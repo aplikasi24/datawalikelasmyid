@@ -164,29 +164,33 @@
 
         // --- 3. App Menus Data ---
         const appMenus = [
-            { id: "dashboard", name: "Dashboard", icon: "fa-home", title: "Dashboard", desc: "Ringkasan aktivitas dan data kelas hari ini." },
-            { id: "pesan", name: "Pesan/Info", icon: "fa-bullhorn", title: "Pengumuman Admin", desc: "Informasi dan pengumuman terbaru dari admin." },
-            { id: "siswa", name: "Data Siswa", icon: "fa-users", title: "Data Siswa", desc: "Kelola data profil siswa kelas Anda." },
-            { id: "struktur", name: "Struktur Organisasi", icon: "fa-sitemap", title: "Struktur Organisasi", desc: "Hierarki dan pengurus kelas Anda." },
-            { id: "mapel", name: "Mata Pelajaran", icon: "fa-book-open", title: "Mata Pelajaran", desc: "Daftar mata pelajaran yang Anda ampu." },
-            { id: "jadwal", name: "Jadwal Mengajar", icon: "fa-calendar-alt", title: "Jadwal Mengajar", desc: "Jadwal mengajar harian Anda." },
-            { id: "presensi", name: "Presensi Siswa", icon: "fa-user-check", title: "Presensi Siswa", desc: "Kelola kehadiran siswa (Hadir, Izin, Sakit, Alpa)." },
-            { id: "nilai", name: "Nilai Siswa", icon: "fa-chart-bar", title: "Nilai Siswa", desc: "Rekapitulasi dan input nilai akademik." },
-            { id: "jurnal", name: "Jurnal Mengajar", icon: "fa-edit", title: "Rencana Jurnal Mengajar", desc: "Catat jurnal kegiatan belajar mengajar harian." },
-            { id: "tugas", name: "Tugas Siswa", icon: "fa-tasks", title: "Tugas Siswa", desc: "Manajemen tugas dan penilaian siswa." },
-            { id: "catatan", name: "Catatan Siswa", icon: "fa-comments", title: "Catatan Siswa", desc: "Catatan anekdotal dan perkembangan siswa." },
-            { id: "piket", name: "Jadwal Piket", icon: "fa-broom", title: "Jadwal Piket", desc: "Jadwal regu kerja piket kebersihan kelas." },
-            { id: "refleksi", name: "Refleksi Mingguan", icon: "fa-lightbulb", title: "Refleksi Mingguan", desc: "Catatan refleksi kinerja guru setiap akhir pekan." },
-            { id: "inventaris", name: "Inventaris", icon: "fa-box-open", title: "Inventaris", desc: "Data sarana dan prasarana di dalam kelas." },
-            { id: "kas_kelas", name: "Kas Kelas", icon: "fa-money-bill-wave", title: "Kas Kelas", desc: "Manajemen keuangan dan kas kelas." },
-            { id: "pembayaran_kelas", name: "Pembayaran Kelas", icon: "fa-file-invoice-dollar", title: "Pembayaran Kelas", desc: "Kelola rincian pembayaran item (LKS, Sarpras, dll)." },
-            { id: "generator_soal", name: "Generator Soal", icon: "fa-robot", title: "Generator Soal AI", desc: "Buat soal secara otomatis menggunakan AI (Selama Token dan Api Masih aktif)." },
-            { id: "modul_ajar_ai", name: "Modul Ajar AI", icon: "fa-chalkboard-teacher", title: "Modul Ajar AI", desc: "Buat Modul Ajar Kurikulum Merdeka yang komprehensif dengan AI." },
-            // Menu aplikasi lain
-            { id: "aplikasi_lain", name: "Aplikasi Lain", icon: "fa-th-large", title: "Aplikasi Terintegrasi", desc: "Berbagai aplikasi lain yang dapat diakses." },
-            // Menu baru di atas pengaturan
-            { id: "sync", name: "Kirim Data (Sync)", icon: "fa-cloud-upload-alt", title: "Sinkronisasi Server", desc: "Kirim data lokal aplikasi ini ke server sekolah." },
-            { id: "pengaturan", name: "Pengaturan", icon: "fa-cog", title: "Pengaturan", desc: "Konfigurasi profil guru dan identitas kelas." }
+            { id: "dashboard", name: "Dashboard", icon: "fa-home", title: "Dashboard", desc: "Ringkasan aktivitas dan data kelas hari ini.", group: "Menu Utama" },
+            { id: "pesan", name: "Pesan/Info", icon: "fa-bullhorn", title: "Pengumuman Admin", desc: "Informasi dan pengumuman terbaru dari admin.", group: "Menu Utama" },
+            
+            { id: "siswa", name: "Data Siswa", icon: "fa-users", title: "Data Siswa", desc: "Kelola data profil siswa kelas Anda.", group: "Manajemen Kelas" },
+            { id: "struktur", name: "Struktur Organisasi", icon: "fa-sitemap", title: "Struktur Organisasi", desc: "Hierarki dan pengurus kelas Anda.", group: "Manajemen Kelas" },
+            { id: "piket", name: "Jadwal Piket", icon: "fa-broom", title: "Jadwal Piket", desc: "Jadwal regu kerja piket kebersihan kelas.", group: "Manajemen Kelas" },
+            { id: "inventaris", name: "Inventaris", icon: "fa-box-open", title: "Inventaris", desc: "Data sarana dan prasarana di dalam kelas.", group: "Manajemen Kelas" },
+            
+            { id: "mapel", name: "Mata Pelajaran", icon: "fa-book-open", title: "Mata Pelajaran", desc: "Daftar mata pelajaran yang Anda ampu.", group: "Kegiatan Belajar Mengajar" },
+            { id: "jadwal", name: "Jadwal Mengajar", icon: "fa-calendar-alt", title: "Jadwal Mengajar", desc: "Jadwal mengajar harian Anda.", group: "Kegiatan Belajar Mengajar" },
+            { id: "jurnal", name: "Jurnal Mengajar", icon: "fa-edit", title: "Rencana Jurnal Mengajar", desc: "Catat jurnal kegiatan belajar mengajar harian.", group: "Kegiatan Belajar Mengajar" },
+            { id: "refleksi", name: "Refleksi Mingguan", icon: "fa-lightbulb", title: "Refleksi Mingguan", desc: "Catatan refleksi kinerja guru setiap akhir pekan.", group: "Kegiatan Belajar Mengajar" },
+            
+            { id: "presensi", name: "Presensi Siswa", icon: "fa-user-check", title: "Presensi Siswa", desc: "Kelola kehadiran siswa (Hadir, Izin, Sakit, Alpa).", group: "Evaluasi & Pantauan Siswa" },
+            { id: "tugas", name: "Tugas Siswa", icon: "fa-tasks", title: "Tugas Siswa", desc: "Manajemen tugas dan penilaian siswa.", group: "Evaluasi & Pantauan Siswa" },
+            { id: "nilai", name: "Nilai Siswa", icon: "fa-chart-bar", title: "Nilai Siswa", desc: "Rekapitulasi dan input nilai akademik.", group: "Evaluasi & Pantauan Siswa" },
+            { id: "catatan", name: "Catatan Siswa", icon: "fa-comments", title: "Catatan Siswa", desc: "Catatan anekdotal dan perkembangan siswa.", group: "Evaluasi & Pantauan Siswa" },
+            
+            { id: "kas_kelas", name: "Kas Kelas", icon: "fa-money-bill-wave", title: "Kas Kelas", desc: "Manajemen keuangan dan kas kelas.", group: "Keuangan Kelas" },
+            { id: "pembayaran_kelas", name: "Pembayaran Kelas", icon: "fa-file-invoice-dollar", title: "Pembayaran Kelas", desc: "Kelola rincian pembayaran item (LKS, Sarpras, dll).", group: "Keuangan Kelas" },
+            
+            { id: "generator_soal", name: "Generator Soal", icon: "fa-robot", title: "Generator Soal AI", desc: "Buat soal secara otomatis menggunakan AI (Selama Token dan Api Masih aktif).", group: "Asisten (AI Tools)" },
+            { id: "modul_ajar_ai", name: "Modul Ajar AI", icon: "fa-chalkboard-teacher", title: "Modul Ajar AI", desc: "Buat Modul Ajar Kurikulum Merdeka yang komprehensif dengan AI.", group: "Asisten (AI Tools)" },
+            
+            { id: "aplikasi_lain", name: "Aplikasi Lain", icon: "fa-th-large", title: "Aplikasi Terintegrasi", desc: "Berbagai aplikasi lain yang dapat diakses.", group: "Sistem & Pengaturan" },
+            { id: "sync", name: "Kirim Data (Sync)", icon: "fa-cloud-upload-alt", title: "Sinkronisasi Server", desc: "Kirim data lokal aplikasi ini ke server sekolah.", group: "Sistem & Pengaturan" },
+            { id: "pengaturan", name: "Pengaturan", icon: "fa-cog", title: "Pengaturan", desc: "Konfigurasi profil guru dan identitas kelas.", group: "Sistem & Pengaturan" }
         ];
 
         window.currentPage = "dashboard";
@@ -210,31 +214,29 @@
                 }
                 const unreadCount = Math.max(0, (db.pesan_info ? db.pesan_info.length : 0) - db.pengaturan.read_pesan_count);
 
-                const hasChildren = sidebarNav.children.length > 0;
-                if (!hasChildren) {
-                    sidebarNav.innerHTML = '';
-                }
+                let currentGroup = "";
 
-                appMenus.forEach((menu, index) => {
+                appMenus.forEach((menu) => {
                     try {
-                        const isActive = menu.id === window.currentPage;
-                        let link;
-                        
-                        if (hasChildren && sidebarNav.children[index]) {
-                            link = sidebarNav.children[index];
-                        } else {
-                            link = document.createElement('a');
-                            link.href = "#";
-                            link.onclick = (e) => {
-                                e.preventDefault();
-                                if(menu.id === 'pesan') {
-                                    db.pengaturan.read_pesan_count = db.pesan_info.length;
-                                    saveDB();
-                                }
-                                window.navigateTo(menu.id);
-                            };
-                            sidebarNav.appendChild(link);
+                        if (menu.group && menu.group !== currentGroup) {
+                            currentGroup = menu.group;
+                            const groupHeader = document.createElement('div');
+                            groupHeader.className = "mt-5 mb-2 px-4";
+                            groupHeader.innerHTML = `<span class="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">${currentGroup}</span>`;
+                            sidebarNav.appendChild(groupHeader);
                         }
+
+                        const isActive = menu.id === window.currentPage;
+                        const link = document.createElement('a');
+                        link.href = "#";
+                        link.onclick = (e) => {
+                            e.preventDefault();
+                            if(menu.id === 'pesan') {
+                                db.pengaturan.read_pesan_count = db.pesan_info.length;
+                                saveDB();
+                            }
+                            window.navigateTo(menu.id);
+                        };
                         
                         let menuNameHtml = menu.name;
                         if(menu.id === 'pesan' && unreadCount > 0) {
@@ -242,18 +244,13 @@
                         }
                         
                         if (isActive) {
-                            link.className = "flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 bg-gradient-to-r from-orange-500 to-orange-600 text-white shadow-lg shadow-orange-500/30 group transform scale-[1.02]";
+                            link.className = "flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 bg-gradient-to-r from-orange-500 to-orange-600 text-white shadow-lg shadow-orange-500/30 group transform scale-[1.02] mb-1";
                             link.innerHTML = '<div class="w-8 h-8 rounded-lg bg-white/20 flex items-center justify-center shrink-0 transition-colors duration-300"><i class="fas ' + menu.icon + ' text-sm"></i></div><span class="font-bold text-sm tracking-wide flex-1 flex items-center transition-colors duration-300">' + menuNameHtml + '</span>';
                         } else {
-                            link.className = "flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 text-slate-400 hover:bg-slate-800/80 hover:text-orange-400 group hover:translate-x-1 cursor-pointer";
-                            
-                            // Special styling for Sync menu
-                            if(menu.id === 'sync') {
-                                link.className += " mt-6 border-t border-slate-800 pt-4 rounded-none hover:translate-x-0";
-                            }
-                            
+                            link.className = "flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 text-slate-400 hover:bg-slate-800/80 hover:text-orange-400 group hover:translate-x-1 cursor-pointer mb-1";
                             link.innerHTML = '<div class="w-8 h-8 rounded-lg bg-slate-800 group-hover:bg-orange-500/20 flex items-center justify-center shrink-0 transition-colors duration-300"><i class="fas ' + menu.icon + ' text-sm text-slate-500 group-hover:text-orange-400 transition-colors duration-300"></i></div><span class="font-medium text-sm flex-1 flex items-center transition-colors duration-300">' + menuNameHtml + '</span>';
                         }
+                        sidebarNav.appendChild(link);
                     } catch (errInner) {
                         console.error('Error menu:', menu, errInner);
                     }
