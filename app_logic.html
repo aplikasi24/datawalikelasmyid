@@ -231,10 +231,10 @@
                             const isOpen = window._sidebarGroupState[currentGroup];
                             
                             const groupHeader = document.createElement('div');
-                            groupHeader.className = "mt-4 mb-2 px-4 flex justify-between items-center cursor-pointer group sidebar-group-header";
+                            groupHeader.className = "mt-5 mb-3 px-4 flex justify-between items-center cursor-pointer group sidebar-group-header";
                             groupHeader.innerHTML = `
-                                <span class="text-[10px] font-bold text-orange-500 uppercase tracking-wider block transition-colors">${currentGroup}</span>
-                                <i class="fas fa-chevron-${isOpen ? 'down' : 'right'} text-[10px] text-slate-500 group-hover:text-orange-400 transition-colors"></i>
+                                <span class="text-xs font-bold text-orange-500 uppercase tracking-wider block transition-colors">${currentGroup}</span>
+                                <i class="fas fa-chevron-${isOpen ? 'down' : 'right'} text-xs text-slate-500 group-hover:text-orange-400 transition-colors"></i>
                             `;
                             
                             const capturedGroup = currentGroup;
