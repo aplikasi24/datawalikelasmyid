@@ -201,6 +201,8 @@
         const sidebar = document.getElementById('sidebar');
         const overlay = document.getElementById('sidebar-overlay');
         const mainScrollArea = document.getElementById('main-scroll-area');
+        window._sidebarGroupState = window._sidebarGroupState || {};
+
         // --- 4. Sidebar Rendering ---
         function renderSidebar() {
             try {
@@ -220,10 +222,32 @@
                     try {
                         if (menu.group && menu.group !== currentGroup) {
                             currentGroup = menu.group;
+                            
+                            // Secara default tertutup (false) saat pertama kali buka
+                            if (window._sidebarGroupState[currentGroup] === undefined) {
+                                window._sidebarGroupState[currentGroup] = false;
+                            }
+                            
+                            const isOpen = window._sidebarGroupState[currentGroup];
+                            
                             const groupHeader = document.createElement('div');
-                            groupHeader.className = "mt-5 mb-2 px-4";
-                            groupHeader.innerHTML = `<span class="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">${currentGroup}</span>`;
+                            groupHeader.className = "mt-4 mb-2 px-4 flex justify-between items-center cursor-pointer group sidebar-group-header";
+                            groupHeader.innerHTML = `
+                                <span class="text-[10px] font-bold text-orange-500 uppercase tracking-wider block transition-colors">${currentGroup}</span>
+                                <i class="fas fa-chevron-${isOpen ? 'down' : 'right'} text-[10px] text-slate-500 group-hover:text-orange-400 transition-colors"></i>
+                            `;
+                            
+                            const capturedGroup = currentGroup;
+                            groupHeader.onclick = () => {
+                                window._sidebarGroupState[capturedGroup] = !window._sidebarGroupState[capturedGroup];
+                                renderSidebar();
+                            };
                             sidebarNav.appendChild(groupHeader);
+                        }
+
+                        // Jika tertutup, jangan tampilkan item menu
+                        if (!window._sidebarGroupState[currentGroup]) {
+                            return;
                         }
 
                         const isActive = menu.id === window.currentPage;
