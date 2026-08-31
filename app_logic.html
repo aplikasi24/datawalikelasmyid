@@ -53,24 +53,20 @@
                     } else {
                         Swal.fire({
                             title: 'Instal Aplikasi',
-                            html: isAndroid ? '<p class="text-sm">Browser ini tidak mendukung instalasi otomatis. Untuk menginstal, aplikasi harus dibuka menggunakan browser <b>Google Chrome</b>.</p>' : '<p class="text-sm">Klik tombol di bawah untuk menyalin tautan dan membukanya di browser yang mendukung instalasi aplikasi.</p>',
+                            html: '<p class="text-sm">Browser ini tidak mendukung instalasi otomatis. Untuk menginstal, aplikasi harus dibuka menggunakan browser <b>Google Chrome</b> (Android) atau <b>Safari</b> (iOS).</p><p class="text-sm mt-2">Silakan salin tautan di bawah ini dan tempel di browser tersebut.</p>',
                             icon: 'info',
                             showCancelButton: true,
-                            confirmButtonText: isAndroid ? '<i class="fab fa-chrome"></i> Buka di Chrome' : '<i class="fas fa-copy"></i> Salin Tautan',
+                            confirmButtonText: '<i class="fas fa-copy"></i> Salin Tautan',
                             cancelButtonText: 'Tutup',
                             confirmButtonColor: '#10b981',
                             cancelButtonColor: '#64748b'
                         }).then((result) => {
                             if (result.isConfirmed) {
-                                if (isAndroid) {
-                                    const domain = window.location.host;
-                                    const path = window.location.pathname;
-                                    window.location.href = `intent://${domain}${path}#Intent;scheme=https;package=com.android.chrome;end`;
-                                } else {
-                                    navigator.clipboard.writeText(window.location.href).then(() => {
-                                        Swal.fire('Tersalin!', 'Tautan telah disalin. Buka di browser Chrome atau Safari untuk menginstal.', 'success');
-                                    });
-                                }
+                                navigator.clipboard.writeText(window.location.href).then(() => {
+                                    Swal.fire('Tersalin!', 'Tautan telah disalin. Buka di browser Google Chrome / Safari lalu tempel (paste) tautan untuk menginstal.', 'success');
+                                }).catch(() => {
+                                    prompt('Salin tautan ini secara manual:', window.location.href);
+                                });
                             }
                         });
                     }
@@ -11268,12 +11264,18 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                 itemHtml = `<div class="text-center text-slate-400 p-4 text-sm">Belum ada item tagihan. Tambahkan di bawah.</div>`;
             }
 
+            let totalTagihanHarusBayar = pk.items.reduce((sum, item) => sum + parseInt(item.nominal || 0), 0);
+
             const modalHtml = `
             <div id="modal-kelola-item-pk" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm opacity-0 transition-opacity duration-300">
                 <div class="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden transform scale-95 transition-transform duration-300 flex flex-col max-h-[90vh]">
-                    <div class="p-5 border-b border-slate-100 flex justify-between items-center bg-slate-50 shrink-0">
-                        <h3 class="font-bold text-lg text-slate-800"><i class="fas fa-cog text-indigo-500 mr-2"></i>Kelola Item Tagihan</h3>
-                        <button onclick="document.getElementById('modal-kelola-item-pk').remove()" class="text-slate-400 hover:text-red-500 transition text-2xl w-8 h-8 flex items-center justify-center rounded-full hover:bg-red-50">&times;</button>
+                    <div class="p-5 border-b border-slate-100 flex justify-between items-center bg-slate-50 shrink-0 gap-2">
+                        <h3 class="font-bold text-lg text-slate-800 flex-1 truncate"><i class="fas fa-cog text-indigo-500 mr-2"></i>Kelola Item</h3>
+                        <div class="text-right flex flex-col items-end shrink-0">
+                            <span class="text-[9px] text-slate-500 font-bold uppercase tracking-wider mb-0.5">Total Tagihan</span>
+                            <span class="text-xs font-bold text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded border border-indigo-100 shadow-sm">Rp ${totalTagihanHarusBayar.toLocaleString('id-ID')}</span>
+                        </div>
+                        <button onclick="document.getElementById('modal-kelola-item-pk').remove()" class="text-slate-400 hover:text-red-500 transition text-2xl w-8 h-8 flex items-center justify-center rounded-full hover:bg-red-50 shrink-0 ml-1">&times;</button>
                     </div>
                     <div class="p-6 overflow-y-auto flex-1">
                         <div class="mb-4">
@@ -11524,8 +11526,8 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                             <input type="date" id="tgl_pk_${item.id}" value="${todayStr}" class="w-full border border-slate-300 rounded p-1.5 outline-none focus:border-indigo-500 text-xs font-bold text-slate-800">
                         </div>
                         <div class="flex items-center gap-2">
-                            <span class="text-slate-500 font-bold text-sm">Rp</span>
-                            <input type="text" id="input_pk_${item.id}" oninput="this.value = this.value.replace(/\\D/g, '').replace(/\\B(?=(\\d{3})+(?!\\d))/g, '.'); window.updateBadgeKurang('${item.id}', ${kurang}); window.updateGlobalSummaryPK('${studentId}');" class="flex-1 border border-slate-300 rounded-lg p-2 outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 text-sm font-bold text-slate-800" placeholder="0">
+                            <span class="text-slate-500 font-bold text-sm shrink-0">Rp</span>
+                            <input type="text" id="input_pk_${item.id}" oninput="this.value = this.value.replace(/\\D/g, '').replace(/\\B(?=(\\d{3})+(?!\\d))/g, '.'); window.updateBadgeKurang('${item.id}', ${kurang}); window.updateGlobalSummaryPK('${studentId}');" class="flex-1 min-w-0 border border-slate-300 rounded-lg p-2 outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 text-sm font-bold text-slate-800" placeholder="0">
                             <button onclick="document.getElementById('input_pk_${item.id}').value = '${kurang.toLocaleString('id-ID')}'; window.updateBadgeKurang('${item.id}', ${kurang}); window.updateGlobalSummaryPK('${studentId}');" class="bg-indigo-100 text-indigo-700 px-3 py-2 rounded-lg text-xs font-bold hover:bg-indigo-200 transition shrink-0 whitespace-nowrap">Lunasi Sisa</button>
                         </div>
                     </div>
