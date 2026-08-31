@@ -230,10 +230,24 @@
                             
                             const isOpen = window._sidebarGroupState[currentGroup];
                             
+                            const groupIcons = {
+                                "Menu Utama": "fa-th-large",
+                                "Manajemen Kelas": "fa-users-cog",
+                                "Kegiatan Belajar Mengajar": "fa-chalkboard-teacher",
+                                "Evaluasi & Pantauan Siswa": "fa-clipboard-check",
+                                "Keuangan Kelas": "fa-wallet",
+                                "Asisten (AI Tools)": "fa-robot",
+                                "Sistem & Pengaturan": "fa-cogs"
+                            };
+                            const groupIcon = groupIcons[currentGroup] || "fa-folder";
+                            
                             const groupHeader = document.createElement('div');
-                            groupHeader.className = "mt-5 mb-3 px-4 flex justify-between items-center cursor-pointer group sidebar-group-header";
+                            groupHeader.className = "mt-8 mb-4 px-4 flex justify-between items-center cursor-pointer group sidebar-group-header";
                             groupHeader.innerHTML = `
-                                <span class="text-xs font-bold text-orange-500 uppercase tracking-wider block transition-colors">${currentGroup}</span>
+                                <div class="flex items-center gap-2">
+                                    <i class="fas ${groupIcon} text-orange-500 text-[11px]"></i>
+                                    <span class="text-[11px] font-bold text-orange-500 uppercase tracking-wider block transition-colors">${currentGroup}</span>
+                                </div>
                                 <i class="fas fa-chevron-${isOpen ? 'down' : 'right'} text-xs text-slate-500 group-hover:text-orange-400 transition-colors"></i>
                             `;
                             
