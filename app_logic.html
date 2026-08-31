@@ -242,13 +242,19 @@
                             const groupIcon = groupIcons[currentGroup] || "fa-folder";
                             
                             const groupHeader = document.createElement('div');
-                            groupHeader.className = "mt-8 mb-4 px-4 flex justify-between items-center cursor-pointer group sidebar-group-header";
+                            groupHeader.className = "mt-10 mb-5 pt-3 pb-2 px-4 flex justify-between items-center cursor-pointer group sidebar-group-header border-t border-slate-800/50";
+                            // Sembunyikan border-t untuk grup pertama
+                            if (currentGroup === "Menu Utama") {
+                                groupHeader.classList.remove("border-t", "border-slate-800/50");
+                                groupHeader.classList.replace("mt-10", "mt-4");
+                            }
+                            
                             groupHeader.innerHTML = `
-                                <div class="flex items-center gap-2">
-                                    <i class="fas ${groupIcon} text-orange-500 text-[11px]"></i>
-                                    <span class="text-[11px] font-bold text-orange-500 uppercase tracking-wider block transition-colors">${currentGroup}</span>
+                                <div class="flex items-center gap-3">
+                                    <i class="fas ${groupIcon} ${isOpen ? 'text-white' : 'text-orange-500 group-hover:text-white'} text-sm transition-colors"></i>
+                                    <span class="text-[11px] font-bold ${isOpen ? 'text-white' : 'text-orange-500 group-hover:text-white'} uppercase tracking-wider block transition-colors">${currentGroup}</span>
                                 </div>
-                                <i class="fas fa-chevron-${isOpen ? 'down' : 'right'} text-xs text-slate-500 group-hover:text-orange-400 transition-colors"></i>
+                                <i class="fas fa-chevron-${isOpen ? 'down' : 'right'} text-xs ${isOpen ? 'text-white' : 'text-slate-500 group-hover:text-white'} transition-colors"></i>
                             `;
                             
                             const capturedGroup = currentGroup;
