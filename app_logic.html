@@ -40,6 +40,7 @@
             } else {
                 if (typeof Swal !== 'undefined') {
                     const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+                    const isAndroid = /Android/i.test(navigator.userAgent);
                     
                     if (isIOS) {
                         Swal.fire({
@@ -51,20 +52,25 @@
                         });
                     } else {
                         Swal.fire({
-                            title: 'Buka di Google Chrome',
-                            html: '<p class="text-sm">Browser ini tidak mendukung instalasi otomatis. Untuk menginstal, aplikasi harus dibuka menggunakan browser <b>Google Chrome</b>.</p>',
+                            title: 'Instal Aplikasi',
+                            html: isAndroid ? '<p class="text-sm">Browser ini tidak mendukung instalasi otomatis. Untuk menginstal, aplikasi harus dibuka menggunakan browser <b>Google Chrome</b>.</p>' : '<p class="text-sm">Klik tombol di bawah untuk menyalin tautan dan membukanya di browser yang mendukung instalasi aplikasi.</p>',
                             icon: 'info',
                             showCancelButton: true,
-                            confirmButtonText: '<i class="fab fa-chrome"></i> Buka di Chrome',
+                            confirmButtonText: isAndroid ? '<i class="fab fa-chrome"></i> Buka di Chrome' : '<i class="fas fa-copy"></i> Salin Tautan',
                             cancelButtonText: 'Tutup',
                             confirmButtonColor: '#10b981',
                             cancelButtonColor: '#64748b'
                         }).then((result) => {
                             if (result.isConfirmed) {
-                                // Redirect to Chrome using Android Intent
-                                const domain = window.location.host;
-                                const path = window.location.pathname;
-                                window.location.href = `intent://${domain}${path}#Intent;scheme=https;package=com.android.chrome;end`;
+                                if (isAndroid) {
+                                    const domain = window.location.host;
+                                    const path = window.location.pathname;
+                                    window.location.href = `intent://${domain}${path}#Intent;scheme=https;package=com.android.chrome;end`;
+                                } else {
+                                    navigator.clipboard.writeText(window.location.href).then(() => {
+                                        Swal.fire('Tersalin!', 'Tautan telah disalin. Buka di browser Chrome atau Safari untuk menginstal.', 'success');
+                                    });
+                                }
                             }
                         });
                     }
