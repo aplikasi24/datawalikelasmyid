@@ -8421,7 +8421,8 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                         <div class="flex flex-wrap sm:flex-nowrap items-center gap-2 w-full lg:w-auto mt-2 lg:mt-0">
                             <div class="relative w-full sm:w-48 shrink-0">
                                 <i class="fas fa-search absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
-                                <input type="text" placeholder="Cari siswa..." value="${window.searchPembayaranSiswa}" onchange="window.searchPembayaranSiswa = this.value; window.navigateTo('pembayaran_kelas');" class="border border-slate-300 rounded-lg pl-7 pr-2 py-1.5 text-sm outline-none focus:border-indigo-500 w-full shadow-sm">
+                                <input id="search-pk" type="text" placeholder="Cari siswa..." value="${window.searchPembayaranSiswa}" oninput="window.searchPembayaranSiswa = this.value; window.navigateTo('pembayaran_kelas'); let el = document.getElementById('search-pk'); if(el) { el.focus(); el.setSelectionRange(this.value.length, this.value.length); }" class="border border-slate-300 rounded-lg pl-7 pr-7 py-1.5 text-sm outline-none focus:border-indigo-500 w-full shadow-sm">
+                                ${window.searchPembayaranSiswa ? `<button onclick="window.searchPembayaranSiswa = ''; window.navigateTo('pembayaran_kelas');" class="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-red-500 transition"><i class="fas fa-times text-xs"></i></button>` : ''}
                             </div>
                             <select onchange="window.filterStatusPembayaran = this.value; window.navigateTo('pembayaran_kelas');" class="border border-slate-300 rounded-lg px-2 py-1.5 text-sm outline-none focus:border-indigo-500 bg-white w-full sm:w-32 cursor-pointer shadow-sm shrink-0">
                                 <option value="Semua" ${window.filterStatusPembayaran === 'Semua' ? 'selected' : ''}>Semua Status</option>
@@ -8819,7 +8820,8 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                         <div class="flex flex-wrap sm:flex-nowrap items-center gap-2 w-full lg:w-auto mt-2 lg:mt-0">
                             <div class="relative w-full sm:w-40 shrink-0">
                                 <i class="fas fa-search absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
-                                <input type="text" placeholder="Cari siswa (Enter)" value="${window.searchKasSiswa}" onchange="window.searchKasSiswa = this.value; window.navigateTo('kas_kelas');" class="border border-slate-300 rounded-lg pl-7 pr-2 py-1.5 text-sm outline-none focus:border-blue-500 w-full shadow-sm">
+                                <input id="search-kas" type="text" placeholder="Cari siswa..." value="${window.searchKasSiswa}" oninput="window.searchKasSiswa = this.value; window.navigateTo('kas_kelas'); let el = document.getElementById('search-kas'); if(el) { el.focus(); el.setSelectionRange(this.value.length, this.value.length); }" class="border border-slate-300 rounded-lg pl-7 pr-7 py-1.5 text-sm outline-none focus:border-blue-500 w-full shadow-sm">
+                                ${window.searchKasSiswa ? `<button onclick="window.searchKasSiswa = ''; window.navigateTo('kas_kelas');" class="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-red-500 transition"><i class="fas fa-times text-xs"></i></button>` : ''}
                             </div>
                             <select onchange="window.filterStatusKas = this.value; window.navigateTo('kas_kelas');" class="border border-slate-300 rounded-lg px-2 py-1.5 text-sm outline-none focus:border-blue-500 bg-white w-full sm:w-32 cursor-pointer shadow-sm shrink-0">
                                 <option value="Semua" ${window.filterStatusKas === 'Semua' ? 'selected' : ''}>Semua Status</option>
