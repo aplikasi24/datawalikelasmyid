@@ -8317,11 +8317,37 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
             });
             let totalKurangGlobal = totalSeharusnyaMasuk - totalMasuk;
 
+            if (typeof window.searchPembayaranSiswa === 'undefined') window.searchPembayaranSiswa = '';
+            if (typeof window.filterStatusPembayaran === 'undefined') window.filterStatusPembayaran = 'Semua';
+
+            let studentsToRender = db.students;
+            
+            if (window.searchPembayaranSiswa) {
+                const q = window.searchPembayaranSiswa.toLowerCase();
+                studentsToRender = studentsToRender.filter(s => s.name.toLowerCase().includes(q));
+            }
+
+            if (window.filterStatusPembayaran !== 'Semua') {
+                studentsToRender = studentsToRender.filter(s => {
+                    let terbayarSiswa = 0;
+                    if(pk.transaksi[s.id]) {
+                        pk.items.forEach(item => {
+                            if(pk.transaksi[s.id][item.id]) terbayarSiswa += parseInt(pk.transaksi[s.id][item.id]);
+                        });
+                    }
+                    let kurangSiswa = totalHarusDibayarPerSiswa - terbayarSiswa;
+                    
+                    if (window.filterStatusPembayaran === 'Lunas') return kurangSiswa <= 0 && totalHarusDibayarPerSiswa > 0;
+                    if (window.filterStatusPembayaran === 'Belum Lunas') return kurangSiswa > 0;
+                    return true;
+                });
+            }
+
             let trs = '';
-            if (db.students.length === 0) {
+            if (studentsToRender.length === 0) {
                 trs = `<tr><td colspan="6" class="text-center p-8 text-slate-500">Belum ada data siswa.</td></tr>`;
             } else {
-                trs = db.students.map((s, idx) => {
+                trs = studentsToRender.map((s, idx) => {
                     let terbayarSiswa = 0;
                     if(pk.transaksi[s.id]) {
                         pk.items.forEach(item => {
@@ -8332,6 +8358,11 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                     }
                     let kurangSiswa = totalHarusDibayarPerSiswa - terbayarSiswa;
                     
+                    let lunasText = '';
+                    if (totalHarusDibayarPerSiswa > 0 && kurangSiswa <= 0) {
+                        lunasText = `<span class="bg-green-100 text-green-700 font-bold text-[10px] px-2 py-1 rounded-lg ml-2 whitespace-nowrap"><i class="fas fa-check mr-1"></i>Lunas</span>`;
+                    }
+                    
                     return `
                     <tr class="border-b border-slate-100 hover:bg-slate-50 transition">
                         <td class="p-3 text-center">${idx + 1}</td>
@@ -8339,13 +8370,14 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                         <td class="p-3 text-right">Rp ${totalHarusDibayarPerSiswa.toLocaleString('id-ID')}</td>
                         <td class="p-3 text-right text-green-600 font-bold">Rp ${terbayarSiswa.toLocaleString('id-ID')}</td>
                         <td class="p-3 text-right text-red-500 font-bold">Rp ${kurangSiswa.toLocaleString('id-ID')}</td>
-                        <td class="p-3 text-center">
+                        <td class="p-3 text-center flex justify-center items-center">
                             <button onclick="window.bukaModalBayarPK('${s.id}')" class="bg-indigo-100 text-indigo-700 hover:bg-indigo-600 hover:text-white px-2.5 py-1.5 rounded-lg text-xs font-bold transition mr-1" title="Bayar">
                                 <i class="fas fa-money-bill-wave"></i>
                             </button>
                             <button onclick="window.bukaModalViewPK('${s.id}')" class="bg-slate-100 text-slate-600 hover:bg-slate-700 hover:text-white px-2.5 py-1.5 rounded-lg text-xs font-bold transition" title="Lihat Rincian">
                                 <i class="fas fa-eye"></i>
                             </button>
+                            ${lunasText}
                         </td>
                     </tr>
                     `;
@@ -8380,10 +8412,22 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
 
                 <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
                     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-5 gap-3">
-                        <h2 class="text-lg font-bold text-slate-800"><i class="fas fa-users mr-2 text-indigo-500"></i>Daftar Siswa & Pembayaran Kelas</h2>
-                        <button onclick="window.bukaModalKelolaItemPK()" class="bg-slate-800 hover:bg-slate-900 text-white font-bold px-4 py-2 rounded-xl text-sm transition shadow-sm whitespace-nowrap">
-                            <i class="fas fa-cog mr-1.5"></i>Kelola Item Tagihan
-                        </button>
+                        <h2 class="text-lg font-bold text-slate-800 shrink-0"><i class="fas fa-users mr-2 text-indigo-500"></i>Daftar Siswa & Pembayaran Kelas</h2>
+                        
+                        <div class="flex flex-col sm:flex-row items-center gap-2 w-full lg:w-auto mt-2 sm:mt-0">
+                            <div class="relative w-full sm:w-48">
+                                <i class="fas fa-search absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+                                <input type="text" placeholder="Cari siswa..." value="${window.searchPembayaranSiswa}" onchange="window.searchPembayaranSiswa = this.value; window.navigateTo('pembayaran_kelas');" class="border border-slate-300 rounded-lg pl-7 pr-2 py-1.5 text-sm outline-none focus:border-indigo-500 w-full shadow-sm">
+                            </div>
+                            <select onchange="window.filterStatusPembayaran = this.value; window.navigateTo('pembayaran_kelas');" class="border border-slate-300 rounded-lg px-2 py-1.5 text-sm outline-none focus:border-indigo-500 bg-white w-full sm:w-32 cursor-pointer shadow-sm">
+                                <option value="Semua" ${window.filterStatusPembayaran === 'Semua' ? 'selected' : ''}>Semua Status</option>
+                                <option value="Lunas" ${window.filterStatusPembayaran === 'Lunas' ? 'selected' : ''}>Lunas</option>
+                                <option value="Belum Lunas" ${window.filterStatusPembayaran === 'Belum Lunas' ? 'selected' : ''}>Belum Lunas</option>
+                            </select>
+                            <button onclick="window.bukaModalKelolaItemPK()" class="bg-slate-800 hover:bg-slate-900 text-white font-bold px-4 py-2 rounded-xl text-sm transition shadow-sm whitespace-nowrap w-full sm:w-auto">
+                                <i class="fas fa-cog mr-1.5"></i>Kelola Item Tagihan
+                            </button>
+                        </div>
                     </div>
 
                     <div class="overflow-x-auto rounded-xl border border-slate-200">
