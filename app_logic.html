@@ -6036,7 +6036,7 @@ Setelah semua baris terisi, tolong berikan kembali kepada saya file Excel terseb
                                 </tr>
                             </thead>
                             <tbody>
-                                ${trs || '<tr><td colspan="10" class="text-center p-8 text-gray-500 bg-gray-50">Belum ada jurnal mengajar. Silakan isi jadwal mengajar terlebih dahulu.</td></tr>'}
+                                ${trs || '<tr><td colspan="10" class="text-center p-8 text-gray-500 bg-gray-50">Belum ada jurnal mengajar. Silakan klik "Tambah Baris".</td></tr>'}
                             </tbody>
                         </table>
                     </div>
@@ -8475,9 +8475,24 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
             let totalKeseluruhanKurang = 0;
             let daftarTunggakanHtml = '';
 
+            if (typeof window.searchKasSiswa === 'undefined') window.searchKasSiswa = '';
+            if (typeof window.filterStatusKas === 'undefined') window.filterStatusKas = 'Semua';
+
             let studentsToRender = db.students;
             if (window.currentFilterKelasKas !== 'Semua Kelas') {
                 studentsToRender = studentsToRender.filter(s => String(s.kelas || '-') === window.currentFilterKelasKas);
+            }
+            if (window.searchKasSiswa) {
+                const q = window.searchKasSiswa.toLowerCase();
+                studentsToRender = studentsToRender.filter(s => s.name.toLowerCase().includes(q));
+            }
+            if (window.filterStatusKas !== 'Semua') {
+                studentsToRender = studentsToRender.filter(s => {
+                    const bayarViewed = (k.pembayaran[s.id] || {})[viewedDateStr] || 0;
+                    if (window.filterStatusKas === 'Lunas') return k.nominal > 0 && bayarViewed >= k.nominal;
+                    if (window.filterStatusKas === 'Belum Lunas') return bayarViewed < k.nominal;
+                    return true;
+                });
             }
 
             let trs = studentsToRender.map((s, index) => {
@@ -8528,6 +8543,11 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                     inputTextColor = 'text-green-700';
                 }
 
+                let lunasBadge = '';
+                if (k.nominal > 0 && bayarViewed >= k.nominal) {
+                    lunasBadge = `<span class="bg-green-100 text-green-700 font-bold text-[10px] px-2 py-1.5 rounded-lg shadow-sm whitespace-nowrap"><i class="fas fa-check mr-1"></i>Lunas</span>`;
+                }
+
                 return `
                 <tr class="hover:bg-slate-50 transition-colors border-b border-slate-100">
                     <td class="p-3 text-center text-sm">${index + 1}</td>
@@ -8539,6 +8559,7 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                             <button onclick="window.updateBayarKas('${s.id}', '${viewedDateStr}', 0)" class="bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 text-[10px] px-2 py-1.5 rounded-lg font-bold shadow-sm transition whitespace-nowrap" title="Tandai Belum Bayar">
                                 <i class="fas fa-times mr-1"></i>Blm Byr
                             </button>
+                            ${lunasBadge}
                         </div>
                     </td>
                     <td class="p-3 text-sm font-bold text-blue-600 text-right">Rp ${kasMingguIni.toLocaleString('id-ID')}</td>
@@ -8745,6 +8766,17 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                             <select id="filter-kelas-kas" onchange="window.currentFilterKelasKas = this.value; window.navigateTo('kas_kelas');" class="border border-slate-300 rounded-lg px-2 py-1 text-sm font-semibold text-slate-700 outline-none focus:ring-2 focus:ring-blue-500 bg-slate-50 cursor-pointer shadow-sm ml-2">
                                 <option value="Semua Kelas">Semua Kelas</option>
                                 ${[...new Set(db.students.map(s => s.kelas || '-'))].filter(k => k !== '-').sort().map(k => `<option value="${k}" ${window.currentFilterKelasKas === k ? 'selected' : ''}>Kelas ${k}</option>`).join('')}
+                            </select>
+                        </div>
+                        <div class="flex flex-col sm:flex-row items-center gap-2 w-full lg:w-auto mt-2 lg:mt-0">
+                            <div class="relative w-full sm:w-40">
+                                <i class="fas fa-search absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+                                <input type="text" placeholder="Cari siswa (Enter)" value="${window.searchKasSiswa}" onchange="window.searchKasSiswa = this.value; window.navigateTo('kas_kelas');" class="border border-slate-300 rounded-lg pl-7 pr-2 py-1.5 text-sm outline-none focus:border-blue-500 w-full shadow-sm">
+                            </div>
+                            <select onchange="window.filterStatusKas = this.value; window.navigateTo('kas_kelas');" class="border border-slate-300 rounded-lg px-2 py-1.5 text-sm outline-none focus:border-blue-500 bg-white w-full sm:w-32 cursor-pointer shadow-sm">
+                                <option value="Semua" ${window.filterStatusKas === 'Semua' ? 'selected' : ''}>Semua Status</option>
+                                <option value="Lunas" ${window.filterStatusKas === 'Lunas' ? 'selected' : ''}>Lunas</option>
+                                <option value="Belum Lunas" ${window.filterStatusKas === 'Belum Lunas' ? 'selected' : ''}>Belum Lunas</option>
                             </select>
                         </div>
                         <div class="flex flex-col sm:flex-row items-start sm:items-center gap-3 w-full lg:w-auto overflow-hidden">
