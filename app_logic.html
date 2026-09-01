@@ -8370,14 +8370,16 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                         <td class="p-3 text-right">Rp ${totalHarusDibayarPerSiswa.toLocaleString('id-ID')}</td>
                         <td class="p-3 text-right text-green-600 font-bold">Rp ${terbayarSiswa.toLocaleString('id-ID')}</td>
                         <td class="p-3 text-right text-red-500 font-bold">Rp ${kurangSiswa.toLocaleString('id-ID')}</td>
-                        <td class="p-3 text-center flex justify-center items-center">
-                            <button onclick="window.bukaModalBayarPK('${s.id}')" class="bg-indigo-100 text-indigo-700 hover:bg-indigo-600 hover:text-white px-2.5 py-1.5 rounded-lg text-xs font-bold transition mr-1" title="Bayar">
-                                <i class="fas fa-money-bill-wave"></i>
-                            </button>
-                            <button onclick="window.bukaModalViewPK('${s.id}')" class="bg-slate-100 text-slate-600 hover:bg-slate-700 hover:text-white px-2.5 py-1.5 rounded-lg text-xs font-bold transition" title="Lihat Rincian">
-                                <i class="fas fa-eye"></i>
-                            </button>
-                            ${lunasText}
+                        <td class="p-3 text-center">
+                            <div class="flex justify-center items-center gap-1.5">
+                                <button onclick="window.bukaModalBayarPK('${s.id}')" class="bg-indigo-100 text-indigo-700 hover:bg-indigo-600 hover:text-white px-2.5 py-1.5 rounded-lg text-xs font-bold transition" title="Bayar">
+                                    <i class="fas fa-money-bill-wave"></i>
+                                </button>
+                                <button onclick="window.bukaModalViewPK('${s.id}')" class="bg-slate-100 text-slate-600 hover:bg-slate-700 hover:text-white px-2.5 py-1.5 rounded-lg text-xs font-bold transition" title="Lihat Rincian">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                                ${lunasText}
+                            </div>
                         </td>
                     </tr>
                     `;
@@ -8411,20 +8413,20 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                 </div>
 
                 <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
-                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-5 gap-3">
-                        <h2 class="text-lg font-bold text-slate-800 shrink-0"><i class="fas fa-users mr-2 text-indigo-500"></i>Daftar Siswa & Pembayaran Kelas</h2>
+                    <div class="flex flex-col lg:flex-row flex-wrap justify-between items-start lg:items-center mb-5 gap-4">
+                        <h2 class="text-lg font-bold text-slate-800 shrink-0 w-full lg:w-auto"><i class="fas fa-users mr-2 text-indigo-500"></i>Daftar Siswa & Pembayaran Kelas</h2>
                         
-                        <div class="flex flex-col sm:flex-row items-center gap-2 w-full lg:w-auto mt-2 sm:mt-0">
-                            <div class="relative w-full sm:w-48">
+                        <div class="flex flex-wrap sm:flex-nowrap items-center gap-2 w-full lg:w-auto mt-2 lg:mt-0">
+                            <div class="relative w-full sm:w-48 shrink-0">
                                 <i class="fas fa-search absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
                                 <input type="text" placeholder="Cari siswa..." value="${window.searchPembayaranSiswa}" onchange="window.searchPembayaranSiswa = this.value; window.navigateTo('pembayaran_kelas');" class="border border-slate-300 rounded-lg pl-7 pr-2 py-1.5 text-sm outline-none focus:border-indigo-500 w-full shadow-sm">
                             </div>
-                            <select onchange="window.filterStatusPembayaran = this.value; window.navigateTo('pembayaran_kelas');" class="border border-slate-300 rounded-lg px-2 py-1.5 text-sm outline-none focus:border-indigo-500 bg-white w-full sm:w-32 cursor-pointer shadow-sm">
+                            <select onchange="window.filterStatusPembayaran = this.value; window.navigateTo('pembayaran_kelas');" class="border border-slate-300 rounded-lg px-2 py-1.5 text-sm outline-none focus:border-indigo-500 bg-white w-full sm:w-32 cursor-pointer shadow-sm shrink-0">
                                 <option value="Semua" ${window.filterStatusPembayaran === 'Semua' ? 'selected' : ''}>Semua Status</option>
                                 <option value="Lunas" ${window.filterStatusPembayaran === 'Lunas' ? 'selected' : ''}>Lunas</option>
                                 <option value="Belum Lunas" ${window.filterStatusPembayaran === 'Belum Lunas' ? 'selected' : ''}>Belum Lunas</option>
                             </select>
-                            <button onclick="window.bukaModalKelolaItemPK()" class="bg-slate-800 hover:bg-slate-900 text-white font-bold px-4 py-2 rounded-xl text-sm transition shadow-sm whitespace-nowrap w-full sm:w-auto">
+                            <button onclick="window.bukaModalKelolaItemPK()" class="bg-slate-800 hover:bg-slate-900 text-white font-bold px-4 py-2 rounded-xl text-sm transition shadow-sm whitespace-nowrap w-full sm:w-auto shrink-0 mt-2 sm:mt-0">
                                 <i class="fas fa-cog mr-1.5"></i>Kelola Item Tagihan
                             </button>
                         </div>
@@ -8804,20 +8806,20 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
 
                 <!-- Tabel Pembayaran -->
                 <div class="bg-white p-6 rounded-2xl shadow-[0_2px_10px_-3px_rgba(6,81,237,0.1)] border border-slate-100 overflow-hidden">
-                    <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-5 gap-4">
-                        <div class="flex items-center gap-3 w-full lg:w-auto">
+                    <div class="flex flex-col lg:flex-row flex-wrap justify-between items-start lg:items-center mb-5 gap-4">
+                        <div class="flex flex-wrap sm:flex-nowrap items-center gap-3 w-full lg:w-auto">
                             <h2 class="text-lg font-bold text-slate-800 shrink-0"><i class="fas fa-users mr-2 text-blue-500"></i>Daftar Siswa & Pembayaran</h2>
-                            <select id="filter-kelas-kas" onchange="window.currentFilterKelasKas = this.value; window.navigateTo('kas_kelas');" class="border border-slate-300 rounded-lg px-2 py-1 text-sm font-semibold text-slate-700 outline-none focus:ring-2 focus:ring-blue-500 bg-slate-50 cursor-pointer shadow-sm ml-2">
+                            <select id="filter-kelas-kas" onchange="window.currentFilterKelasKas = this.value; window.navigateTo('kas_kelas');" class="border border-slate-300 rounded-lg px-2 py-1 text-sm font-semibold text-slate-700 outline-none focus:ring-2 focus:ring-blue-500 bg-slate-50 cursor-pointer shadow-sm ml-0 sm:ml-2 shrink-0">
                                 <option value="Semua Kelas">Semua Kelas</option>
                                 ${[...new Set(db.students.map(s => s.kelas || '-'))].filter(k => k !== '-').sort().map(k => `<option value="${k}" ${window.currentFilterKelasKas === k ? 'selected' : ''}>Kelas ${k}</option>`).join('')}
                             </select>
                         </div>
-                        <div class="flex flex-col sm:flex-row items-center gap-2 w-full lg:w-auto mt-2 lg:mt-0">
-                            <div class="relative w-full sm:w-40">
+                        <div class="flex flex-wrap sm:flex-nowrap items-center gap-2 w-full lg:w-auto mt-2 lg:mt-0">
+                            <div class="relative w-full sm:w-40 shrink-0">
                                 <i class="fas fa-search absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
                                 <input type="text" placeholder="Cari siswa (Enter)" value="${window.searchKasSiswa}" onchange="window.searchKasSiswa = this.value; window.navigateTo('kas_kelas');" class="border border-slate-300 rounded-lg pl-7 pr-2 py-1.5 text-sm outline-none focus:border-blue-500 w-full shadow-sm">
                             </div>
-                            <select onchange="window.filterStatusKas = this.value; window.navigateTo('kas_kelas');" class="border border-slate-300 rounded-lg px-2 py-1.5 text-sm outline-none focus:border-blue-500 bg-white w-full sm:w-32 cursor-pointer shadow-sm">
+                            <select onchange="window.filterStatusKas = this.value; window.navigateTo('kas_kelas');" class="border border-slate-300 rounded-lg px-2 py-1.5 text-sm outline-none focus:border-blue-500 bg-white w-full sm:w-32 cursor-pointer shadow-sm shrink-0">
                                 <option value="Semua" ${window.filterStatusKas === 'Semua' ? 'selected' : ''}>Semua Status</option>
                                 <option value="Lunas" ${window.filterStatusKas === 'Lunas' ? 'selected' : ''}>Lunas</option>
                                 <option value="Belum Lunas" ${window.filterStatusKas === 'Belum Lunas' ? 'selected' : ''}>Belum Lunas</option>
