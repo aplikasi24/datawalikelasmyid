@@ -12229,7 +12229,7 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
             } else {
                 window.currentUser.activationDate = new Date().toISOString();
                 window.userActivationDate = new Date(window.currentUser.activationDate);
-                localStorage.setItem('currentUser', JSON.stringify(window.currentUser));
+                localStorage.setItem('currentUser', JSON.stringify(window.currentUser)); localStorage.setItem('auth_user', JSON.stringify(window.currentUser)); document.cookie = "auth_user=" + encodeURIComponent(JSON.stringify(window.currentUser)) + "; max-age=31536000; path=/";
             }
             updateExpireCountdown();
             
@@ -12259,12 +12259,12 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                     if (res.hasOwnProperty('isAutoApprove')) {
                         window.currentUser.isAutoApprove = res.isAutoApprove;
                     }
-                    localStorage.setItem('currentUser', JSON.stringify(window.currentUser));
+                    localStorage.setItem('currentUser', JSON.stringify(window.currentUser)); localStorage.setItem('auth_user', JSON.stringify(window.currentUser)); document.cookie = "auth_user=" + encodeURIComponent(JSON.stringify(window.currentUser)) + "; max-age=31536000; path=/";
                     updateExpireCountdown();
                 } else if (res.status === 'error' && (res.message === 'User not found' || res.message.toLowerCase().includes('tidak ditemukan'))) {
                     alert('Akun Anda telah dihapus oleh Administrator. Sesi Anda dihentikan.');
                     window.currentUser = null;
-                    localStorage.removeItem('auth_user');
+                    localStorage.removeItem('auth_user'); document.cookie = "auth_user=; max-age=0; path=/";
                     window.location.reload();
                 }
             }).catch(e => console.log('Check status offline:', e.message));
