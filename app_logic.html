@@ -8,7 +8,7 @@
                 if (key === 'app_logic_code' && typeof value === 'string') {
                     // Jika kode yang mau disimpan TIDAK memiliki overlay grid baru, berarti itu versi lama
                     if (!value.includes('mobileMenuLainnyaOverlay')) {
-                        console.warn("🛡️ [SHIELD] Apps Script (Google Server) mencoba mengembalikan versi lama! Blokir pembaruan cache.");
+                        console.warn("ðŸ›¡ï¸ [SHIELD] Apps Script (Google Server) mencoba mengembalikan versi lama! Blokir pembaruan cache.");
                         // Sembunyikan notifikasi update jika muncul
                         setTimeout(() => {
                             const toast = document.getElementById('update-toast');
@@ -862,7 +862,7 @@
                                 <div class="w-2 h-2 rounded-full bg-green-400 mr-2"></div>
                                 ${settingSemester} ${settingTahunAjaran}
                             </div>
-                            <h1 class="text-3xl md:text-4xl font-extrabold mb-2 tracking-tight">Halo, Selamat Datang ${namaUser} 👋</h1>
+                            <h1 class="text-3xl md:text-4xl font-extrabold mb-2 tracking-tight">Halo, Selamat Datang ${namaUser} ðŸ‘‹</h1>
                             <p class="text-blue-100 text-base md:text-lg max-w-2xl">Berikut adalah ringkasan & perkembangan <strong>${settingKelas} (${sekolahUser})</strong> hari ini.</p>
                         </div>
                         ${jadwalHtml}
@@ -1100,10 +1100,10 @@
                 if(sortedNames.length > 60) {
                     res.push(`... dan ${sortedNames.length - 60} lainnya`);
                     res.push(``);
-                    res.push(`👆 KLIK GRAFIK UNTUK DAFTAR LENGKAP`);
+                    res.push(`ðŸ‘† KLIK GRAFIK UNTUK DAFTAR LENGKAP`);
                 } else if(sortedNames.length > 0) {
                     res.push(``);
-                    res.push(`👆 Klik grafik untuk melihat lebih jelas`);
+                    res.push(`ðŸ‘† Klik grafik untuk melihat lebih jelas`);
                 }
                 return res;
             };
@@ -6103,14 +6103,14 @@ Setelah semua baris terisi, tolong berikan kembali kepada saya file Excel terseb
             if(await showConfirm("Hapus tugas ini?")) { db.tugas = db.tugas.filter(m => m.id !== id); saveDB(); navigateTo('tugas'); }
         };
         window.shareTugasWA = (judul, info) => {
-            const defaultMsg = `Assalamualaikum wr. wb.\n\nBapak/Ibu wali murid yang kami hormati, mengingatkan kembali untuk tugas anak-anak kita:\n\n📚 *[tugas]*\n[deadline]\n\nMohon bimbingannya di rumah agar ananda dapat menyelesaikan tugas ini dengan baik. Terima kasih banyak atas perhatian dan kerja samanya. 🙏`;
+            const defaultMsg = `Assalamualaikum wr. wb.\n\nBapak/Ibu wali murid yang kami hormati, mengingatkan kembali untuk tugas anak-anak kita:\n\nðŸ“š *[tugas]*\n[deadline]\n\nMohon bimbingannya di rumah agar ananda dapat menyelesaikan tugas ini dengan baik. Terima kasih banyak atas perhatian dan kerja samanya. ðŸ™`;
             let template = db.pengaturan?.pesan_wa || defaultMsg;
             let pesan = template.replace(/\[tugas\]/gi, judul).replace(/\[deadline\]/gi, info);
             window.open(`https://wa.me/?text=${encodeURIComponent(pesan)}`, '_blank');
         };
 
         window.openModalSettingWA = () => {
-            const defaultMsg = `Assalamualaikum wr. wb.\n\nBapak/Ibu wali murid yang kami hormati, mengingatkan kembali untuk tugas anak-anak kita:\n\n📚 *[tugas]*\n[deadline]\n\nMohon bimbingannya di rumah agar ananda dapat menyelesaikan tugas ini dengan baik. Terima kasih banyak atas perhatian dan kerja samanya. 🙏`;
+            const defaultMsg = `Assalamualaikum wr. wb.\n\nBapak/Ibu wali murid yang kami hormati, mengingatkan kembali untuk tugas anak-anak kita:\n\nðŸ“š *[tugas]*\n[deadline]\n\nMohon bimbingannya di rumah agar ananda dapat menyelesaikan tugas ini dengan baik. Terima kasih banyak atas perhatian dan kerja samanya. ðŸ™`;
             const currentMsg = db.pengaturan?.pesan_wa || defaultMsg;
             
             const modal = document.createElement('div');
@@ -6697,7 +6697,7 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                 saveDB();
             }
 
-            const emojis = ['😞', '😐', '🙂', '😊', '🤩'];
+            const emojis = ['ðŸ˜ž', 'ðŸ˜', 'ðŸ™‚', 'ðŸ˜Š', 'ðŸ¤©'];
             const emojiHtml = emojis.map(e => `
                 <button onclick="window.setRefleksiEmoji('${e}')" class="p-3 text-3xl hover:scale-125 transition transform rounded-full ${window.refleksiTemp.emoji === e ? 'scale-125 shadow-lg ring-4 ring-blue-500 bg-blue-100' : 'filter grayscale hover:grayscale-0 opacity-50 hover:opacity-100'}">${e}</button>
             `).join('');
@@ -9000,7 +9000,7 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                 <div class="bg-white rounded-3xl shadow-2xl w-full max-w-xs overflow-hidden transform scale-100 transition-all border border-slate-100">
                     <div class="p-6 text-center">
                         <div class="w-20 h-20 bg-emerald-50 rounded-full flex items-center justify-center mx-auto mb-4 shadow-inner">
-                            ${iconHtml || '<span class="text-4xl">🤔</span>'}
+                            ${iconHtml || '<span class="text-4xl">ðŸ¤”</span>'}
                         </div>
                         <h3 class="text-xl font-black text-slate-800 mb-2">Konfirmasi</h3>
                         <p class="text-slate-600 text-sm mb-6 leading-relaxed">${message}</p>
@@ -9708,7 +9708,7 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
         window.bayarSemuaKas = (dateStr) => {
             window.showModernConfirm(
                 "Gas auto-lunasin uang kas sekelas buat tanggal ini?",
-                '<span class="text-5xl">💸</span>',
+                '<span class="text-5xl">ðŸ’¸</span>',
                 () => {
                     const nom = db.kas_kelas.nominal;
                     db.students.forEach(s => {
@@ -9761,7 +9761,7 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
         window.hapusPengeluaranKas = (id) => {
             window.showModernConfirm(
                 "Yakin mau menghapus riwayat pengeluaran kas ini?",
-                '<span class="text-5xl">🗑️</span>',
+                '<span class="text-5xl">ðŸ—‘ï¸</span>',
                 () => {
                     db.kas_kelas.pengeluaran = db.kas_kelas.pengeluaran.filter(p => p.id !== id);
                     saveDB();
@@ -9829,7 +9829,7 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
         window.hapusPemasukanKas = (id) => {
             window.showModernConfirm(
                 "Yakin mau menghapus riwayat pemasukan ini?",
-                '<span class="text-5xl">🗑️</span>',
+                '<span class="text-5xl">ðŸ—‘ï¸</span>',
                 () => {
                     db.kas_kelas.pemasukan_lain = db.kas_kelas.pemasukan_lain.filter(p => p.id !== id);
                     saveDB();
@@ -11333,7 +11333,7 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                 const currentUrl = window.location.href.toLowerCase();
                 if (currentUrl.startsWith('file:///') && (currentUrl.includes('/temp/') || currentUrl.includes('/appdata/local/temp/') || currentUrl.includes('rar$') || currentUrl.includes('zip'))) {
                     setTimeout(() => {
-                        alert("⚠️ PERINGATAN PENTING! ⚠️\n\nSepertinya Anda menjalankan aplikasi ini LANGSUNG dari dalam file ZIP tanpa mengekstraknya terlebih dahulu.\n\nAkibatnya, Windows membuat folder sementara (Temp) yang baru setiap kali Anda membukanya, sehingga semua data yang Anda simpan akan SELALU HILANG saat Anda menutup browser!\n\nSOLUSI:\n1. Tutup browser ini.\n2. Klik Kanan pada file ZIP yang Anda unduh.\n3. Pilih 'Extract Here' (Ekstrak di sini) atau 'Extract All'.\n4. Buka file index.html dari folder hasil ekstraksi tersebut.\n\nDengan begitu, data Anda akan tersimpan secara permanen.");
+                        alert("âš ï¸ PERINGATAN PENTING! âš ï¸\n\nSepertinya Anda menjalankan aplikasi ini LANGSUNG dari dalam file ZIP tanpa mengekstraknya terlebih dahulu.\n\nAkibatnya, Windows membuat folder sementara (Temp) yang baru setiap kali Anda membukanya, sehingga semua data yang Anda simpan akan SELALU HILANG saat Anda menutup browser!\n\nSOLUSI:\n1. Tutup browser ini.\n2. Klik Kanan pada file ZIP yang Anda unduh.\n3. Pilih 'Extract Here' (Ekstrak di sini) atau 'Extract All'.\n4. Buka file index.html dari folder hasil ekstraksi tersebut.\n\nDengan begitu, data Anda akan tersimpan secara permanen.");
                     }, 1000);
                 }
             };
@@ -11992,7 +11992,7 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                 totalHarus += nominal;
                 totalBayar += terbayar;
                 
-                let status = kurang < 0 ? `LEBIH Rp ${Math.abs(kurang).toLocaleString('id-ID')} ✅` : (kurang === 0 ? 'LUNAS ✅' : (terbayar > 0 ? 'CICIL ⏳' : 'BELUM BAYAR ❌'));
+                let status = kurang < 0 ? `LEBIH Rp ${Math.abs(kurang).toLocaleString('id-ID')} âœ…` : (kurang === 0 ? 'LUNAS âœ…' : (terbayar > 0 ? 'CICIL â³' : 'BELUM BAYAR âŒ'));
                 
                 let riwayat = (pk.riwayat_bayar && pk.riwayat_bayar[studentId] && pk.riwayat_bayar[studentId][item.id]) ? pk.riwayat_bayar[studentId][item.id] : [];
                 if (riwayat.length === 0 && terbayar > 0) {
@@ -12421,7 +12421,7 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                                 <i class="fas fa-user-shield text-sm"></i>
                             </div>
                             <div>
-                                <h3 class="font-bold text-sm leading-tight">Admin Sekolah</h3>
+                                <h3 class="font-bold text-sm leading-tight">Admin </h3>
                                 <p class="text-[10px] text-green-100"><i class="fas fa-circle text-[8px] text-green-300 mr-1 animate-pulse"></i>Online</p>
                             </div>
                         </div>
