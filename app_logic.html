@@ -5602,6 +5602,7 @@ Terima kasih!`;
                             </thead>
                             <tbody>${trs}</tbody>
                         </table>
+                        ${isLastPage ? `
                         <div class="mt-12 flex justify-between px-10 text-center text-sm" style="page-break-inside: avoid;">
                             <div class="w-64 pt-4">
                                 <p class="mb-24">Mengetahui,<br>Guru Kelas</p>
@@ -5615,6 +5616,7 @@ Terima kasih!`;
                                 <p>NIP. ${db.pengaturan?.nip_kepsek || '....................................'}</p>
                             </div>
                         </div>
+                        ` : ''}
                     </div>
                 `;
             }).join('');
@@ -5622,21 +5624,20 @@ Terima kasih!`;
             const container = document.getElementById('jurnal-print-container');
             container.innerHTML = `
                 <!-- Poster/Sampul Jurnal (Page 1) -->
-                <div class="w-full flex items-center justify-center relative bg-gradient-to-br from-indigo-700 via-purple-700 to-purple-900 text-white rounded-3xl p-8 overflow-hidden mb-8 print:h-[285mm] print:rounded-none print:shadow-none" style="page-break-after: always; -webkit-print-color-adjust: exact; print-color-adjust: exact; min-height: 1000px;">
-                    <div class="absolute top-0 left-0 w-full h-full opacity-10 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyMCIgaGVpZ2h0PSIyMCI+PHBhdGggZD0iTTAgMGgyMHYyMEgwem0xMCAxMGgxMHYxMEgxMHoiIGZpbGw9IiNmZmYiIGZpbGwtcnVsZT0iZXZlbm9kZCIvPjwvc3ZnPg==')]"></div>
-                    <div class="relative z-10 w-full h-full border-[10px] border-white/20 rounded-3xl flex flex-col items-center justify-center text-center p-12 bg-black/10 backdrop-blur-sm print:border-4 print:border-gray-300">
-                        <div class="w-40 h-40 bg-white rounded-full flex items-center justify-center shadow-2xl mb-12 print:border-4 print:border-gray-800">
-                            <i class="fas fa-book-reader text-7xl text-indigo-600 print:text-black"></i>
+                <div class="w-full flex items-center justify-center relative bg-white text-blue-900 border-8 border-blue-900 p-8 mb-8" style="page-break-after: always; height: 260mm; box-sizing: border-box;">
+                    <div class="w-full h-full border-4 border-blue-900 p-8 flex flex-col items-center justify-center text-center">
+                        <div class="w-32 h-32 bg-white rounded-full flex items-center justify-center border-4 border-blue-900 mb-10">
+                            <i class="fas fa-book-reader text-6xl text-blue-900"></i>
                         </div>
-                        <h1 class="text-6xl font-black mb-6 tracking-wider uppercase text-yellow-400 print:text-black" style="text-shadow: 2px 2px 4px rgba(0,0,0,0.3);">${db.pengaturan?.sekolah || 'SEKOLAH DASAR'}</h1>
-                        <div class="w-32 h-3 bg-yellow-400 rounded-full mb-12 shadow-lg print:bg-gray-800"></div>
-                        <h2 class="text-7xl font-extrabold mb-8 uppercase tracking-widest text-white print:text-black" style="text-shadow: 2px 2px 8px rgba(0,0,0,0.5);">JURNAL MENGAJAR</h2>
-                        <h3 class="text-3xl font-bold mb-16 text-indigo-200 uppercase tracking-widest print:text-gray-800">${subtitle}</h3>
+                        <h1 class="text-5xl font-black mb-6 tracking-wider uppercase text-blue-900">${db.pengaturan?.sekolah || 'SEKOLAH DASAR'}</h1>
+                        <div class="w-24 h-2 bg-blue-900 rounded-full mb-10"></div>
+                        <h2 class="text-6xl font-extrabold mb-6 uppercase tracking-widest text-blue-900">JURNAL MENGAJAR</h2>
+                        <h3 class="text-2xl font-bold mb-16 text-blue-700 uppercase tracking-widest">${subtitle}</h3>
                         
-                        <div class="mt-auto bg-white/10 p-10 rounded-[30px] border-2 border-white/30 w-full max-w-2xl backdrop-blur-md shadow-2xl print:bg-transparent print:border-gray-400 print:border-4">
-                            <p class="text-2xl text-indigo-200 mb-3 uppercase tracking-widest font-black print:text-gray-600">Wali Kelas</p>
-                            <p class="text-5xl font-bold text-white mb-4 print:text-black">${db.pengaturan?.nama || 'NAMA GURU'}</p>
-                            <p class="text-xl text-indigo-200 font-bold tracking-widest print:text-gray-700">NIP. ${db.pengaturan?.nip || '-'}</p>
+                        <div class="mt-auto p-8 w-full max-w-xl border-4 border-blue-900">
+                            <p class="text-xl text-blue-700 mb-2 uppercase tracking-widest font-black">Wali Kelas</p>
+                            <p class="text-4xl font-bold text-blue-900 mb-3">${db.pengaturan?.nama || 'NAMA GURU'}</p>
+                            <p class="text-lg text-blue-700 font-bold tracking-widest">NIP. ${db.pengaturan?.nip || '-'}</p>
                         </div>
                     </div>
                 </div>
