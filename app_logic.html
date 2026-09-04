@@ -5202,11 +5202,134 @@ Terima kasih!`;
         };
 
         window.downloadExcelJurnal = () => {
-            if(db.jurnal.length === 0) { alert('Jurnal masih kosong!'); return; }
+            const currentMonth = window.currentJurnalDate.substring(0, 7); // YYYY-MM
+            const modal = document.createElement('div');
+            modal.id = 'modal-excel-jurnal';
+            modal.className = 'fixed inset-0 bg-black bg-opacity-50 z-[100] flex items-center justify-center p-4 opacity-0 transition-opacity duration-300';
+            modal.innerHTML = `
+                <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md transform scale-95 transition-transform duration-300 flex flex-col">
+                    <div class="p-6 border-b border-gray-100 flex justify-between items-center bg-green-50 rounded-t-2xl">
+                        <h3 class="text-xl font-bold text-green-800"><i class="fas fa-file-excel mr-2"></i>Unduh Jurnal (Excel)</h3>
+                        <button onclick="document.getElementById('modal-excel-jurnal').remove()" class="text-gray-400 hover:text-green-500"><i class="fas fa-times text-xl"></i></button>
+                    </div>
+                    <div class="p-6 space-y-4">
+                        <div>
+                            <label class="block text-sm font-bold text-gray-700 mb-2">Pilih Rentang Waktu</label>
+                            <div class="flex gap-4">
+                                <label class="flex items-center gap-2 cursor-pointer">
+                                    <input type="radio" name="excel_rentang" value="hari_ini" checked onchange="document.getElementById('excel_bulan_container').classList.add('hidden')">
+                                    <span class="font-medium text-gray-700">Hari Ini</span>
+                                </label>
+                                <label class="flex items-center gap-2 cursor-pointer">
+                                    <input type="radio" name="excel_rentang" value="bulan" onchange="document.getElementById('excel_bulan_container').classList.remove('hidden')">
+                                    <span class="font-medium text-gray-700">Bulan Tertentu</span>
+                                </label>
+                            </div>
+                        </div>
+                        <div id="excel_bulan_container" class="hidden">
+                            <div class="flex gap-4">
+                                <div class="flex-1">
+                                    <label class="block text-sm font-bold text-gray-700 mb-1">Bulan</label>
+                                    <select id="excel_jurnal_month_sel" class="w-full border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-green-500 outline-none bg-white cursor-pointer">
+                                        <option value="01" ${currentMonth.endsWith('-01') ? 'selected' : ''}>Januari</option>
+                                        <option value="02" ${currentMonth.endsWith('-02') ? 'selected' : ''}>Februari</option>
+                                        <option value="03" ${currentMonth.endsWith('-03') ? 'selected' : ''}>Maret</option>
+                                        <option value="04" ${currentMonth.endsWith('-04') ? 'selected' : ''}>April</option>
+                                        <option value="05" ${currentMonth.endsWith('-05') ? 'selected' : ''}>Mei</option>
+                                        <option value="06" ${currentMonth.endsWith('-06') ? 'selected' : ''}>Juni</option>
+                                        <option value="07" ${currentMonth.endsWith('-07') ? 'selected' : ''}>Juli</option>
+                                        <option value="08" ${currentMonth.endsWith('-08') ? 'selected' : ''}>Agustus</option>
+                                        <option value="09" ${currentMonth.endsWith('-09') ? 'selected' : ''}>September</option>
+                                        <option value="10" ${currentMonth.endsWith('-10') ? 'selected' : ''}>Oktober</option>
+                                        <option value="11" ${currentMonth.endsWith('-11') ? 'selected' : ''}>November</option>
+                                        <option value="12" ${currentMonth.endsWith('-12') ? 'selected' : ''}>Desember</option>
+                                    </select>
+                                </div>
+                                <div class="w-32 shrink-0">
+                                    <label class="block text-sm font-bold text-gray-700 mb-1">Tahun</label>
+                                    <input type="number" id="excel_jurnal_year" value="${currentMonth.substring(0, 4)}" class="w-full border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-green-500 outline-none bg-white">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="pt-4 flex justify-end gap-2">
+                            <button onclick="document.getElementById('modal-excel-jurnal').remove()" class="px-5 py-2.5 bg-gray-100 text-gray-700 rounded-xl font-bold hover:bg-gray-200 transition">Batal</button>
+                            <button onclick="window.executeDownloadExcelJurnal()" class="px-5 py-2.5 bg-green-600 text-white rounded-xl font-bold hover:bg-green-700 flex items-center gap-2 shadow-md transition">
+                                <i class="fas fa-download"></i> Unduh Excel
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+            requestAnimationFrame(() => {
+                modal.classList.remove('opacity-0');
+                modal.querySelector('div').classList.remove('scale-95');
+            });
+        };
+
+        window.executeDownloadExcelJurnal = () => {
+            const rentang = document.querySelector('input[name="excel_rentang"]:checked').value;
+            let dataToPrint = [];
+            let fileNameSuffix = "";
+            
+            if (rentang === 'hari_ini') {
+                const dateStrFormatted = new Date(window.currentJurnalDate).toLocaleDateString('id-ID');
+                const dp = window.currentJurnalDate.split('-');
+                const dateStrDash = dp.length === 3 ? `${dp[2]}-${dp[1]}-${dp[0]}` : '';
+                dataToPrint = db.jurnal.filter(j => j.tgl === window.currentJurnalDate || j.tanggal === window.currentJurnalDate || j.tgl === dateStrFormatted || j.tanggal === dateStrFormatted || j.tgl === dateStrDash || j.tanggal === dateStrDash);
+                
+                // Urutkan jam untuk hari ini
+                dataToPrint.sort((a, b) => (a.jam_ke || 'Z').localeCompare(b.jam_ke || 'Z', undefined, {numeric: true}));
+                fileNameSuffix = window.currentJurnalDate;
+            } else {
+                const monthSel = document.getElementById('excel_jurnal_month_sel').value;
+                const yearSel = document.getElementById('excel_jurnal_year').value;
+                if(!yearSel) {
+                    window.showAlert("Masukkan tahun terlebih dahulu!");
+                    return;
+                }
+                
+                const year = yearSel;
+                const month = monthSel;
+                
+                dataToPrint = db.jurnal.filter(j => {
+                    let dStr = j.tgl || j.tanggal;
+                    if(!dStr) return false;
+                    
+                    let y, m;
+                    if(dStr.includes('-')) {
+                        const parts = dStr.split('-');
+                        if(parts[0].length === 4) { y = parts[0]; m = parts[1]; } 
+                        else { m = parts[1]; y = parts[2]; }
+                    } else if(dStr.includes('/')) {
+                        const parts = dStr.split('/');
+                        if(parts[0].length === 4) { y = parts[0]; m = parts[1]; } 
+                        else { m = parts[1]; y = parts[2]; }
+                    }
+                    
+                    return (y === year && m === month);
+                });
+                
+                // Urutkan berdasarkan tanggal lalu jam
+                dataToPrint.sort((a, b) => {
+                    let d1 = a.tgl || a.tanggal || '';
+                    let d2 = b.tgl || b.tanggal || '';
+                    if(d1.includes('/')) d1 = d1.split('/').reverse().join('-');
+                    if(d2.includes('/')) d2 = d2.split('/').reverse().join('-');
+                    if(d1 !== d2) return d1.localeCompare(d2);
+                    return (a.jam_ke || 'Z').localeCompare(b.jam_ke || 'Z', undefined, {numeric: true});
+                });
+                fileNameSuffix = `${year}-${month}`;
+            }
+            
+            if (dataToPrint.length === 0) {
+                window.showAlert("Tidak ada data jurnal untuk rentang waktu yang dipilih.");
+                return;
+            }
             
             const headers = ['ID_Jurnal', 'Waktu', 'JP', 'Tanggal', 'Mata Pelajaran', 'Tujuan Pembelajaran (TP)', 'Materi Pokok', 'Kegiatan Pembelajaran', 'Penilaian / Asesmen', 'Refleksi Guru'];
             
-            const data = db.jurnal.map((j, i) => {
+            const data = dataToPrint.map((j, i) => {
                 let rowId = `JURNAL-${String(i+1).padStart(3, '0')}`;
                 return {
                     'ID_Jurnal': rowId,
@@ -5268,7 +5391,8 @@ Terima kasih!`;
 
             const wb = XLSX.utils.book_new();
             XLSX.utils.book_append_sheet(wb, ws, "Jurnal Mengajar");
-            XLSX.writeFile(wb, `Jurnal_Mengajar_${new Date().getTime()}.xlsx`);
+            XLSX.writeFile(wb, `Jurnal_Mengajar_${fileNameSuffix}.xlsx`);
+            document.getElementById('modal-excel-jurnal').remove();
         };
 
         window.openModalPrintJurnal = () => {
