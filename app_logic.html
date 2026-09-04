@@ -5561,17 +5561,17 @@ Terima kasih!`;
                 
                 const trs = dayData.map((j, i) => {
                     return `
-                        <tr class="border-b border-gray-400">
-                            <td class="p-2 border border-gray-400 text-center text-sm">${i+1}</td>
-                            <td class="p-2 border border-gray-400 text-center text-sm">${j.jam_ke || ''}</td>
-                            <td class="p-2 border border-gray-400 text-center text-sm">${j.jp || ''}</td>
-                            <td class="p-2 border border-gray-400 text-center text-sm">${tglKey}</td>
-                            <td class="p-2 border border-gray-400 text-sm">${j.mapel || ''}</td>
-                            <td class="p-2 border border-gray-400 text-sm">${j.tp || ''}</td>
-                            <td class="p-2 border border-gray-400 text-sm">${j.materi || j.judul || ''}</td>
-                            <td class="p-2 border border-gray-400 text-sm">${j.kegiatan || ''}</td>
-                            <td class="p-2 border border-gray-400 text-sm">${j.asesmen || ''}</td>
-                            <td class="p-2 border border-gray-400 text-sm">${j.refleksi || j.catatan || ''}</td>
+                        <tr class="border-b border-gray-400 print:text-[11px] print:leading-tight">
+                            <td class="p-2 print:p-1 border border-gray-400 text-center">${i+1}</td>
+                            <td class="p-2 print:p-1 border border-gray-400 text-center">${j.jam_ke || ''}</td>
+                            <td class="p-2 print:p-1 border border-gray-400 text-center">${j.jp || ''}</td>
+                            <td class="p-2 print:p-1 border border-gray-400 text-center">${tglKey}</td>
+                            <td class="p-2 print:p-1 border border-gray-400">${j.mapel || ''}</td>
+                            <td class="p-2 print:p-1 border border-gray-400">${j.tp || ''}</td>
+                            <td class="p-2 print:p-1 border border-gray-400">${j.materi || j.judul || ''}</td>
+                            <td class="p-2 print:p-1 border border-gray-400">${j.kegiatan || ''}</td>
+                            <td class="p-2 print:p-1 border border-gray-400">${j.asesmen || ''}</td>
+                            <td class="p-2 print:p-1 border border-gray-400">${j.refleksi || j.catatan || ''}</td>
                         </tr>
                     `;
                 }).join('');
@@ -5580,38 +5580,38 @@ Terima kasih!`;
                 
                 return `
                     <div style="${!isLastPage ? 'page-break-after: always;' : ''}">
-                        <div class="text-center mb-6 pt-4">
-                            <h2 class="text-2xl font-bold uppercase underline">Buku Jurnal Mengajar</h2>
-                            <h3 class="text-lg font-semibold mt-1">${daySubtitle}</h3>
-                            <p class="text-md">${db.pengaturan?.sekolah || ''} | ${db.pengaturan?.nama || ''}</p>
+                        <div class="text-center mb-6 pt-4 print:mb-2 print:pt-2">
+                            <h2 class="text-2xl print:text-lg font-bold uppercase underline">Buku Jurnal Mengajar</h2>
+                            <h3 class="text-lg print:text-sm font-semibold mt-1">${daySubtitle}</h3>
+                            <p class="text-md print:text-xs">${db.pengaturan?.sekolah || ''} | ${db.pengaturan?.nama || ''}</p>
                         </div>
                         <table class="w-full text-left border-collapse border border-gray-400">
                             <thead>
-                                <tr class="bg-gray-200">
-                                    <th class="p-2 border border-gray-400 text-center text-sm w-10">No</th>
-                                    <th class="p-2 border border-gray-400 text-center text-sm w-16">Waktu</th>
-                                    <th class="p-2 border border-gray-400 text-center text-sm w-12">JP</th>
-                                    <th class="p-2 border border-gray-400 text-center text-sm w-24">Tanggal</th>
-                                    <th class="p-2 border border-gray-400 text-center text-sm w-32">Mata Pelajaran</th>
-                                    <th class="p-2 border border-gray-400 text-center text-sm">Tujuan Pembelajaran (TP)</th>
-                                    <th class="p-2 border border-gray-400 text-center text-sm">Materi Pokok</th>
-                                    <th class="p-2 border border-gray-400 text-center text-sm">Kegiatan Pembelajaran</th>
-                                    <th class="p-2 border border-gray-400 text-center text-sm">Penilaian / Asesmen</th>
-                                    <th class="p-2 border border-gray-400 text-center text-sm">Refleksi Guru</th>
+                                <tr class="bg-gray-200 print:text-[11px] print:leading-tight">
+                                    <th class="p-2 print:p-1 border border-gray-400 text-center w-10 print:w-8">No</th>
+                                    <th class="p-2 print:p-1 border border-gray-400 text-center w-16 print:w-12">Waktu</th>
+                                    <th class="p-2 print:p-1 border border-gray-400 text-center w-12 print:w-10">JP</th>
+                                    <th class="p-2 print:p-1 border border-gray-400 text-center w-24 print:w-20">Tanggal</th>
+                                    <th class="p-2 print:p-1 border border-gray-400 text-center w-32 print:w-24">Mata Pelajaran</th>
+                                    <th class="p-2 print:p-1 border border-gray-400 text-center">Tujuan Pembelajaran (TP)</th>
+                                    <th class="p-2 print:p-1 border border-gray-400 text-center">Materi Pokok</th>
+                                    <th class="p-2 print:p-1 border border-gray-400 text-center">Kegiatan Pembelajaran</th>
+                                    <th class="p-2 print:p-1 border border-gray-400 text-center">Penilaian / Asesmen</th>
+                                    <th class="p-2 print:p-1 border border-gray-400 text-center">Refleksi Guru</th>
                                 </tr>
                             </thead>
                             <tbody>${trs}</tbody>
                         </table>
                         ${isLastPage ? `
-                        <div class="mt-12 flex justify-between px-10 text-center text-sm" style="page-break-inside: avoid;">
-                            <div class="w-64 pt-4">
-                                <p class="mb-24">Mengetahui,<br>Guru Kelas</p>
+                        <div class="mt-12 print:mt-6 flex justify-between px-10 print:px-4 text-center text-sm print:text-xs" style="page-break-inside: avoid;">
+                            <div class="w-64 pt-4 print:pt-2">
+                                <p class="mb-24 print:mb-16">Mengetahui,<br>Guru Kelas</p>
                                 <p class="font-bold underline">${db.pengaturan?.nama || '....................................'}</p>
                                 <p>NIP. ${db.pengaturan?.nip || '....................................'}</p>
                             </div>
                             <div class="w-64">
-                                <p class="mb-4 text-right">............., ....................... 20...</p>
-                                <p class="mb-20">Mengetahui,<br>Kepala Sekolah</p>
+                                <p class="mb-4 print:mb-2 text-right">............., ....................... 20...</p>
+                                <p class="mb-20 print:mb-16">Mengetahui,<br>Kepala Sekolah</p>
                                 <p class="font-bold underline">${db.pengaturan?.kepsek || '....................................'}</p>
                                 <p>NIP. ${db.pengaturan?.nip_kepsek || '....................................'}</p>
                             </div>
@@ -5624,20 +5624,20 @@ Terima kasih!`;
             const container = document.getElementById('jurnal-print-container');
             container.innerHTML = `
                 <!-- Poster/Sampul Jurnal (Page 1) -->
-                <div class="w-full flex items-center justify-center relative bg-white text-blue-900 border-8 border-blue-900 p-8 mb-8" style="page-break-after: always; height: 260mm; box-sizing: border-box;">
-                    <div class="w-full h-full border-4 border-blue-900 p-8 flex flex-col items-center justify-center text-center">
-                        <div class="w-32 h-32 bg-white rounded-full flex items-center justify-center border-4 border-blue-900 mb-10">
-                            <i class="fas fa-book-reader text-6xl text-blue-900"></i>
+                <div class="w-full flex items-center justify-center relative bg-white text-blue-900 border-8 border-blue-900 p-4 mb-4" style="page-break-after: always; height: 230mm; box-sizing: border-box; overflow: hidden;">
+                    <div class="w-full h-full border-4 border-blue-900 p-6 flex flex-col items-center justify-center text-center">
+                        <div class="w-24 h-24 bg-white rounded-full flex items-center justify-center border-4 border-blue-900 mb-8">
+                            <i class="fas fa-book-reader text-5xl text-blue-900"></i>
                         </div>
-                        <h1 class="text-5xl font-black mb-6 tracking-wider uppercase text-blue-900">${db.pengaturan?.sekolah || 'SEKOLAH DASAR'}</h1>
-                        <div class="w-24 h-2 bg-blue-900 rounded-full mb-10"></div>
-                        <h2 class="text-6xl font-extrabold mb-6 uppercase tracking-widest text-blue-900">JURNAL MENGAJAR</h2>
-                        <h3 class="text-2xl font-bold mb-16 text-blue-700 uppercase tracking-widest">${subtitle}</h3>
+                        <h1 class="text-4xl font-black mb-4 tracking-wider uppercase text-blue-900">${db.pengaturan?.sekolah || 'SEKOLAH DASAR'}</h1>
+                        <div class="w-24 h-2 bg-blue-900 rounded-full mb-8"></div>
+                        <h2 class="text-5xl font-extrabold mb-4 uppercase tracking-widest text-blue-900">JURNAL MENGAJAR</h2>
+                        <h3 class="text-xl font-bold mb-12 text-blue-700 uppercase tracking-widest">${subtitle}</h3>
                         
-                        <div class="mt-auto p-8 w-full max-w-xl border-4 border-blue-900">
-                            <p class="text-xl text-blue-700 mb-2 uppercase tracking-widest font-black">Wali Kelas</p>
-                            <p class="text-4xl font-bold text-blue-900 mb-3">${db.pengaturan?.nama || 'NAMA GURU'}</p>
-                            <p class="text-lg text-blue-700 font-bold tracking-widest">NIP. ${db.pengaturan?.nip || '-'}</p>
+                        <div class="mt-auto p-6 w-full max-w-xl border-4 border-blue-900">
+                            <p class="text-lg text-blue-700 mb-2 uppercase tracking-widest font-black">Wali Kelas</p>
+                            <p class="text-3xl font-bold text-blue-900 mb-3">${db.pengaturan?.nama || 'NAMA GURU'}</p>
+                            <p class="text-md text-blue-700 font-bold tracking-widest">NIP. ${db.pengaturan?.nip || '-'}</p>
                         </div>
                     </div>
                 </div>
