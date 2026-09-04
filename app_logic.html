@@ -5624,19 +5624,19 @@ Terima kasih!`;
             const container = document.getElementById('jurnal-print-container');
             container.innerHTML = `
                 <!-- Poster/Sampul Jurnal (Page 1) -->
-                <div class="w-full flex items-center justify-center relative bg-white text-blue-900 border-8 border-blue-900 p-4 mb-4" style="page-break-after: always; height: 230mm; box-sizing: border-box; overflow: hidden;">
-                    <div class="w-full h-full border-4 border-blue-900 p-6 flex flex-col items-center justify-center text-center">
-                        <div class="w-24 h-24 bg-white rounded-full flex items-center justify-center border-4 border-blue-900 mb-8">
-                            <i class="fas fa-book-reader text-5xl text-blue-900"></i>
+                <div class="w-full flex items-center justify-center relative bg-white text-blue-900 border-8 border-blue-900 p-4 mb-4" style="page-break-after: always; max-height: 250mm; box-sizing: border-box; overflow: hidden;">
+                    <div class="w-full border-4 border-blue-900 p-8 py-12 flex flex-col items-center justify-center text-center">
+                        <div class="w-20 h-20 bg-white rounded-full flex items-center justify-center border-4 border-blue-900 mb-6">
+                            <i class="fas fa-book-reader text-4xl text-blue-900"></i>
                         </div>
-                        <h1 class="text-4xl font-black mb-4 tracking-wider uppercase text-blue-900">${db.pengaturan?.sekolah || 'SEKOLAH DASAR'}</h1>
-                        <div class="w-24 h-2 bg-blue-900 rounded-full mb-8"></div>
+                        <h1 class="text-4xl font-black mb-3 tracking-wider uppercase text-blue-900">${db.pengaturan?.sekolah || 'SEKOLAH DASAR'}</h1>
+                        <div class="w-24 h-2 bg-blue-900 rounded-full mb-6"></div>
                         <h2 class="text-5xl font-extrabold mb-4 uppercase tracking-widest text-blue-900">JURNAL MENGAJAR</h2>
-                        <h3 class="text-xl font-bold mb-12 text-blue-700 uppercase tracking-widest">${subtitle}</h3>
+                        <h3 class="text-xl font-bold mb-10 text-blue-700 uppercase tracking-widest">${subtitle}</h3>
                         
-                        <div class="mt-auto p-6 w-full max-w-xl border-4 border-blue-900">
+                        <div class="mt-4 p-6 w-full max-w-xl border-4 border-blue-900">
                             <p class="text-lg text-blue-700 mb-2 uppercase tracking-widest font-black">Wali Kelas</p>
-                            <p class="text-3xl font-bold text-blue-900 mb-3">${db.pengaturan?.nama || 'NAMA GURU'}</p>
+                            <p class="text-3xl font-bold text-blue-900 mb-2">${db.pengaturan?.nama || 'NAMA GURU'}</p>
                             <p class="text-md text-blue-700 font-bold tracking-widest">NIP. ${db.pengaturan?.nip || '-'}</p>
                         </div>
                     </div>
