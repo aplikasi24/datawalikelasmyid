@@ -7397,36 +7397,19 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                     });
                 }
                 
-                const bodyData = new URLSearchParams({
-                    action: 'backupToDrive',
-                    data: JSON.stringify({ 
-                        email: window.currentUser.email,
-                        nama: window.currentUser.nama,
-                        jsonData: JSON.stringify(dbToCloud)
+                const res = await fetch(APPSCRIPT_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: new URLSearchParams({
+                        action: 'backupToDrive',
+                        data: JSON.stringify({ 
+                            email: window.currentUser.email,
+                            nama: window.currentUser.nama,
+                            jsonData: JSON.stringify(dbToCloud)
+                        })
                     })
-                }).toString();
-                
-                const data = await new Promise((resolve, reject) => {
-                    const xhr = new XMLHttpRequest();
-                    xhr.open('POST', APPSCRIPT_URL, true);
-                    xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
-                    xhr.upload.onprogress = (e) => {
-                        if (e.lengthComputable) {
-                            const percent = Math.round((e.loaded / e.total) * 100);
-                            if(loader && loader.updateMsg) loader.updateMsg(`Sedang mengirim data ke server... ${percent}%`);
-                        }
-                    };
-                    xhr.onload = () => {
-                        if (xhr.status >= 200 && xhr.status < 300) {
-                            try { resolve(JSON.parse(xhr.responseText)); } 
-                            catch(err) { reject(err); }
-                        } else {
-                            reject(new Error(xhr.statusText));
-                        }
-                    };
-                    xhr.onerror = () => reject(new Error("Network Error"));
-                    xhr.send(bodyData);
                 });
+                const data = await res.json();
                 if (data.status === 'success') {
                     await loader.update('success', 'Berhasil', "Berhasil! Data Anda sudah di-backup ke Drive server.");
                     window.loadCloudBackups();
@@ -7434,7 +7417,8 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                     await loader.update('error', 'Gagal', data.message);
                 }
             } catch (err) {
-                await loader.update('error', 'Gagal', "Gagal menghubungi server.");
+                console.error("Backup Error:", err);
+                await loader.update('error', 'Gagal', "Gagal menghubungi server. Error: " + (err.message || err));
             } finally {
                 if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fas fa-cloud-upload-alt"></i> Backup ke Server'; }
             }
@@ -7445,37 +7429,46 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
             
             const loader = window.showLoading("Sedang mengunduh dan memulihkan data dari server...");
             try {
-                const bodyData = new URLSearchParams({
-                    action: 'restoreFromDrive',
-                    data: JSON.stringify({ 
-                        email: window.currentUser.email,
-                        fileId: fileId
+                const res = await fetch(APPSCRIPT_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: new URLSearchParams({
+                        action: 'restoreFromDrive',
+                        data: JSON.stringify({ 
+                            email: window.currentUser.email,
+                            fileId: fileId
+                        })
                     })
-                }).toString();
-                
-                const data = await new Promise((resolve, reject) => {
-                    const xhr = new XMLHttpRequest();
-                    xhr.open('POST', APPSCRIPT_URL, true);
-                    xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
-                    xhr.onprogress = (e) => {
-                        if (e.lengthComputable) {
-                            const percent = Math.round((e.loaded / e.total) * 100);
-                            if(loader && loader.updateMsg) loader.updateMsg(`Sedang mengunduh dan memulihkan data dari server... ${percent}%`);
-                        } else {
-                            if(loader && loader.updateMsg) loader.updateMsg(`Sedang mengunduh dan memulihkan data dari server... ${(e.loaded / 1024).toFixed(1)} KB`);
-                        }
-                    };
-                    xhr.onload = () => {
-                        if (xhr.status >= 200 && xhr.status < 300) {
-                            try { resolve(JSON.parse(xhr.responseText)); } 
-                            catch(err) { reject(err); }
-                        } else {
-                            reject(new Error(xhr.statusText));
-                        }
-                    };
-                    xhr.onerror = () => reject(new Error("Network Error"));
-                    xhr.send(bodyData);
                 });
+                
+                // Melacak progress unduhan menggunakan reader
+                const reader = res.body.getReader();
+                const contentLength = +res.headers.get('Content-Length');
+                let receivedLength = 0;
+                let chunks = [];
+                while(true) {
+                    const {done, value} = await reader.read();
+                    if (done) break;
+                    chunks.push(value);
+                    receivedLength += value.length;
+                    
+                    if (contentLength > 0) {
+                        const percent = Math.round((receivedLength / contentLength) * 100);
+                        if(loader && loader.updateMsg) loader.updateMsg(`Sedang mengunduh dan memulihkan data dari server... ${percent}%`);
+                    } else {
+                        if(loader && loader.updateMsg) loader.updateMsg(`Sedang mengunduh dan memulihkan data dari server... ${(receivedLength / 1024).toFixed(1)} KB`);
+                    }
+                }
+                
+                let chunksAll = new Uint8Array(receivedLength);
+                let position = 0;
+                for(let chunk of chunks) {
+                    chunksAll.set(chunk, position);
+                    position += chunk.length;
+                }
+                
+                const resultText = new TextDecoder("utf-8").decode(chunksAll);
+                const data = JSON.parse(resultText);
                 if (data.status === 'success') {
                     const importedDb = JSON.parse(data.data);
                     if (importedDb && importedDb.students) {
