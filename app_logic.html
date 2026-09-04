@@ -7397,19 +7397,36 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                     });
                 }
                 
-                const res = await fetch(APPSCRIPT_URL, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                    body: new URLSearchParams({
-                        action: 'backupToDrive',
-                        data: JSON.stringify({ 
-                            email: window.currentUser.email,
-                            nama: window.currentUser.nama,
-                            jsonData: JSON.stringify(dbToCloud)
-                        })
+                const bodyData = new URLSearchParams({
+                    action: 'backupToDrive',
+                    data: JSON.stringify({ 
+                        email: window.currentUser.email,
+                        nama: window.currentUser.nama,
+                        jsonData: JSON.stringify(dbToCloud)
                     })
+                }).toString();
+                
+                const data = await new Promise((resolve, reject) => {
+                    const xhr = new XMLHttpRequest();
+                    xhr.open('POST', APPSCRIPT_URL, true);
+                    xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+                    xhr.upload.onprogress = (e) => {
+                        if (e.lengthComputable) {
+                            const percent = Math.round((e.loaded / e.total) * 100);
+                            if(loader && loader.updateMsg) loader.updateMsg(`Sedang mengirim data ke server... ${percent}%`);
+                        }
+                    };
+                    xhr.onload = () => {
+                        if (xhr.status >= 200 && xhr.status < 300) {
+                            try { resolve(JSON.parse(xhr.responseText)); } 
+                            catch(err) { reject(err); }
+                        } else {
+                            reject(new Error(xhr.statusText));
+                        }
+                    };
+                    xhr.onerror = () => reject(new Error("Network Error"));
+                    xhr.send(bodyData);
                 });
-                const data = await res.json();
                 if (data.status === 'success') {
                     await loader.update('success', 'Berhasil', "Berhasil! Data Anda sudah di-backup ke Drive server.");
                     window.loadCloudBackups();
@@ -7428,18 +7445,37 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
             
             const loader = window.showLoading("Sedang mengunduh dan memulihkan data dari server...");
             try {
-                const res = await fetch(APPSCRIPT_URL, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                    body: new URLSearchParams({
-                        action: 'restoreFromDrive',
-                        data: JSON.stringify({ 
-                            email: window.currentUser.email,
-                            fileId: fileId
-                        })
+                const bodyData = new URLSearchParams({
+                    action: 'restoreFromDrive',
+                    data: JSON.stringify({ 
+                        email: window.currentUser.email,
+                        fileId: fileId
                     })
+                }).toString();
+                
+                const data = await new Promise((resolve, reject) => {
+                    const xhr = new XMLHttpRequest();
+                    xhr.open('POST', APPSCRIPT_URL, true);
+                    xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+                    xhr.onprogress = (e) => {
+                        if (e.lengthComputable) {
+                            const percent = Math.round((e.loaded / e.total) * 100);
+                            if(loader && loader.updateMsg) loader.updateMsg(`Sedang mengunduh dan memulihkan data dari server... ${percent}%`);
+                        } else {
+                            if(loader && loader.updateMsg) loader.updateMsg(`Sedang mengunduh dan memulihkan data dari server... ${(e.loaded / 1024).toFixed(1)} KB`);
+                        }
+                    };
+                    xhr.onload = () => {
+                        if (xhr.status >= 200 && xhr.status < 300) {
+                            try { resolve(JSON.parse(xhr.responseText)); } 
+                            catch(err) { reject(err); }
+                        } else {
+                            reject(new Error(xhr.statusText));
+                        }
+                    };
+                    xhr.onerror = () => reject(new Error("Network Error"));
+                    xhr.send(bodyData);
                 });
-                const data = await res.json();
                 if (data.status === 'success') {
                     const importedDb = JSON.parse(data.data);
                     if (importedDb && importedDb.students) {
@@ -7611,6 +7647,10 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
             });
 
             return {
+                updateMsg: (newMsg) => {
+                    const msgEl = overlay.querySelector('#loading-msg');
+                    if (msgEl) msgEl.innerHTML = newMsg;
+                },
                 update: (status, title, newMsg) => {
                     const icon = overlay.querySelector('#loading-icon');
                     const titleEl = overlay.querySelector('#loading-title');
@@ -10393,7 +10433,7 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                 return `
                 <div style="padding: 0; width: 100%; height: 100vh; box-sizing: border-box; background: white; position: relative; overflow: hidden;">
                     <button onclick="window.tutupAplikasiLain()" style="position: absolute; top: 12px; left: 12px; z-index: 50;" class="bg-white/95 backdrop-blur text-gray-800 px-4 py-2 rounded-xl border border-gray-300 hover:bg-gray-100 transition shadow-lg flex items-center font-bold text-sm">
-                        <i class="fas fa-arrow-left mr-2"></i> 
+                        <i class="fas fa-arrow-left mr-2"></i> Kembali
                     </button>
                   <iframe 
                     src="${window.currentAplikasiLainUrl}" 
