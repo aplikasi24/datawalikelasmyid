@@ -5329,68 +5329,85 @@ Terima kasih!`;
             
             const headers = ['ID_Jurnal', 'Waktu', 'JP', 'Tanggal', 'Mata Pelajaran', 'Tujuan Pembelajaran (TP)', 'Materi Pokok', 'Kegiatan Pembelajaran', 'Penilaian / Asesmen', 'Refleksi Guru'];
             
-            const data = dataToPrint.map((j, i) => {
-                let rowId = `JURNAL-${String(i+1).padStart(3, '0')}`;
-                return {
-                    'ID_Jurnal': rowId,
-                    'Waktu': j.jam_ke || '',
-                    'JP': j.jp || '',
-                    'Tanggal': j.tgl || j.tanggal || '',
-                    'Mata Pelajaran': j.mapel || '',
-                    'Tujuan Pembelajaran (TP)': j.tp || '',
-                    'Materi Pokok': j.materi || j.judul || '',
-                    'Kegiatan Pembelajaran': j.kegiatan || '',
-                    'Penilaian / Asesmen': j.asesmen || '',
-                    'Refleksi Guru': j.refleksi || j.catatan || ''
-                };
+            // Kelompokkan berdasarkan tanggal
+            const groupedData = {};
+            dataToPrint.forEach(j => {
+                let t = j.tgl || j.tanggal || 'Tanpa Tanggal';
+                if (t.includes('/')) t = t.replace(/\//g, '-');
+                let parts = t.split('-');
+                if (parts.length === 3 && parts[0].length === 4) {
+                    t = `${parts[2]}-${parts[1]}-${parts[0]}`; // Ubah YYYY-MM-DD menjadi DD-MM-YYYY
+                }
+                if (!groupedData[t]) groupedData[t] = [];
+                groupedData[t].push(j);
             });
-
-            const ws = XLSX.utils.json_to_sheet(data, { header: headers });
             
-            const range = XLSX.utils.decode_range(ws['!ref']);
-            for(let R = range.s.r; R <= range.e.r; ++R) {
-                for(let C = range.s.c; C <= range.e.c; ++C) {
-                    const cell_address = {c:C, r:R};
-                    const cell_ref = XLSX.utils.encode_cell(cell_address);
-                    if(!ws[cell_ref]) ws[cell_ref] = { t: 's', v: '' }; 
-                    
-                    const cell = ws[cell_ref];
-                    cell.s = {
-                        font: { name: "Arial", sz: 10 },
-                        alignment: { vertical: "top", horizontal: "left", wrapText: true },
-                        border: {
-                            top: {style: "thin", color: {auto: 1}},
-                            bottom: {style: "thin", color: {auto: 1}},
-                            left: {style: "thin", color: {auto: 1}},
-                            right: {style: "thin", color: {auto: 1}}
-                        }
+            const wb = XLSX.utils.book_new();
+            
+            Object.keys(groupedData).forEach((tglKey, index) => {
+                const dayData = groupedData[tglKey];
+                
+                const data = dayData.map((j, i) => {
+                    let rowId = `JURNAL-${String(i+1).padStart(3, '0')}`;
+                    return {
+                        'ID_Jurnal': rowId,
+                        'Waktu': j.jam_ke || '',
+                        'JP': j.jp || '',
+                        'Tanggal': j.tgl || j.tanggal || '',
+                        'Mata Pelajaran': j.mapel || '',
+                        'Tujuan Pembelajaran (TP)': j.tp || '',
+                        'Materi Pokok': j.materi || j.judul || '',
+                        'Kegiatan Pembelajaran': j.kegiatan || '',
+                        'Penilaian / Asesmen': j.asesmen || '',
+                        'Refleksi Guru': j.refleksi || j.catatan || ''
                     };
-                    
-                    if (R === 0) {
-                        cell.s.font.bold = true;
-                        cell.s.fill = { fgColor: { rgb: "174976" } }; 
-                        cell.s.font.color = { rgb: "FFFFFF" }; 
-                        cell.s.alignment.horizontal = "center";
-                        cell.s.alignment.vertical = "center";
+                });
+                
+                const ws = XLSX.utils.json_to_sheet(data, { header: headers });
+                
+                const range = XLSX.utils.decode_range(ws['!ref']);
+                for(let R = range.s.r; R <= range.e.r; ++R) {
+                    for(let C = range.s.c; C <= range.e.c; ++C) {
+                        const cell_address = {c:C, r:R};
+                        const cell_ref = XLSX.utils.encode_cell(cell_address);
+                        if(!ws[cell_ref]) ws[cell_ref] = { t: 's', v: '' }; 
+                        
+                        const cell = ws[cell_ref];
+                        cell.s = {
+                            font: { name: "Arial", sz: 10 },
+                            alignment: { vertical: "top", horizontal: "left", wrapText: true },
+                            border: {
+                                top: {style: "thin", color: {auto: 1}},
+                                bottom: {style: "thin", color: {auto: 1}},
+                                left: {style: "thin", color: {auto: 1}},
+                                right: {style: "thin", color: {auto: 1}}
+                            }
+                        };
+                        
+                        if (R === 0) {
+                            cell.s.font.bold = true;
+                            cell.s.fill = { fgColor: { rgb: "174976" } }; 
+                            cell.s.font.color = { rgb: "FFFFFF" }; 
+                            cell.s.alignment.horizontal = "center";
+                            cell.s.alignment.vertical = "center";
+                        }
                     }
                 }
-            }
+                
+                ws['!cols'] = [
+                    {wch: 12}, {wch: 8}, {wch: 6}, {wch: 12}, {wch: 20}, {wch: 30}, {wch: 20}, {wch: 35}, {wch: 20}, {wch: 25}
+                ];
+                
+                // Format nama sheet (maks 31 karakter, dilarang ada \ / ? * : [ ])
+                let safeSheetName = tglKey.replace(/[\/\?\|\*\[\]\:\\]/g, '-').substring(0, 31);
+                // Tambahkan index jika duplikat
+                if (wb.SheetNames.includes(safeSheetName)) {
+                    safeSheetName = `${safeSheetName.substring(0, 27)}_${index}`;
+                }
+                
+                XLSX.utils.book_append_sheet(wb, ws, safeSheetName);
+            });
 
-            ws['!cols'] = [
-                {wch: 12}, 
-                {wch: 8},  
-                {wch: 6},
-                {wch: 12}, 
-                {wch: 20}, 
-                {wch: 30}, 
-                {wch: 20}, 
-                {wch: 35}, 
-                {wch: 20}, 
-                {wch: 25}  
-            ];
-
-            const wb = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(wb, ws, "Jurnal Mengajar");
             XLSX.writeFile(wb, `Jurnal_Mengajar_${fileNameSuffix}.xlsx`);
             document.getElementById('modal-excel-jurnal').remove();
         };
@@ -5526,30 +5543,79 @@ Terima kasih!`;
             }
             
             // Build HTML
-            const trs = dataToPrint.map((j, i) => {
-                let tglVal = j.tgl || j.tanggal || '';
-                // Pastikan selalu dalam format DD-MM-YYYY
-                if (tglVal.includes('-') && tglVal.split('-').length === 3) {
-                    const p = tglVal.split('-');
-                    if (p[0].length === 4) tglVal = `${p[2]}-${p[1]}-${p[0]}`;
-                } else if (tglVal.includes('/') && tglVal.split('/').length === 3) {
-                    const p = tglVal.split('/');
-                    if (p[0].length === 4) tglVal = `${p[2]}-${p[1]}-${p[0]}`;
-                    else tglVal = `${p[0]}-${p[1]}-${p[2]}`;
+            const groupedData = {};
+            dataToPrint.forEach(j => {
+                let t = j.tgl || j.tanggal || 'Tanpa Tanggal';
+                if (t.includes('/')) t = t.replace(/\//g, '-');
+                let parts = t.split('-');
+                if (parts.length === 3 && parts[0].length === 4) {
+                    t = `${parts[2]}-${parts[1]}-${parts[0]}`; // Ubah YYYY-MM-DD menjadi DD-MM-YYYY
                 }
+                if (!groupedData[t]) groupedData[t] = [];
+                groupedData[t].push(j);
+            });
+            
+            let pagesHtml = Object.keys(groupedData).map((tglKey, tglIdx) => {
+                const dayData = groupedData[tglKey];
+                let isLastPage = tglIdx === Object.keys(groupedData).length - 1;
+                
+                const trs = dayData.map((j, i) => {
+                    return `
+                        <tr class="border-b border-gray-400">
+                            <td class="p-2 border border-gray-400 text-center text-sm">${i+1}</td>
+                            <td class="p-2 border border-gray-400 text-center text-sm">${j.jam_ke || ''}</td>
+                            <td class="p-2 border border-gray-400 text-center text-sm">${j.jp || ''}</td>
+                            <td class="p-2 border border-gray-400 text-center text-sm">${tglKey}</td>
+                            <td class="p-2 border border-gray-400 text-sm">${j.mapel || ''}</td>
+                            <td class="p-2 border border-gray-400 text-sm">${j.tp || ''}</td>
+                            <td class="p-2 border border-gray-400 text-sm">${j.materi || j.judul || ''}</td>
+                            <td class="p-2 border border-gray-400 text-sm">${j.kegiatan || ''}</td>
+                            <td class="p-2 border border-gray-400 text-sm">${j.asesmen || ''}</td>
+                            <td class="p-2 border border-gray-400 text-sm">${j.refleksi || j.catatan || ''}</td>
+                        </tr>
+                    `;
+                }).join('');
+                
+                let daySubtitle = rentang === 'hari_ini' ? subtitle : `Tanggal: ${tglKey}`;
+                
                 return `
-                    <tr class="border-b border-gray-400">
-                        <td class="p-2 border border-gray-400 text-center text-sm">${i+1}</td>
-                        <td class="p-2 border border-gray-400 text-center text-sm">${j.jam_ke || ''}</td>
-                        <td class="p-2 border border-gray-400 text-center text-sm">${j.jp || ''}</td>
-                        <td class="p-2 border border-gray-400 text-center text-sm">${tglVal}</td>
-                        <td class="p-2 border border-gray-400 text-sm">${j.mapel || ''}</td>
-                        <td class="p-2 border border-gray-400 text-sm">${j.tp || ''}</td>
-                        <td class="p-2 border border-gray-400 text-sm">${j.materi || j.judul || ''}</td>
-                        <td class="p-2 border border-gray-400 text-sm">${j.kegiatan || ''}</td>
-                        <td class="p-2 border border-gray-400 text-sm">${j.asesmen || ''}</td>
-                        <td class="p-2 border border-gray-400 text-sm">${j.refleksi || j.catatan || ''}</td>
-                    </tr>
+                    <div style="${!isLastPage ? 'page-break-after: always;' : ''}">
+                        <div class="text-center mb-6 pt-4">
+                            <h2 class="text-2xl font-bold uppercase underline">Buku Jurnal Mengajar</h2>
+                            <h3 class="text-lg font-semibold mt-1">${daySubtitle}</h3>
+                            <p class="text-md">${db.pengaturan?.sekolah || ''} | ${db.pengaturan?.nama || ''}</p>
+                        </div>
+                        <table class="w-full text-left border-collapse border border-gray-400">
+                            <thead>
+                                <tr class="bg-gray-200">
+                                    <th class="p-2 border border-gray-400 text-center text-sm w-10">No</th>
+                                    <th class="p-2 border border-gray-400 text-center text-sm w-16">Waktu</th>
+                                    <th class="p-2 border border-gray-400 text-center text-sm w-12">JP</th>
+                                    <th class="p-2 border border-gray-400 text-center text-sm w-24">Tanggal</th>
+                                    <th class="p-2 border border-gray-400 text-center text-sm w-32">Mata Pelajaran</th>
+                                    <th class="p-2 border border-gray-400 text-center text-sm">Tujuan Pembelajaran (TP)</th>
+                                    <th class="p-2 border border-gray-400 text-center text-sm">Materi Pokok</th>
+                                    <th class="p-2 border border-gray-400 text-center text-sm">Kegiatan Pembelajaran</th>
+                                    <th class="p-2 border border-gray-400 text-center text-sm">Penilaian / Asesmen</th>
+                                    <th class="p-2 border border-gray-400 text-center text-sm">Refleksi Guru</th>
+                                </tr>
+                            </thead>
+                            <tbody>${trs}</tbody>
+                        </table>
+                        <div class="mt-12 flex justify-between px-10 text-center text-sm" style="page-break-inside: avoid;">
+                            <div class="w-64 pt-4">
+                                <p class="mb-24">Mengetahui,<br>Guru Kelas</p>
+                                <p class="font-bold underline">${db.pengaturan?.nama || '....................................'}</p>
+                                <p>NIP. ${db.pengaturan?.nip || '....................................'}</p>
+                            </div>
+                            <div class="w-64">
+                                <p class="mb-4 text-right">............., ....................... 20...</p>
+                                <p class="mb-20">Mengetahui,<br>Kepala Sekolah</p>
+                                <p class="font-bold underline">${db.pengaturan?.kepsek || '....................................'}</p>
+                                <p>NIP. ${db.pengaturan?.nip_kepsek || '....................................'}</p>
+                            </div>
+                        </div>
+                    </div>
                 `;
             }).join('');
             
@@ -5575,42 +5641,8 @@ Terima kasih!`;
                     </div>
                 </div>
 
-                <!-- Isi Jurnal -->
-                <div class="text-center mb-6 pt-4">
-                    <h2 class="text-2xl font-bold uppercase underline">Buku Jurnal Mengajar</h2>
-                    <h3 class="text-lg font-semibold mt-1">${subtitle}</h3>
-                    <p class="text-md">${db.pengaturan?.sekolah || ''} | ${db.pengaturan?.nama || ''}</p>
-                </div>
-                <table class="w-full text-left border-collapse border border-gray-400">
-                    <thead>
-                        <tr class="bg-gray-200">
-                            <th class="p-2 border border-gray-400 text-center text-sm w-10">No</th>
-                            <th class="p-2 border border-gray-400 text-center text-sm w-16">Waktu</th>
-                            <th class="p-2 border border-gray-400 text-center text-sm w-12">JP</th>
-                            <th class="p-2 border border-gray-400 text-center text-sm w-24">Tanggal</th>
-                            <th class="p-2 border border-gray-400 text-center text-sm w-32">Mata Pelajaran</th>
-                            <th class="p-2 border border-gray-400 text-center text-sm">Tujuan Pembelajaran (TP)</th>
-                            <th class="p-2 border border-gray-400 text-center text-sm">Materi Pokok</th>
-                            <th class="p-2 border border-gray-400 text-center text-sm">Kegiatan Pembelajaran</th>
-                            <th class="p-2 border border-gray-400 text-center text-sm">Penilaian / Asesmen</th>
-                            <th class="p-2 border border-gray-400 text-center text-sm">Refleksi Guru</th>
-                        </tr>
-                    </thead>
-                    <tbody>${trs}</tbody>
-                </table>
-                <div class="mt-12 flex justify-between px-10 text-center text-sm" style="page-break-inside: avoid;">
-                    <div class="w-64 pt-4">
-                        <p class="mb-24">Mengetahui,<br>Guru Kelas</p>
-                        <p class="font-bold underline">${db.pengaturan?.nama || '....................................'}</p>
-                        <p>NIP. ${db.pengaturan?.nip || '....................................'}</p>
-                    </div>
-                    <div class="w-64">
-                        <p class="mb-4 text-right">............., ....................... 20...</p>
-                        <p class="mb-20">Mengetahui,<br>Kepala Sekolah</p>
-                        <p class="font-bold underline">${db.pengaturan?.kepsek || '....................................'}</p>
-                        <p>NIP. ${db.pengaturan?.nip_kepsek || '....................................'}</p>
-                    </div>
-                </div>
+                <!-- Halaman Isi Jurnal Per Hari -->
+                ${pagesHtml}
             `;
             
             document.getElementById('modal-print-jurnal').remove();
