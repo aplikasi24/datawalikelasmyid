@@ -606,7 +606,7 @@
         window.renderTautanCepatUI = () => {
             window.initDashboardData();
             const list = db.tautanCepatList;
-            const itemsPerPage = 4;
+            const itemsPerPage = 8;
             const maxPage = Math.ceil(list.length / itemsPerPage) - 1;
             if (window.dashboardState.tautanPage > maxPage && maxPage >= 0) window.dashboardState.tautanPage = maxPage;
             
@@ -627,7 +627,7 @@
                         </button>
                     </div>
                 </div>
-                <div class="flex flex-col gap-2 h-full min-h-[120px]">
+                <div class="grid grid-cols-2 gap-2 h-full min-h-[120px]">
             `;
 
             if (list.length === 0) {
