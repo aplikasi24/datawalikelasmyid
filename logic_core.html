@@ -1,0 +1,206 @@
+        // --- ANTI-DOWNGRADE PERISAI (SHIELD) ---
+        // Mencegah Apps Script menimpa cache dengan versi lama
+        (function() {
+            if (window._shieldActive) return;
+            window._shieldActive = true;
+            const originalSetItem = localStorage.setItem;
+            localStorage.setItem = function(key, value) {
+                if (key === 'app_logic_code' && typeof value === 'string') {
+                    // Jika kode yang mau disimpan TIDAK memiliki overlay grid baru, berarti itu versi lama
+                    if (!value.includes('mobileMenuLainnyaOverlay')) {
+                        console.warn("🛡️ [SHIELD] Apps Script (Google Server) mencoba mengembalikan versi lama! Blokir pembaruan cache.");
+                        // Sembunyikan notifikasi update jika muncul
+                        setTimeout(() => {
+                            const toast = document.getElementById('update-toast');
+                            if (toast) toast.remove();
+                        }, 500);
+                        return; // BLOKIR! Jangan disimpan.
+                    }
+                }
+                originalSetItem.apply(this, arguments);
+            };
+        })();
+
+        // --- 1. PWA Service Worker Registration ---
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./sw.js')
+                    .then(reg => console.log('Service Worker terdaftar!', reg.scope))
+                    .catch(err => console.log('Service Worker gagal mendaftar', err));
+            });
+        }
+
+        window.handleInstallApp = async () => {
+            if (window.deferredPrompt) {
+                window.deferredPrompt.prompt();
+                try {
+                    await window.deferredPrompt.userChoice;
+                } catch(e) {}
+                window.deferredPrompt = null;
+            } else {
+                if (typeof Swal !== 'undefined') {
+                    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+                    const isAndroid = /Android/i.test(navigator.userAgent);
+                    
+                    if (isIOS) {
+                        Swal.fire({
+                            title: 'Instal di iPhone',
+                            html: '<p class="text-sm">Untuk menginstal di iPhone, buka aplikasi ini di <b>Safari</b>, ketuk tombol <b>Share</b> <i class="fas fa-share-square"></i> di bawah layar, lalu pilih <b>"Tambahkan ke Layar Utama"</b>.</p>',
+                            icon: 'info',
+                            confirmButtonText: 'Mengerti',
+                            confirmButtonColor: '#3b82f6'
+                        });
+                    } else {
+                        Swal.fire({
+                            title: 'Instal Aplikasi',
+                            html: '<p class="text-sm">Browser ini tidak mendukung instalasi otomatis. Untuk menginstal, aplikasi harus dibuka menggunakan browser <b>Google Chrome</b> (Android) atau <b>Safari</b> (iOS).</p><p class="text-sm mt-2">Silakan salin tautan di bawah ini dan tempel di browser tersebut.</p>',
+                            icon: 'info',
+                            showCancelButton: true,
+                            confirmButtonText: '<i class="fas fa-copy"></i> Salin Tautan',
+                            cancelButtonText: 'Tutup',
+                            confirmButtonColor: '#10b981',
+                            cancelButtonColor: '#64748b'
+                        }).then((result) => {
+                            if (result.isConfirmed) {
+                                navigator.clipboard.writeText(window.location.href).then(() => {
+                                    Swal.fire('Tersalin!', 'Tautan telah disalin. Buka di browser Google Chrome / Safari lalu tempel (paste) tautan untuk menginstal.', 'success');
+                                }).catch(() => {
+                                    prompt('Salin tautan ini secara manual:', window.location.href);
+                                });
+                            }
+                        });
+                    }
+                } else {
+                    alert("Untuk menginstal, silakan buka aplikasi ini menggunakan browser Google Chrome.");
+                }
+            }
+        };
+
+        // --- 2. LocalStorage Database Management ---
+        let DB_KEY = 'manajemenWaliKelasDB';
+        const defaultData = {
+            students: [
+                { id: 1, nis: '2023001', nisn: '0011223344', name: 'Ahmad Budi Santoso', gender: 'L', kelas: '6A', ayah: 'Budi Santoso', ibu: 'Siti Kholijah', alamat: 'Jl. Merdeka No. 1', agama: 'Islam', hp: '081234567890' },
+                { id: 2, nis: '2023002', nisn: '0011223355', name: 'Siti Aminah', gender: 'P', kelas: '6A', ayah: 'Abdullah', ibu: 'Fatimah', alamat: 'Jl. Pahlawan No. 2', agama: 'Islam', hp: '081298765432' },
+                { id: 3, nis: '2023003', nisn: '0011223366', name: 'Joko Wahyono', gender: 'L', kelas: '6A', ayah: 'Noto Mihardjo', ibu: 'Sudjiatmi', alamat: 'Jl. Ahmad Yani No. 3', agama: 'Islam', hp: '081312345678' }
+            ],
+            attendance_today: {},
+            mapel: [
+                { id: 1, nama: "Pendidikan Agama dan Budi Pekerti", tipe: "Muatan Nasional", icon: "fa-book-open", warna: "bg-blue-500" },
+                { id: 2, nama: "Pendidikan Pancasila", tipe: "Muatan Nasional", icon: "fa-landmark", warna: "bg-red-500" },
+                { id: 3, nama: "Bahasa Indonesia", tipe: "Muatan Nasional", icon: "fa-book", warna: "bg-orange-500" },
+                { id: 4, nama: "Matematika", tipe: "Muatan Nasional", icon: "fa-calculator", warna: "bg-indigo-500" },
+                { id: 5, nama: "Ilmu Pengetahuan Alam dan Sosial (IPAS)", tipe: "Muatan Nasional", icon: "fa-flask", warna: "bg-green-600" },
+                { id: 6, nama: "Seni dan Budaya (Seni Rupa)", tipe: "Muatan Nasional", icon: "fa-palette", warna: "bg-pink-500" },
+                { id: 7, nama: "Pendidikan Jasmani, Olahraga, dan Kesehatan (PJOK)", tipe: "Muatan Nasional", icon: "fa-running", warna: "bg-blue-600" },
+                { id: 8, nama: "Bahasa Jawa", tipe: "Muatan Lokal", icon: "fa-language", warna: "bg-green-500" },
+                { id: 9, nama: "Bahasa Inggris", tipe: "Muatan Nasional", icon: "fa-globe", warna: "bg-purple-500" }
+            ],
+            jurnal: [
+                { id: 1, tgl: "12 Okt", judul: "Matematika - Pecahan Desimal", catatan: "Sebagian besar siswa sudah memahami pecahan." }
+            ],
+            tugas: [
+                { id: 1, judul: "PR Matematika Hal 45", info: "Deadline besok", status: "diberikan" },
+                { id: 2, judul: "Kliping IPA", info: "28/32 terkumpul", status: "menunggu" }
+            ],
+            catatan: [
+                { id: 1, siswa: "Joko Wahyono", waktu: "Kemarin", jenis: "Pelanggaran", teks: "Tidur di kelas." }
+            ],
+            inventaris: [
+                { id: 1, nama: "Spidol", jumlah: 5, kondisi: "Rusak Ringan", badge: "bg-yellow-100 text-yellow-700" }
+            ],
+            jadwal: [
+                { id: 1, hari: "Senin", jam: "07:00 - 08:30", mapel: "Upacara / PAI", warna: "blue" },
+                { id: 2, hari: "Senin", jam: "08:30 - 10:00", mapel: "Tematik", warna: "green" }
+            ],
+            piket: [
+                { id: 1, hari: "Senin", siswa: "Ahmad Budi Santoso" },
+                { id: 2, hari: "Senin", siswa: "Joko Wahyono" }
+            ],
+            pesan_info: [
+                { id: 1, pengirim: "admin", teks: "Selamat datang di semester baru! Mohon semua wali kelas memastikan data siswa sudah lengkap.", waktu: new Date().toISOString(), gambar_url: "", link_url: "" }
+            ],
+            struktur_organisasi: [
+                { id: '1', name: 'Budi Santoso', title: 'Ketua Kelas', parentId: null, photo: '' },
+                { id: '2', name: 'Siti Aminah', title: 'Wakil Ketua', parentId: '1', photo: '' },
+                { id: '3', name: 'Agus Pratama', title: 'Sekretaris', parentId: '1', photo: '' },
+                { id: '4', name: 'Rini Yulianti', title: 'Bendahara', parentId: '1', photo: '' },
+                { id: '5', name: 'Dedi Kusuma', title: 'Seksi Keamanan', parentId: '2', photo: '' }
+            ],
+            kas_kelas: {
+                nominal: 1000,
+                tanggal_mulai: "2023-07-17", // Default contoh
+                hari_aktif: { Senin: true, Selasa: true, Rabu: true, Kamis: true, Jumat: true, Sabtu: false, Minggu: false },
+                pengeluaran: [], // { id, tgl, nominal, keterangan }
+                pembayaran: {} // { studentId: { 'YYYY-MM-DD': nominal } } ATAU { studentId: total_dibayar } untuk kesederhanaan.
+                // Wait, if it's based on date, maybe better to just use a simple total_dibayar if they can pay any amount at any time, 
+                // but the prompt says "daftar nama anak yang kurang di tanggal berapa". So let's store by date:
+                // pembayaran: { studentId: { '2023-10-12': 1000 } }
+            }
+        };
+
+        let db;
+
+        function saveDB() {
+            const jsonStr = JSON.stringify(db);
+            
+            // 1. Coba simpan ke LocalStorage (bisa diblokir oleh beberapa browser ketat)
+            try {
+                localStorage.setItem(DB_KEY, jsonStr);
+            } catch(err) {
+                console.warn("LocalStorage tidak diizinkan oleh browser ini:", err);
+            }
+            
+            // 2. Simpan otomatis ke IndexedDB sebagai cache cadangan rahasia (mengakali LocalStorage yang dihapus browser)
+            try {
+                const req = indexedDB.open('MWK_CacheDB', 1);
+                req.onupgradeneeded = e => e.target.result.createObjectStore('cache');
+                req.onsuccess = e => {
+                    const idb = e.target.result;
+                    const tx = idb.transaction('cache', 'readwrite');
+                    tx.objectStore('cache').put(jsonStr, DB_KEY + '_json');
+                    tx.oncomplete = () => idb.close();
+                };
+            } catch(err) {}
+        }
+
+        // --- 3. App Menus Data ---
+        const appMenus = [
+            { id: "dashboard", name: "Dashboard", icon: "fa-home", title: "Dashboard", desc: "Ringkasan aktivitas dan data kelas hari ini.", group: "Menu Utama" },
+            { id: "pesan", name: "Pesan/Info", icon: "fa-bullhorn", title: "Pengumuman Admin", desc: "Informasi dan pengumuman terbaru dari admin.", group: "Menu Utama" },
+            
+            { id: "siswa", name: "Data Siswa", icon: "fa-users", title: "Data Siswa", desc: "Kelola data profil siswa kelas Anda.", group: "Manajemen Kelas" },
+            { id: "struktur", name: "Struktur Organisasi", icon: "fa-sitemap", title: "Struktur Organisasi", desc: "Hierarki dan pengurus kelas Anda.", group: "Manajemen Kelas" },
+            { id: "piket", name: "Jadwal Piket", icon: "fa-broom", title: "Jadwal Piket", desc: "Jadwal regu kerja piket kebersihan kelas.", group: "Manajemen Kelas" },
+            { id: "inventaris", name: "Inventaris", icon: "fa-box-open", title: "Inventaris", desc: "Data sarana dan prasarana di dalam kelas.", group: "Manajemen Kelas" },
+            
+            { id: "mapel", name: "Mata Pelajaran", icon: "fa-book-open", title: "Mata Pelajaran", desc: "Daftar mata pelajaran yang Anda ampu.", group: "Kegiatan Belajar Mengajar" },
+            { id: "jadwal", name: "Jadwal Mengajar", icon: "fa-calendar-alt", title: "Jadwal Mengajar", desc: "Jadwal mengajar harian Anda.", group: "Kegiatan Belajar Mengajar" },
+            { id: "jurnal", name: "Jurnal Mengajar", icon: "fa-edit", title: "Rencana Jurnal Mengajar", desc: "Catat jurnal kegiatan belajar mengajar harian.", group: "Kegiatan Belajar Mengajar" },
+            { id: "refleksi", name: "Refleksi Mingguan", icon: "fa-lightbulb", title: "Refleksi Mingguan", desc: "Catatan refleksi kinerja guru setiap akhir pekan.", group: "Kegiatan Belajar Mengajar" },
+            
+            { id: "presensi", name: "Presensi Siswa", icon: "fa-user-check", title: "Presensi Siswa", desc: "Kelola kehadiran siswa (Hadir, Izin, Sakit, Alpa).", group: "Evaluasi & Pantauan Siswa" },
+            { id: "tugas", name: "Tugas Siswa", icon: "fa-tasks", title: "Tugas Siswa", desc: "Manajemen tugas dan penilaian siswa.", group: "Evaluasi & Pantauan Siswa" },
+            { id: "nilai", name: "Nilai Siswa", icon: "fa-chart-bar", title: "Nilai Siswa", desc: "Rekapitulasi dan input nilai akademik.", group: "Evaluasi & Pantauan Siswa" },
+            { id: "catatan", name: "Catatan Siswa", icon: "fa-comments", title: "Catatan Siswa", desc: "Catatan anekdotal dan perkembangan siswa.", group: "Evaluasi & Pantauan Siswa" },
+            
+            { id: "kas_kelas", name: "Kas Kelas", icon: "fa-money-bill-wave", title: "Kas Kelas", desc: "Manajemen keuangan dan kas kelas.", group: "Keuangan Kelas" },
+            { id: "pembayaran_kelas", name: "Pembayaran Kelas", icon: "fa-file-invoice-dollar", title: "Pembayaran Kelas", desc: "Kelola rincian pembayaran item (LKS, Sarpras, dll).", group: "Keuangan Kelas" },
+            
+            { id: "generator_soal", name: "Generator Soal", icon: "fa-robot", title: "Generator Soal AI", desc: "Buat soal secara otomatis menggunakan AI (Selama Token dan Api Masih aktif).", group: "Asisten (AI Tools)" },
+            { id: "modul_ajar_ai", name: "Modul Ajar AI", icon: "fa-chalkboard-teacher", title: "Modul Ajar AI", desc: "Buat Modul Ajar Kurikulum Merdeka yang komprehensif dengan AI.", group: "Asisten (AI Tools)" },
+            
+            { id: "aplikasi_lain", name: "Aplikasi Lain", icon: "fa-th-large", title: "Aplikasi Terintegrasi", desc: "Berbagai aplikasi lain yang dapat diakses.", group: "Sistem & Pengaturan" },
+            { id: "sync", name: "Kirim Data (Sync)", icon: "fa-cloud-upload-alt", title: "Sinkronisasi Server", desc: "Kirim data lokal aplikasi ini ke server sekolah.", group: "Sistem & Pengaturan" },
+            { id: "pengaturan", name: "Pengaturan", icon: "fa-cog", title: "Pengaturan", desc: "Konfigurasi profil guru dan identitas kelas.", group: "Sistem & Pengaturan" }
+        ];
+
+        window.currentPage = "dashboard";
+
+        // --- DOM Elements ---
+        const sidebarNav = document.getElementById('sidebar-nav');
+        const appContent = document.getElementById('app-content');
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('sidebar-overlay');
+        const mainScrollArea = document.getElementById('main-scroll-area');
+        window._sidebarGroupState = window._sidebarGroupState || {};

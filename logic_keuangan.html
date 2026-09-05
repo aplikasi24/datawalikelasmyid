@@ -1,0 +1,1576 @@
+        function renderPembayaranKelas() {
+            if (!db.pembayaran_kelas) db.pembayaran_kelas = { items: [], transaksi: {} };
+            let pk = db.pembayaran_kelas;
+            
+            let totalHarusDibayarPerSiswa = pk.items.reduce((sum, item) => sum + parseInt(item.nominal), 0);
+            let totalSeharusnyaMasuk = totalHarusDibayarPerSiswa * db.students.length;
+            let totalMasuk = 0;
+            
+            db.students.forEach(s => {
+                if(pk.transaksi[s.id]) {
+                    pk.items.forEach(item => {
+                        if(pk.transaksi[s.id][item.id]) {
+                            totalMasuk += parseInt(pk.transaksi[s.id][item.id]);
+                        }
+                    });
+                }
+            });
+            let totalKurangGlobal = totalSeharusnyaMasuk - totalMasuk;
+
+            if (typeof window.searchPembayaranSiswa === 'undefined') window.searchPembayaranSiswa = '';
+            if (typeof window.filterStatusPembayaran === 'undefined') window.filterStatusPembayaran = 'Semua';
+
+            let studentsToRender = db.students;
+            
+            if (window.searchPembayaranSiswa) {
+                const q = window.searchPembayaranSiswa.toLowerCase();
+                studentsToRender = studentsToRender.filter(s => s.name.toLowerCase().includes(q));
+            }
+
+            if (window.filterStatusPembayaran !== 'Semua') {
+                studentsToRender = studentsToRender.filter(s => {
+                    let terbayarSiswa = 0;
+                    if(pk.transaksi[s.id]) {
+                        pk.items.forEach(item => {
+                            if(pk.transaksi[s.id][item.id]) terbayarSiswa += parseInt(pk.transaksi[s.id][item.id]);
+                        });
+                    }
+                    let kurangSiswa = totalHarusDibayarPerSiswa - terbayarSiswa;
+                    
+                    if (window.filterStatusPembayaran === 'Lunas') return kurangSiswa <= 0 && totalHarusDibayarPerSiswa > 0;
+                    if (window.filterStatusPembayaran === 'Belum Lunas') return kurangSiswa > 0;
+                    return true;
+                });
+            }
+
+            let trs = '';
+            if (studentsToRender.length === 0) {
+                trs = `<tr><td colspan="6" class="text-center p-8 text-slate-500">Belum ada data siswa.</td></tr>`;
+            } else {
+                trs = studentsToRender.map((s, idx) => {
+                    let terbayarSiswa = 0;
+                    if(pk.transaksi[s.id]) {
+                        pk.items.forEach(item => {
+                            if(pk.transaksi[s.id][item.id]) {
+                                terbayarSiswa += parseInt(pk.transaksi[s.id][item.id]);
+                            }
+                        });
+                    }
+                    let kurangSiswa = totalHarusDibayarPerSiswa - terbayarSiswa;
+                    
+                    let lunasText = '';
+                    if (totalHarusDibayarPerSiswa > 0 && kurangSiswa <= 0) {
+                        lunasText = `<span class="absolute left-full ml-2 bg-green-100 text-green-700 font-bold text-[10px] px-2 py-1 rounded-lg shadow-sm whitespace-nowrap"><i class="fas fa-check mr-1"></i>Lunas</span>`;
+                    }
+                    
+                    return `
+                    <tr class="border-b border-slate-100 hover:bg-slate-50 transition">
+                        <td class="p-3 text-center">${idx + 1}</td>
+                        <td class="p-3 font-bold text-slate-700">${s.name}</td>
+                        <td class="p-3 text-right">Rp ${totalHarusDibayarPerSiswa.toLocaleString('id-ID')}</td>
+                        <td class="p-3 text-right text-green-600 font-bold">Rp ${terbayarSiswa.toLocaleString('id-ID')}</td>
+                        <td class="p-3 text-right text-red-500 font-bold">Rp ${kurangSiswa.toLocaleString('id-ID')}</td>
+                        <td class="p-3">
+                            <div class="flex justify-center items-center w-full min-w-[180px]">
+                                <div class="relative flex items-center gap-1.5 w-max">
+                                    <button onclick="window.bukaModalBayarPK('${s.id}')" class="bg-indigo-100 text-indigo-700 hover:bg-indigo-600 hover:text-white px-2.5 py-1.5 rounded-lg text-xs font-bold transition" title="Bayar">
+                                        <i class="fas fa-money-bill-wave"></i>
+                                    </button>
+                                    <button onclick="window.bukaModalViewPK('${s.id}')" class="bg-slate-100 text-slate-600 hover:bg-slate-700 hover:text-white px-2.5 py-1.5 rounded-lg text-xs font-bold transition" title="Lihat Rincian">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                    ${lunasText}
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                    `;
+                }).join('');
+            }
+
+            return `
+            <div class="mb-6 animate-fade-in-up">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                    <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 flex items-center gap-4 border-l-4 border-l-blue-500">
+                        <div class="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center text-blue-500 text-xl shrink-0"><i class="fas fa-bullseye"></i></div>
+                        <div>
+                            <p class="text-sm text-slate-500 font-medium">Seharusnya Masuk</p>
+                            <h3 class="text-xl font-bold text-slate-800">Rp ${totalSeharusnyaMasuk.toLocaleString('id-ID')}</h3>
+                        </div>
+                    </div>
+                    <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 flex items-center gap-4 border-l-4 border-l-green-500">
+                        <div class="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center text-green-500 text-xl shrink-0"><i class="fas fa-wallet"></i></div>
+                        <div>
+                            <p class="text-sm text-slate-500 font-medium">Saldo Masuk (Terbayar)</p>
+                            <h3 class="text-xl font-bold text-slate-800">Rp ${totalMasuk.toLocaleString('id-ID')}</h3>
+                        </div>
+                    </div>
+                    <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 flex items-center gap-4 border-l-4 border-l-red-500">
+                        <div class="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center text-red-500 text-xl shrink-0"><i class="fas fa-exclamation-triangle"></i></div>
+                        <div>
+                            <p class="text-sm text-slate-500 font-medium">Kurang (Keseluruhan)</p>
+                            <h3 class="text-xl font-bold text-slate-800">Rp ${totalKurangGlobal.toLocaleString('id-ID')}</h3>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
+                    <div class="flex flex-col lg:flex-row flex-wrap justify-between items-start lg:items-center mb-5 gap-4">
+                        <h2 class="text-lg font-bold text-slate-800 shrink-0 w-full lg:w-auto"><i class="fas fa-users mr-2 text-indigo-500"></i>Daftar Siswa & Pembayaran Kelas</h2>
+                        
+                        <div class="flex flex-wrap sm:flex-nowrap items-center gap-2 w-full lg:w-auto mt-2 lg:mt-0">
+                            <div class="relative w-full sm:w-48 shrink-0">
+                                <i class="fas fa-search absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+                                <input id="search-pk" type="text" placeholder="Cari siswa..." value="${window.searchPembayaranSiswa}" oninput="window.searchPembayaranSiswa = this.value; window.navigateTo('pembayaran_kelas'); let el = document.getElementById('search-pk'); if(el) { el.focus(); el.setSelectionRange(this.value.length, this.value.length); }" class="border border-slate-300 rounded-lg pl-7 pr-7 py-1.5 text-sm outline-none focus:border-indigo-500 w-full shadow-sm">
+                                ${window.searchPembayaranSiswa ? `<button onclick="window.searchPembayaranSiswa = ''; window.navigateTo('pembayaran_kelas');" class="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-red-500 transition"><i class="fas fa-times text-xs"></i></button>` : ''}
+                            </div>
+                            <select onchange="window.filterStatusPembayaran = this.value; window.navigateTo('pembayaran_kelas');" class="border border-slate-300 rounded-lg px-2 py-1.5 text-sm outline-none focus:border-indigo-500 bg-white w-full sm:w-32 cursor-pointer shadow-sm shrink-0">
+                                <option value="Semua" ${window.filterStatusPembayaran === 'Semua' ? 'selected' : ''}>Semua Status</option>
+                                <option value="Lunas" ${window.filterStatusPembayaran === 'Lunas' ? 'selected' : ''}>Lunas</option>
+                                <option value="Belum Lunas" ${window.filterStatusPembayaran === 'Belum Lunas' ? 'selected' : ''}>Belum Lunas</option>
+                            </select>
+                            <button onclick="window.bukaModalKelolaItemPK()" class="bg-slate-800 hover:bg-slate-900 text-white font-bold px-4 py-2 rounded-xl text-sm transition shadow-sm whitespace-nowrap w-full sm:w-auto shrink-0 mt-2 sm:mt-0">
+                                <i class="fas fa-cog mr-1.5"></i>Kelola Item Tagihan
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="overflow-x-auto rounded-xl border border-slate-200">
+                        <table class="w-full text-left border-collapse whitespace-nowrap">
+                            <thead class="bg-slate-50 border-b border-slate-200 text-slate-600 text-sm">
+                                <tr>
+                                    <th class="p-3 text-center w-12 font-bold">No</th>
+                                    <th class="p-3 font-bold">Nama Siswa</th>
+                                    <th class="p-3 font-bold text-right">Harus Dibayar</th>
+                                    <th class="p-3 font-bold text-right">Terbayar</th>
+                                    <th class="p-3 font-bold text-right">Kurang</th>
+                                    <th class="p-3 text-center font-bold min-w-[180px]">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${trs}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            `;
+        }
+
+        // --- Kas Kelas ---
+        function renderKasKelas() {
+            if (!db.kas_kelas) {
+                db.kas_kelas = {
+                    nominal: 10000,
+                    tanggal_mulai: '2026-07-13',
+                    hari_aktif: { 'Jumat': true },
+                    pembayaran: {},
+                    pengeluaran: []
+                };
+            }
+            let k = db.kas_kelas;
+            if(!k.pembayaran) k.pembayaran = {};
+            if(!k.pengeluaran) k.pengeluaran = [];
+            if(!k.pemasukan_lain) k.pemasukan_lain = [];
+
+            const tglMulai = new Date(k.tanggal_mulai);
+            const hariIni = new Date();
+            let hariBerlalu = 0;
+            
+            let datesToCheck = [];
+            if (!isNaN(tglMulai.getTime()) && tglMulai <= hariIni) {
+                let currentDate = new Date(tglMulai);
+                while (currentDate <= hariIni) {
+                    const hariNama = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'][currentDate.getDay()];
+                    if (k.hari_aktif[hariNama]) {
+                        hariBerlalu++;
+                        datesToCheck.push(currentDate.toISOString().split('T')[0]);
+                    }
+                    currentDate.setDate(currentDate.getDate() + 1);
+                }
+            }
+
+            if (typeof window.kasCurrentDateIndex === 'undefined') {
+                window.kasCurrentDateIndex = datesToCheck.length > 0 ? datesToCheck.length - 1 : -1;
+            } else if (window.kasCurrentDateIndex >= datesToCheck.length) {
+                window.kasCurrentDateIndex = datesToCheck.length - 1;
+            }
+
+            let viewedDateStr = datesToCheck[window.kasCurrentDateIndex] || hariIni.toLocaleDateString('en-CA');
+            let viewedDateObj = new Date(viewedDateStr);
+            let viewedDateFormatted = viewedDateObj.toLocaleDateString('id-ID', {weekday: 'long', day: 'numeric', month: 'short', year: 'numeric'});
+
+            const hasPrev = window.kasCurrentDateIndex > 0;
+            const hasNext = window.kasCurrentDateIndex >= 0 && window.kasCurrentDateIndex < datesToCheck.length - 1;
+
+            const dayOfWeek = viewedDateObj.getDay(); 
+            const diffToMonday = viewedDateObj.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1);
+            let weekStart = new Date(viewedDateObj);
+            weekStart.setDate(diffToMonday);
+            let weekEnd = new Date(weekStart);
+            weekEnd.setDate(weekStart.getDate() + 6);
+            
+            let datesInWeek = [];
+            for (let d = new Date(weekStart); d <= weekEnd; d.setDate(d.getDate() + 1)) {
+                datesInWeek.push(d.toISOString().split('T')[0]);
+            }
+
+            if (typeof window.currentFilterKelasKas === 'undefined') {
+                window.currentFilterKelasKas = 'Semua Kelas';
+            }
+
+            let totalHarusBayar = hariBerlalu * k.nominal;
+            let totalKeseluruhanBayar = 0;
+            let totalKeseluruhanKurang = 0;
+            let daftarTunggakanHtml = '';
+
+            if (typeof window.searchKasSiswa === 'undefined') window.searchKasSiswa = '';
+            if (typeof window.filterStatusKas === 'undefined') window.filterStatusKas = 'Semua';
+
+            let studentsToRender = db.students;
+            if (window.currentFilterKelasKas !== 'Semua Kelas') {
+                studentsToRender = studentsToRender.filter(s => String(s.kelas || '-') === window.currentFilterKelasKas);
+            }
+            if (window.searchKasSiswa) {
+                const q = window.searchKasSiswa.toLowerCase();
+                studentsToRender = studentsToRender.filter(s => s.name.toLowerCase().includes(q));
+            }
+            if (window.filterStatusKas !== 'Semua') {
+                studentsToRender = studentsToRender.filter(s => {
+                    const bayarViewed = (k.pembayaran[s.id] || {})[viewedDateStr] || 0;
+                    if (window.filterStatusKas === 'Lunas') return k.nominal > 0 && bayarViewed >= k.nominal;
+                    if (window.filterStatusKas === 'Belum Lunas') return bayarViewed < k.nominal;
+                    return true;
+                });
+            }
+
+            let trs = studentsToRender.map((s, index) => {
+                const bayarSiswa = k.pembayaran[s.id] || {};
+                let totalDibayarSiswa = 0;
+                let kasMingguIni = 0;
+                let tanggalTunggakan = [];
+                
+                datesToCheck.forEach(date => {
+                    const bayarHariIni = bayarSiswa[date] || 0;
+                    if(bayarHariIni < k.nominal) {
+                        const [y, m, d] = date.split('-');
+                        const dateFormatted = `${d}/${m}/${y}`;
+                        tanggalTunggakan.push(`${dateFormatted} (Kur. ${k.nominal - bayarHariIni})`);
+                    }
+                });
+                
+                datesInWeek.forEach(date => {
+                    kasMingguIni += (bayarSiswa[date] || 0);
+                });
+
+                const totalSemuaDibayar = Object.values(bayarSiswa).reduce((a,b)=>a+b, 0);
+                totalDibayarSiswa = totalSemuaDibayar; 
+                
+                let kurang = totalHarusBayar - totalDibayarSiswa;
+                if(kurang < 0) kurang = 0;
+                
+                if (kurang > 0 && tanggalTunggakan.length > 0) {
+                    daftarTunggakanHtml += `<li class="mb-2"><span class="font-bold text-red-600">${s.name}</span>: Kurang Rp ${kurang.toLocaleString('id-ID')} <br><span class="text-xs text-gray-500">Tunggakan di: ${tanggalTunggakan.join(', ')}</span></li>`;
+                } else if (kurang > 0) {
+                    daftarTunggakanHtml += `<li class="mb-2"><span class="font-bold text-red-600">${s.name}</span>: Kurang Rp ${kurang.toLocaleString('id-ID')}</li>`;
+                }
+
+                totalKeseluruhanBayar += totalDibayarSiswa;
+                totalKeseluruhanKurang += kurang;
+
+                const bayarViewed = bayarSiswa[viewedDateStr] || 0;
+                let inputBgColor = 'bg-white';
+                let inputTextColor = 'text-slate-900';
+                if (bayarViewed === 0) {
+                    inputBgColor = 'bg-red-50';
+                    inputTextColor = 'text-red-600';
+                } else if (bayarViewed < k.nominal) {
+                    inputBgColor = 'bg-yellow-50';
+                    inputTextColor = 'text-yellow-700';
+                } else {
+                    inputBgColor = 'bg-green-50';
+                    inputTextColor = 'text-green-700';
+                }
+
+                let lunasBadge = '';
+                if (k.nominal > 0 && bayarViewed >= k.nominal) {
+                    lunasBadge = `<span class="bg-green-100 text-green-700 font-bold text-[10px] px-2 py-1.5 rounded-lg shadow-sm whitespace-nowrap"><i class="fas fa-check mr-1"></i>Lunas</span>`;
+                }
+
+                return `
+                <tr class="hover:bg-slate-50 transition-colors border-b border-slate-100">
+                    <td class="p-3 text-center text-sm">${index + 1}</td>
+                    <td class="p-3 text-sm font-medium">${s.name}</td>
+                    <td class="p-3">
+                        <div class="flex items-center gap-2">
+                            <span class="text-slate-400 font-bold text-xs">Rp</span>
+                            <input type="text" inputmode="numeric" id="input-bayar-${s.id}" class="w-24 border border-slate-300 rounded-lg p-1.5 text-sm outline-none focus:border-blue-500 font-bold ${inputBgColor} ${inputTextColor}" value="${bayarViewed === 0 ? '' : bayarViewed.toLocaleString('id-ID')}" oninput="window.formatInputRupiah(this)" onblur="window.updateBayarKas('${s.id}', '${viewedDateStr}', this.value)" placeholder="0">
+                            <button onclick="window.updateBayarKas('${s.id}', '${viewedDateStr}', 0)" class="bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 text-[10px] px-2 py-1.5 rounded-lg font-bold shadow-sm transition whitespace-nowrap" title="Tandai Belum Bayar">
+                                <i class="fas fa-times mr-1"></i>Blm Byr
+                            </button>
+                            ${lunasBadge}
+                        </div>
+                    </td>
+                    <td class="p-3 text-sm font-bold text-blue-600 text-right">Rp ${kasMingguIni.toLocaleString('id-ID')}</td>
+                    <td class="p-3 text-sm text-green-700 font-bold text-right border-l border-slate-100">Rp ${totalDibayarSiswa.toLocaleString('id-ID')}</td>
+                    <td class="p-3 text-sm text-red-600 font-bold text-right">Rp ${kurang.toLocaleString('id-ID')}</td>
+                </tr>
+                `;
+            }).join('');
+
+            if(studentsToRender.length === 0) {
+                trs = '<tr><td colspan="6" class="text-center p-8 text-slate-500 italic">Belum ada data siswa.</td></tr>';
+            }
+
+            if (typeof window.pengeluaranPage === 'undefined') window.pengeluaranPage = 1;
+            if (typeof window.pengeluaranPerPage === 'undefined') window.pengeluaranPerPage = 10;
+            
+            let totalPengeluaran = 0;
+            k.pengeluaran.forEach(p => totalPengeluaran += p.nominal);
+
+            let dataPengeluaran = k.pengeluaran.map((p, index) => ({
+                ...p,
+                no: index + 1
+            })).reverse();
+            let totalPagesPengeluaran = 1;
+            
+            if (window.pengeluaranPerPage !== 'semua') {
+                let limit = parseInt(window.pengeluaranPerPage);
+                totalPagesPengeluaran = Math.ceil(dataPengeluaran.length / limit) || 1;
+                
+                if (window.pengeluaranPage > totalPagesPengeluaran) window.pengeluaranPage = totalPagesPengeluaran;
+                if (window.pengeluaranPage < 1) window.pengeluaranPage = 1;
+                
+                const startIndex = (window.pengeluaranPage - 1) * limit;
+                dataPengeluaran = dataPengeluaran.slice(startIndex, startIndex + limit);
+            }
+
+            let trsPengeluaran = dataPengeluaran.map(p => {
+                let formattedTgl = p.tgl;
+                if(formattedTgl && formattedTgl.includes('-')) {
+                    let parts = formattedTgl.split('-');
+                    if(parts.length === 3 && parts[0].length === 4) formattedTgl = `${parts[2]}-${parts[1]}-${parts[0]}`;
+                }
+                return `
+                <tr class="border-b border-slate-100">
+                    <td class="p-2 text-sm text-center text-slate-500 font-bold">${p.no}</td>
+                    <td class="p-2 text-sm">${formattedTgl}</td>
+                    <td class="p-2 text-sm">${p.keterangan}</td>
+                    <td class="p-2 text-sm text-right font-bold text-red-600">Rp ${p.nominal.toLocaleString('id-ID')}</td>
+                    <td class="p-2 text-center">
+                        <button onclick="window.editPengeluaranKas('${p.id}')" class="text-yellow-500 hover:text-yellow-700 mr-2" title="Edit Nominal"><i class="fas fa-pencil-alt"></i></button>
+                        <button onclick="window.hapusPengeluaranKas('${p.id}')" class="text-red-500 hover:text-red-700" title="Hapus"><i class="fas fa-trash"></i></button>
+                    </td>
+                </tr>
+                `;
+            }).join('');
+            
+            if(k.pengeluaran.length === 0) {
+                trsPengeluaran = '<tr><td colspan="5" class="text-center p-4 text-slate-500 italic">Belum ada pengeluaran.</td></tr>';
+            }
+            
+            let paginationHtml = '';
+            if (k.pengeluaran.length > 10 || window.pengeluaranPerPage !== 10) {
+                paginationHtml = `
+                <div class="flex flex-col sm:flex-row justify-between items-center bg-slate-50 border-t border-slate-200 p-3 gap-3">
+                    <div class="flex items-center gap-2 text-sm text-slate-600 font-medium">
+                        Tampilkan:
+                        <select onchange="window.setPengeluaranPerPage(this.value)" class="border border-slate-300 rounded-lg px-2 py-1 outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 bg-white">
+                            <option value="10" ${window.pengeluaranPerPage == 10 ? 'selected' : ''}>10</option>
+                            <option value="20" ${window.pengeluaranPerPage == 20 ? 'selected' : ''}>20</option>
+                            <option value="semua" ${window.pengeluaranPerPage === 'semua' ? 'selected' : ''}>Semua</option>
+                        </select>
+                    </div>
+                    ${window.pengeluaranPerPage !== 'semua' ? `
+                    <div class="flex items-center gap-2">
+                        <button onclick="window.navigasiPengeluaranPage(-1)" ${window.pengeluaranPage <= 1 ? 'disabled' : ''} class="px-2 py-1 bg-white border border-slate-300 text-slate-600 rounded-lg disabled:opacity-40 disabled:cursor-not-allowed hover:bg-slate-100 transition shadow-sm"><i class="fas fa-chevron-left"></i></button>
+                        <span class="text-sm font-bold text-slate-700 mx-1">Hal ${window.pengeluaranPage} dari ${totalPagesPengeluaran}</span>
+                        <button onclick="window.navigasiPengeluaranPage(1)" ${window.pengeluaranPage >= totalPagesPengeluaran ? 'disabled' : ''} class="px-2 py-1 bg-white border border-slate-300 text-slate-600 rounded-lg disabled:opacity-40 disabled:cursor-not-allowed hover:bg-slate-100 transition shadow-sm"><i class="fas fa-chevron-right"></i></button>
+                    </div>
+                    ` : ''}
+                </div>
+                `;
+            }
+
+            // --- Pemasukan Lain ---
+            if (typeof window.pemasukanPage === 'undefined') window.pemasukanPage = 1;
+            if (typeof window.pemasukanPerPage === 'undefined') window.pemasukanPerPage = 10;
+            
+            let totalPemasukanLain = 0;
+            k.pemasukan_lain.forEach(p => totalPemasukanLain += p.nominal);
+
+            let dataPemasukan = k.pemasukan_lain.map((p, index) => ({
+                ...p,
+                no: index + 1
+            })).reverse();
+            let totalPagesPemasukan = 1;
+            
+            if (window.pemasukanPerPage !== 'semua') {
+                let limit = parseInt(window.pemasukanPerPage);
+                totalPagesPemasukan = Math.ceil(dataPemasukan.length / limit) || 1;
+                
+                if (window.pemasukanPage > totalPagesPemasukan) window.pemasukanPage = totalPagesPemasukan;
+                if (window.pemasukanPage < 1) window.pemasukanPage = 1;
+                
+                const startIndex = (window.pemasukanPage - 1) * limit;
+                dataPemasukan = dataPemasukan.slice(startIndex, startIndex + limit);
+            }
+
+            let trsPemasukan = dataPemasukan.map(p => {
+                let formattedTgl = p.tgl;
+                if(formattedTgl && formattedTgl.includes('-')) {
+                    let parts = formattedTgl.split('-');
+                    if(parts.length === 3 && parts[0].length === 4) formattedTgl = `${parts[2]}-${parts[1]}-${parts[0]}`;
+                }
+                return `
+                <tr class="border-b border-slate-100">
+                    <td class="p-2 text-sm text-center text-slate-500 font-bold">${p.no}</td>
+                    <td class="p-2 text-sm">${formattedTgl}</td>
+                    <td class="p-2 text-sm">${p.keterangan}</td>
+                    <td class="p-2 text-sm text-right font-bold text-blue-600">Rp ${p.nominal.toLocaleString('id-ID')}</td>
+                    <td class="p-2 text-center">
+                        <button onclick="window.editPemasukanKas('${p.id}')" class="text-yellow-500 hover:text-yellow-700 mr-2" title="Edit Nominal"><i class="fas fa-pencil-alt"></i></button>
+                        <button onclick="window.hapusPemasukanKas('${p.id}')" class="text-red-500 hover:text-red-700" title="Hapus"><i class="fas fa-trash"></i></button>
+                    </td>
+                </tr>
+                `;
+            }).join('');
+            
+            if(k.pemasukan_lain.length === 0) {
+                trsPemasukan = '<tr><td colspan="5" class="text-center p-4 text-slate-500 italic">Belum ada pemasukan lain.</td></tr>';
+            }
+            
+            let paginationPemasukanHtml = '';
+            if (k.pemasukan_lain.length > 10 || window.pemasukanPerPage !== 10) {
+                paginationPemasukanHtml = `
+                <div class="flex flex-col sm:flex-row justify-between items-center bg-slate-50 border-t border-slate-200 p-3 gap-3">
+                    <div class="flex items-center gap-2 text-sm text-slate-600 font-medium">
+                        Tampilkan:
+                        <select onchange="window.setPemasukanPerPage(this.value)" class="border border-slate-300 rounded-lg px-2 py-1 outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 bg-white">
+                            <option value="10" ${window.pemasukanPerPage == 10 ? 'selected' : ''}>10</option>
+                            <option value="20" ${window.pemasukanPerPage == 20 ? 'selected' : ''}>20</option>
+                            <option value="semua" ${window.pemasukanPerPage === 'semua' ? 'selected' : ''}>Semua</option>
+                        </select>
+                    </div>
+                    ${window.pemasukanPerPage !== 'semua' ? `
+                    <div class="flex items-center gap-2">
+                        <button onclick="window.navigasiPemasukanPage(-1)" ${window.pemasukanPage <= 1 ? 'disabled' : ''} class="px-2 py-1 bg-white border border-slate-300 text-slate-600 rounded-lg disabled:opacity-40 disabled:cursor-not-allowed hover:bg-slate-100 transition shadow-sm"><i class="fas fa-chevron-left"></i></button>
+                        <span class="text-sm font-bold text-slate-700 mx-1">Hal ${window.pemasukanPage} dari ${totalPagesPemasukan}</span>
+                        <button onclick="window.navigasiPemasukanPage(1)" ${window.pemasukanPage >= totalPagesPemasukan ? 'disabled' : ''} class="px-2 py-1 bg-white border border-slate-300 text-slate-600 rounded-lg disabled:opacity-40 disabled:cursor-not-allowed hover:bg-slate-100 transition shadow-sm"><i class="fas fa-chevron-right"></i></button>
+                    </div>
+                    ` : ''}
+                </div>
+                `;
+            }
+
+            const saldoAkhir = totalKeseluruhanBayar + totalPemasukanLain - totalPengeluaran;
+
+            const days = ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu', 'Minggu'];
+            const cbHari = days.map(d => `
+                <label class="flex items-center gap-1.5 text-sm cursor-pointer bg-slate-50 px-3 py-1.5 rounded-lg border border-slate-200">
+                    <input type="checkbox" id="chk-hari-${d}" onchange="window.simpanPengaturanKas()" ${k.hari_aktif[d] ? 'checked' : ''} class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500"> <span>${d}</span>
+                </label>
+            `).join('');
+
+            const isSettingsOpen = window.isKasSettingsOpen ? '' : 'hidden';
+            const iconRotate = window.isKasSettingsOpen ? 'rotate-180' : '';
+
+            return `
+            <div class="space-y-6">
+                <!-- Pengaturan Kas -->
+                <div class="bg-white rounded-2xl shadow-[0_2px_10px_-3px_rgba(6,81,237,0.1)] border border-slate-100 overflow-hidden">
+                    <div onclick="window.isKasSettingsOpen = !window.isKasSettingsOpen; document.getElementById('kas-settings-body').classList.toggle('hidden'); document.getElementById('kas-settings-icon').classList.toggle('rotate-180');" class="p-5 cursor-pointer flex justify-between items-center hover:bg-slate-50 transition">
+                        <h2 class="text-lg font-bold text-slate-800 m-0"><i class="fas fa-cogs mr-2 text-blue-500"></i>Pengaturan Kas Kelas</h2>
+                        <i id="kas-settings-icon" class="fas fa-chevron-down text-slate-400 transition-transform duration-300 ${iconRotate}"></i>
+                    </div>
+                    <div id="kas-settings-body" class="${isSettingsOpen} px-6 pb-6 pt-2 border-t border-slate-100">
+                        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-2 mt-2">
+                        <div class="bg-slate-50/50 p-4 rounded-xl border border-slate-100">
+                            <label class="block text-sm font-bold text-slate-700 mb-2">Nominal Uang Kas (Rp)</label>
+                            <div class="relative">
+                                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 font-bold">Rp</span>
+                                <input type="text" inputmode="numeric" id="kas-nominal" value="${k.nominal ? k.nominal.toLocaleString('id-ID') : ''}" oninput="window.formatInputRupiah(this)" onchange="window.simpanPengaturanKas()" class="pl-10 w-full border border-slate-300 rounded-xl p-2.5 outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition font-medium">
+                            </div>
+                        </div>
+                        <div class="bg-slate-50/50 p-4 rounded-xl border border-slate-100">
+                            <label class="block text-sm font-bold text-slate-700 mb-2">Tanggal Mulai Berlaku</label>
+                            <input type="date" id="kas-tgl-mulai" value="${k.tanggal_mulai}" onchange="window.simpanPengaturanKas()" class="w-full border border-slate-300 rounded-xl p-2.5 outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition font-medium">
+                        </div>
+                        <div class="bg-slate-50/50 p-4 rounded-xl border border-slate-100">
+                            <label class="block text-sm font-bold text-slate-700 mb-2">Hari Aktif Kas</label>
+                            <div class="flex flex-wrap gap-2">
+                                ${cbHari}
+                            </div>
+                        </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tabel Pembayaran -->
+                <div class="bg-white p-6 rounded-2xl shadow-[0_2px_10px_-3px_rgba(6,81,237,0.1)] border border-slate-100 overflow-hidden">
+                    <div class="flex flex-col lg:flex-row flex-wrap justify-between items-start lg:items-center mb-5 gap-4">
+                        <div class="flex flex-wrap sm:flex-nowrap items-center gap-3 w-full lg:w-auto">
+                            <h2 class="text-lg font-bold text-slate-800 shrink-0"><i class="fas fa-users mr-2 text-blue-500"></i>Daftar Siswa & Pembayaran</h2>
+                            <select id="filter-kelas-kas" onchange="window.currentFilterKelasKas = this.value; window.navigateTo('kas_kelas');" class="border border-slate-300 rounded-lg px-2 py-1 text-sm font-semibold text-slate-700 outline-none focus:ring-2 focus:ring-blue-500 bg-slate-50 cursor-pointer shadow-sm ml-0 sm:ml-2 shrink-0">
+                                <option value="Semua Kelas">Semua Kelas</option>
+                                ${[...new Set(db.students.map(s => s.kelas || '-'))].filter(k => k !== '-').sort().map(k => `<option value="${k}" ${window.currentFilterKelasKas === k ? 'selected' : ''}>Kelas ${k}</option>`).join('')}
+                            </select>
+                        </div>
+                        <div class="flex flex-wrap sm:flex-nowrap items-center gap-2 w-full lg:w-auto mt-2 lg:mt-0">
+                            <div class="relative w-full sm:w-40 shrink-0">
+                                <i class="fas fa-search absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+                                <input id="search-kas" type="text" placeholder="Cari siswa..." value="${window.searchKasSiswa}" oninput="window.searchKasSiswa = this.value; window.navigateTo('kas_kelas'); let el = document.getElementById('search-kas'); if(el) { el.focus(); el.setSelectionRange(this.value.length, this.value.length); }" class="border border-slate-300 rounded-lg pl-7 pr-7 py-1.5 text-sm outline-none focus:border-blue-500 w-full shadow-sm">
+                                ${window.searchKasSiswa ? `<button onclick="window.searchKasSiswa = ''; window.navigateTo('kas_kelas');" class="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-red-500 transition"><i class="fas fa-times text-xs"></i></button>` : ''}
+                            </div>
+                            <select onchange="window.filterStatusKas = this.value; window.navigateTo('kas_kelas');" class="border border-slate-300 rounded-lg px-2 py-1.5 text-sm outline-none focus:border-blue-500 bg-white w-full sm:w-32 cursor-pointer shadow-sm shrink-0">
+                                <option value="Semua" ${window.filterStatusKas === 'Semua' ? 'selected' : ''}>Semua Status</option>
+                                <option value="Lunas" ${window.filterStatusKas === 'Lunas' ? 'selected' : ''}>Lunas</option>
+                                <option value="Belum Lunas" ${window.filterStatusKas === 'Belum Lunas' ? 'selected' : ''}>Belum Lunas</option>
+                            </select>
+                        </div>
+                        <div class="flex flex-col sm:flex-row items-start sm:items-center gap-3 w-full lg:w-auto overflow-hidden">
+                            <div class="flex bg-slate-100 rounded-xl p-1 shadow-inner items-center justify-between w-full sm:w-auto shrink-0">
+                                <button onclick="window.navigasiHariKas(-1)" ${!hasPrev ? 'disabled' : ''} class="px-2 sm:px-3 py-1.5 rounded-lg text-slate-600 font-bold hover:bg-white hover:shadow-sm disabled:opacity-30 transition text-sm"><i class="fas fa-chevron-left sm:mr-1"></i> <span class="hidden sm:inline">Prev</span></button>
+                                <span class="px-2 sm:px-4 font-bold text-slate-800 text-xs sm:text-sm whitespace-nowrap text-center flex-1">${datesToCheck.length > 0 ? viewedDateFormatted : 'Tidak ada hari aktif'}</span>
+                                <button onclick="window.navigasiHariKas(1)" ${!hasNext ? 'disabled' : ''} class="px-2 sm:px-3 py-1.5 rounded-lg text-slate-600 font-bold hover:bg-white hover:shadow-sm disabled:opacity-30 transition text-sm"><span class="hidden sm:inline">Next</span> <i class="fas fa-chevron-right sm:ml-1"></i></button>
+                            </div>
+                            <div class="flex flex-wrap gap-2 w-full sm:w-auto justify-start sm:justify-end">
+                                <button onclick="window.bukaModalDownloadKas()" class="flex-1 sm:flex-none bg-teal-600 hover:bg-teal-700 text-white font-bold px-3 py-2 rounded-xl text-xs sm:text-sm transition shadow-sm whitespace-nowrap text-center"><i class="fas fa-file-download mr-1.5"></i>Rekap</button>
+                                <button onclick="window.bukaFilterTunggakan()" class="flex-1 sm:flex-none bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-3 py-2 rounded-xl text-xs sm:text-sm transition shadow-sm whitespace-nowrap text-center"><i class="fas fa-search-dollar mr-1.5"></i>Filter</button>
+                                <button onclick="window.bayarSemuaKas('${viewedDateStr}')" class="flex-1 sm:flex-none bg-blue-600 hover:bg-blue-700 text-white font-bold px-3 py-2 rounded-xl text-xs sm:text-sm transition shadow-sm whitespace-nowrap text-center"><i class="fas fa-check-double mr-1.5"></i>Lunas Semua</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="overflow-x-auto rounded-xl border border-slate-200" style="-webkit-overflow-scrolling: touch;">
+                        <table class="w-full text-left border-collapse whitespace-nowrap min-w-max" style="touch-action: pan-x pan-y;">
+                            <thead class="bg-slate-50 border-b border-slate-200 text-slate-600 text-sm">
+                                <tr>
+                                    <th class="p-3 text-center w-12 font-bold">No</th>
+                                    <th class="p-3 font-bold">Nama Siswa</th>
+                                    <th class="p-3 font-bold w-48">Bayar (Rp)</th>
+                                    <th class="p-3 font-bold text-right text-blue-700">Kas Mgg Ini</th>
+                                    <th class="p-3 font-bold text-right border-l border-slate-200">Total Dibayar</th>
+                                    <th class="p-3 font-bold text-right">Jumlah Kurang</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${trs}
+                            </tbody>
+                            <tfoot class="bg-slate-100 border-t border-slate-300">
+                                <tr>
+                                    <td colspan="4" class="p-4 text-right font-bold text-slate-700">TOTAL KESELURUHAN</td>
+                                    <td class="p-4 text-right font-black text-green-700 text-base border-l border-slate-200">Rp ${totalKeseluruhanBayar.toLocaleString('id-ID')}</td>
+                                    <td class="p-4 text-right font-black text-red-600 text-base">Rp ${totalKeseluruhanKurang.toLocaleString('id-ID')}</td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                    <!-- Saldo Kas Saat Ini -->
+                    <div class="bg-gradient-to-r from-emerald-500 to-green-600 p-6 rounded-2xl shadow-lg text-white flex justify-between items-center transform transition-transform hover:scale-[1.01]">
+                        <div>
+                            <div class="text-emerald-100 text-sm font-bold tracking-wider uppercase mb-1">Saldo Kas Saat Ini</div>
+                            <div class="text-2xl lg:text-3xl font-black">Rp ${saldoAkhir.toLocaleString('id-ID')}</div>
+                        </div>
+                        <div class="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center backdrop-blur-sm shadow-inner shrink-0">
+                            <i class="fas fa-coins text-2xl text-white"></i>
+                        </div>
+                    </div>
+                    
+                    <!-- Total Pemasukan -->
+                    <div class="bg-gradient-to-r from-blue-500 to-blue-600 p-6 rounded-2xl shadow-lg text-white flex justify-between items-center transform transition-transform hover:scale-[1.01]">
+                        <div>
+                            <div class="text-blue-100 text-xs sm:text-sm font-bold tracking-wider uppercase mb-1">Total Pemasukan</div>
+                            <div class="text-2xl lg:text-3xl font-black">Rp ${(totalKeseluruhanBayar + totalPemasukanLain).toLocaleString('id-ID')}</div>
+                        </div>
+                        <div class="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center backdrop-blur-sm shadow-inner shrink-0 hidden sm:flex">
+                            <i class="fas fa-hand-holding-usd text-xl text-white"></i>
+                        </div>
+                    </div>
+                    
+                    <!-- Total Pengeluaran -->
+                    <div class="bg-gradient-to-r from-orange-500 to-orange-600 p-6 rounded-2xl shadow-lg text-white flex justify-between items-center transform transition-transform hover:scale-[1.01]">
+                        <div>
+                            <div class="text-orange-100 text-xs sm:text-sm font-bold tracking-wider uppercase mb-1">Total Pengeluaran</div>
+                            <div class="text-2xl lg:text-3xl font-black">Rp ${totalPengeluaran.toLocaleString('id-ID')}</div>
+                        </div>
+                        <div class="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center backdrop-blur-sm shadow-inner shrink-0 hidden sm:flex">
+                            <i class="fas fa-shopping-cart text-xl text-white"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+                    <!-- Pemasukan Lain -->
+                    <div class="bg-white p-6 rounded-2xl shadow-[0_2px_10px_-3px_rgba(6,81,237,0.1)] border border-slate-100 flex flex-col">
+                        <h2 class="text-lg font-bold text-slate-800 mb-5"><i class="fas fa-hand-holding-usd mr-2 text-blue-500"></i>Pemasukan Lain</h2>
+                        
+                        <div class="border border-slate-200 rounded-xl overflow-x-auto mb-5" style="-webkit-overflow-scrolling: touch;">
+                            <table class="w-full text-left whitespace-nowrap min-w-max" style="touch-action: pan-x pan-y;">
+                                <thead class="bg-slate-50 border-b border-slate-200">
+                                    <tr>
+                                        <th class="p-3 text-xs font-bold text-slate-500 uppercase tracking-wider text-center w-10">No</th>
+                                        <th class="p-3 text-xs font-bold text-slate-500 uppercase tracking-wider">Tgl</th>
+                                        <th class="p-3 text-xs font-bold text-slate-500 uppercase tracking-wider">Keterangan</th>
+                                        <th class="p-3 text-xs font-bold text-slate-500 uppercase tracking-wider text-right">Nominal</th>
+                                        <th class="p-3"></th>
+                                    </tr>
+                                </thead>
+                                <tbody>${trsPemasukan}</tbody>
+                                <tfoot class="bg-blue-50 border-t border-blue-100">
+                                    <tr>
+                                        <td colspan="3" class="p-3 text-right font-bold text-blue-800 text-sm">Total Pemasukan Lain</td>
+                                        <td colspan="2" class="p-3 font-bold text-blue-700 text-right text-base">Rp ${totalPemasukanLain.toLocaleString('id-ID')}</td>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                            ${paginationPemasukanHtml}
+                        </div>
+
+                        <div class="mt-auto pt-5 border-t border-slate-100">
+                            <h4 class="text-sm font-bold text-slate-700 mb-3"><i class="fas fa-plus-circle mr-1.5 text-blue-500"></i>Catat Pemasukan Baru</h4>
+                            <div class="flex flex-col sm:flex-row gap-2">
+                                <input type="text" id="pemasukan-ket" placeholder="Keterangan (misal: Infaq)..." class="flex-1 border border-slate-300 rounded-xl p-2.5 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 font-medium">
+                                <input type="text" inputmode="numeric" id="pemasukan-nom" placeholder="Nominal (Rp)" class="w-full sm:w-32 border border-slate-300 rounded-xl p-2.5 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 font-medium" oninput="window.formatInputRupiah(this)">
+                                <button onclick="window.tambahPemasukanKas()" class="bg-blue-600 hover:bg-blue-700 text-white rounded-xl px-5 py-2.5 text-sm font-bold shadow-sm transition"><i class="fas fa-plus"></i></button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Saldo & Pengeluaran -->
+                    <div class="bg-white p-6 rounded-2xl shadow-[0_2px_10px_-3px_rgba(6,81,237,0.1)] border border-slate-100 flex flex-col">
+                        <h2 class="text-lg font-bold text-slate-800 mb-5"><i class="fas fa-shopping-cart mr-2 text-emerald-500"></i>Saldo Digunakan (Pengeluaran)</h2>
+                        
+                        <div class="border border-slate-200 rounded-xl overflow-x-auto mb-5" style="-webkit-overflow-scrolling: touch;">
+                            <table class="w-full text-left whitespace-nowrap min-w-max" style="touch-action: pan-x pan-y;">
+                                <thead class="bg-slate-50 border-b border-slate-200">
+                                    <tr>
+                                        <th class="p-3 text-xs font-bold text-slate-500 uppercase tracking-wider text-center w-10">No</th>
+                                        <th class="p-3 text-xs font-bold text-slate-500 uppercase tracking-wider">Tgl</th>
+                                        <th class="p-3 text-xs font-bold text-slate-500 uppercase tracking-wider">Keterangan</th>
+                                        <th class="p-3 text-xs font-bold text-slate-500 uppercase tracking-wider text-right">Nominal</th>
+                                        <th class="p-3"></th>
+                                    </tr>
+                                </thead>
+                                <tbody>${trsPengeluaran}</tbody>
+                                <tfoot class="bg-red-50 border-t border-red-100">
+                                    <tr>
+                                        <td colspan="3" class="p-3 text-right font-bold text-red-800 text-sm">Total Digunakan</td>
+                                        <td colspan="2" class="p-3 font-bold text-red-700 text-right text-base">Rp ${totalPengeluaran.toLocaleString('id-ID')}</td>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                            ${paginationHtml}
+                        </div>
+
+                        <div class="mt-auto pt-5 border-t border-slate-100">
+                            <h4 class="text-sm font-bold text-slate-700 mb-3"><i class="fas fa-minus-circle mr-1.5 text-emerald-500"></i>Catat Pengeluaran Baru</h4>
+                            <div class="flex flex-col sm:flex-row gap-2">
+                                <input type="text" id="pengeluaran-ket" placeholder="Keterangan..." class="flex-1 border border-slate-300 rounded-xl p-2.5 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 font-medium">
+                                <input type="text" inputmode="numeric" id="pengeluaran-nom" placeholder="Nominal (Rp)" class="w-full sm:w-32 border border-slate-300 rounded-xl p-2.5 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 font-medium" oninput="window.formatInputRupiah(this)">
+                                <button onclick="window.tambahPengeluaranKas()" class="bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl px-5 py-2.5 text-sm font-bold shadow-sm transition"><i class="fas fa-plus"></i></button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Daftar Tunggakan -->
+                <div class="bg-white p-6 rounded-2xl shadow-[0_2px_10px_-3px_rgba(6,81,237,0.1)] border border-slate-100 flex flex-col">
+                    <h2 class="text-lg font-bold text-slate-800 mb-5"><i class="fas fa-exclamation-triangle mr-2 text-red-500"></i>Daftar Tunggakan Siswa</h2>
+                    <div class="bg-slate-50 p-5 rounded-xl border border-slate-200 max-h-[420px] overflow-y-auto custom-scrollbar shadow-inner">
+                        ${daftarTunggakanHtml ? `<ul class="list-disc pl-5 text-sm space-y-3">${daftarTunggakanHtml}</ul>` : `<div class="h-full flex flex-col items-center justify-center text-emerald-600 py-10 font-bold"><div class="w-16 h-16 bg-emerald-100 text-emerald-500 rounded-full flex items-center justify-center mb-3"><i class="fas fa-check text-3xl"></i></div><p class="text-lg">Luar Biasa!</p><p class="text-emerald-500 font-medium text-sm">Tidak ada siswa yang menunggak kas.</p></div>`}
+                    </div>
+                </div>
+            </div>
+            `;
+        }
+
+        window.showModernConfirm = (message, iconHtml, onConfirm) => {
+            const existing = document.getElementById('modern-confirm-modal');
+            if (existing) existing.remove();
+            
+            const modal = document.createElement('div');
+            modal.id = 'modern-confirm-modal';
+            modal.className = 'fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/40 backdrop-blur-sm p-4';
+            
+            modal.innerHTML = `
+                <div class="bg-white rounded-3xl shadow-2xl w-full max-w-xs overflow-hidden transform scale-100 transition-all border border-slate-100">
+                    <div class="p-6 text-center">
+                        <div class="w-20 h-20 bg-emerald-50 rounded-full flex items-center justify-center mx-auto mb-4 shadow-inner">
+                            ${iconHtml || '<span class="text-4xl">🤔</span>'}
+                        </div>
+                        <h3 class="text-xl font-black text-slate-800 mb-2">Konfirmasi</h3>
+                        <p class="text-slate-600 text-sm mb-6 leading-relaxed">${message}</p>
+                        <div class="flex gap-3">
+                            <button id="mc-btn-cancel" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-3 rounded-xl transition text-sm">Batal</button>
+                            <button id="mc-btn-confirm" class="flex-1 bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-3 rounded-xl shadow-[0_4px_12px_rgba(16,185,129,0.3)] hover:shadow-[0_6px_16px_rgba(16,185,129,0.4)] transition text-sm transform hover:-translate-y-0.5">Ya, Gas!</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+            
+            document.getElementById('mc-btn-cancel').onclick = () => {
+                modal.classList.add('opacity-0');
+                setTimeout(() => modal.remove(), 200);
+            };
+            document.getElementById('mc-btn-confirm').onclick = () => {
+                modal.classList.add('opacity-0');
+                setTimeout(() => {
+                    modal.remove();
+                    if (onConfirm) onConfirm();
+                }, 200);
+            };
+        };
+
+        window.showModernPrompt = (message, defaultValue, iconHtml, onConfirm) => {
+            const existing = document.getElementById('modern-prompt-modal');
+            if (existing) existing.remove();
+            
+            const modal = document.createElement('div');
+            modal.id = 'modern-prompt-modal';
+            modal.className = 'fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/40 backdrop-blur-sm p-4';
+            
+            modal.innerHTML = `
+                <div class="bg-white rounded-3xl shadow-2xl w-full max-w-sm overflow-hidden transform scale-100 transition-all border border-slate-100">
+                    <div class="p-6">
+                        <div class="flex items-center gap-3 mb-4">
+                            <div class="w-12 h-12 bg-blue-50 text-blue-500 rounded-full flex items-center justify-center shadow-inner shrink-0">
+                                ${iconHtml || '<i class="fas fa-edit text-xl"></i>'}
+                            </div>
+                            <h3 class="text-xl font-bold text-slate-800 leading-tight">Edit Nominal</h3>
+                        </div>
+                        <p class="text-slate-600 text-sm mb-4 leading-relaxed">${message}</p>
+                        
+                        <div class="relative mb-6">
+                            <span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 font-bold">Rp</span>
+                            <input type="text" id="modern-prompt-input" inputmode="numeric" class="w-full border border-slate-300 rounded-xl py-3 pl-10 pr-3 outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition text-lg font-bold text-slate-700 bg-slate-50" value="${defaultValue}">
+                        </div>
+
+                        <div class="flex gap-3">
+                            <button id="mp-btn-cancel" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-3 rounded-xl transition text-sm">Batal</button>
+                            <button id="mp-btn-confirm" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-xl shadow-[0_4px_12px_rgba(37,99,235,0.3)] hover:shadow-[0_6px_16px_rgba(37,99,235,0.4)] transition text-sm transform hover:-translate-y-0.5">Simpan</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+            
+            const inputEl = document.getElementById('modern-prompt-input');
+            
+            inputEl.addEventListener('input', function() {
+                window.formatInputRupiah(this);
+            });
+            window.formatInputRupiah(inputEl);
+            
+            setTimeout(() => inputEl.focus(), 100);
+            
+            document.getElementById('mp-btn-cancel').onclick = () => {
+                modal.classList.add('opacity-0');
+                setTimeout(() => modal.remove(), 200);
+            };
+            
+            document.getElementById('mp-btn-confirm').onclick = () => {
+                const val = inputEl.value;
+                modal.classList.add('opacity-0');
+                setTimeout(() => {
+                    modal.remove();
+                    if (onConfirm) onConfirm(val);
+                }, 200);
+            };
+        };
+
+        window.formatInputRupiah = (el) => {
+            const originalValue = el.value;
+            let val = originalValue.replace(/[^0-9]/g, '');
+            let formatted = '';
+            
+            if (val !== '') {
+                formatted = parseInt(val, 10).toLocaleString('id-ID');
+            }
+            
+            if (originalValue !== formatted) {
+                let cursorPosition = el.selectionStart || 0;
+                let originalLen = originalValue.length;
+                
+                el.value = formatted;
+                
+                let newLen = formatted.length;
+                cursorPosition += (newLen - originalLen);
+                
+                if (el.setSelectionRange) {
+                    try {
+                        el.setSelectionRange(cursorPosition, cursorPosition);
+                    } catch(e) {}
+                }
+            }
+        };
+
+        window.simpanPengaturanKas = () => {
+            const nominalStr = document.getElementById('kas-nominal').value || '0';
+            const nominal = parseInt(nominalStr.replace(/\./g, '')) || 0;
+            const tglMulai = document.getElementById('kas-tgl-mulai').value;
+            const days = ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu', 'Minggu'];
+            
+            if(!db.kas_kelas) db.kas_kelas = {};
+            if(!db.kas_kelas.hari_aktif) db.kas_kelas.hari_aktif = {};
+
+            db.kas_kelas.nominal = nominal;
+            db.kas_kelas.tanggal_mulai = tglMulai;
+            days.forEach(d => {
+                db.kas_kelas.hari_aktif[d] = document.getElementById('chk-hari-' + d).checked;
+            });
+            
+            saveDB();
+            // Retain the current date index across re-renders
+            navigateTo('kas_kelas');
+        };
+
+        window.navigasiHariKas = (dir) => {
+            window.kasCurrentDateIndex += dir;
+            navigateTo('kas_kelas');
+        };
+
+        window.bukaFilterTunggakan = () => {
+            const k = db.kas_kelas;
+            const nom = k.nominal;
+            const tglMulai = new Date(k.tanggal_mulai);
+            const hariIni = new Date();
+            let datesToCheck = [];
+            
+            if (!isNaN(tglMulai.getTime()) && tglMulai <= hariIni) {
+                let currentDate = new Date(tglMulai);
+                while (currentDate <= hariIni) {
+                    const hariNama = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'][currentDate.getDay()];
+                    if (k.hari_aktif[hariNama]) {
+                        datesToCheck.push(currentDate.toISOString().split('T')[0]);
+                    }
+                    currentDate.setDate(currentDate.getDate() + 1);
+                }
+            }
+
+            let tunggakanHtml = '';
+            let countTunggakan = 0;
+
+            db.students.forEach(s => {
+                let totalKurangSiswa = 0;
+                let arrTunggakan = [];
+                
+                datesToCheck.forEach(d => {
+                    let byr = (k.pembayaran[s.id] && k.pembayaran[s.id][d]) !== undefined ? k.pembayaran[s.id][d] : 0;
+                    if(byr < nom) {
+                        let kurang = nom - byr;
+                        totalKurangSiswa += kurang;
+                        let [yyyy, mm, dd] = d.split('-');
+                        arrTunggakan.push({ dateStr: d, formatTgl: `${dd}/${mm}/${yyyy}`, kurang, byr });
+                    }
+                });
+
+                if (totalKurangSiswa > 0) {
+                    countTunggakan++;
+                    let rincianHtml = arrTunggakan.map(t => `
+                        <div class="flex justify-between items-center bg-white p-2 rounded border border-slate-100 mb-1">
+                            <span class="text-xs font-medium text-slate-600"><i class="fas fa-calendar-alt text-slate-400 mr-1"></i>${t.formatTgl}</span>
+                            <div class="flex items-center gap-1.5">
+                                <span class="text-xs font-bold text-slate-400">Rp</span>
+                                <input type="text" inputmode="numeric" value="${t.byr > 0 ? t.byr.toLocaleString('id-ID') : ''}" oninput="window.formatInputRupiah(this)" onchange="window.updateBayarKasModal('${s.id}', '${t.dateStr}', this.value)" class="w-16 text-xs font-bold text-red-600 border border-slate-300 rounded px-1.5 py-1 outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 text-right bg-red-50/30" placeholder="0">
+                                <button onclick="window.lunasiSatuTunggakan('${s.id}', '${t.dateStr}', ${nom})" class="bg-emerald-50 text-emerald-600 hover:bg-emerald-100 border border-emerald-200 px-2 py-1 rounded text-[10px] font-bold transition shadow-sm ml-1 whitespace-nowrap"><i class="fas fa-check mr-1"></i>sdh kas</button>
+                            </div>
+                        </div>
+                    `).join('');
+
+                    let sHtml = `
+                    <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 mb-3 hover:shadow-md transition">
+                        <div class="flex justify-between items-start mb-3">
+                            <div>
+                                <h4 class="font-bold text-slate-800">${s.name}</h4>
+                                <span class="text-[10px] font-bold text-red-600 bg-red-100 px-2 py-0.5 rounded-full inline-block mt-1 border border-red-200">Total: Rp -${totalKurangSiswa.toLocaleString('id-ID')}</span>
+                            </div>
+                            <button onclick="window.lunasiSemuaTunggakanSiswa('${s.id}')" class="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1.5 rounded-lg text-xs font-bold shadow-sm transition"><i class="fas fa-check-circle mr-1"></i>Lunas Semua</button>
+                        </div>
+                        <div class="space-y-1">
+                            ${rincianHtml}
+                        </div>
+                    </div>
+                    `;
+                    tunggakanHtml += sHtml;
+                }
+            });
+
+            if (countTunggakan === 0) {
+                tunggakanHtml = '<div class="text-center py-10"><i class="fas fa-check-circle text-5xl text-emerald-400 mb-4"></i><h3 class="text-lg font-bold text-slate-700">Hebat!</h3><p class="text-slate-500">Tidak ada siswa yang menunggak kas.</p></div>';
+            }
+
+            const modalHtml = `
+            <div id="filter-tunggakan-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm opacity-0 transition-opacity duration-300">
+                <div class="bg-white rounded-2xl shadow-xl w-full max-w-lg overflow-hidden transform scale-95 transition-transform duration-300 flex flex-col max-h-[90vh]">
+                    <div class="p-5 border-b border-slate-100 flex justify-between items-center bg-slate-50 relative">
+                        <h3 class="font-bold text-lg text-slate-800"><i class="fas fa-search-dollar text-indigo-500 mr-2"></i>Filter Pintar</h3>
+                        <button onclick="window.tutupFilterTunggakan()" class="text-slate-400 hover:text-red-500 transition text-2xl w-8 h-8 flex items-center justify-center rounded-full hover:bg-red-50 absolute right-4 top-4">&times;</button>
+                    </div>
+                    <div class="p-5 overflow-y-auto flex-1 bg-slate-100/50">
+                        ${tunggakanHtml}
+                    </div>
+                </div>
+            </div>
+            `;
+            
+            let existing = document.getElementById('filter-tunggakan-modal');
+            if (existing) existing.remove();
+            
+            document.body.insertAdjacentHTML('beforeend', modalHtml);
+            
+            setTimeout(() => {
+                const modal = document.getElementById('filter-tunggakan-modal');
+                if(modal) {
+                    modal.classList.remove('opacity-0');
+                    modal.children[0].classList.remove('scale-95');
+                }
+            }, 10);
+        };
+
+        window.tutupFilterTunggakan = () => {
+            const modal = document.getElementById('filter-tunggakan-modal');
+            if(modal) {
+                modal.classList.add('opacity-0');
+                modal.children[0].classList.add('scale-95');
+                setTimeout(() => modal.remove(), 300);
+            }
+        };
+
+        window.bukaModalDownloadKas = () => {
+            const k = db.kas_kelas;
+            const tglMulai = new Date(k.tanggal_mulai);
+            const hariIni = new Date();
+            let datesToCheck = [];
+            
+            if (!isNaN(tglMulai.getTime()) && tglMulai <= hariIni) {
+                let currentDate = new Date(tglMulai);
+                while (currentDate <= hariIni) {
+                    const hariNama = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'][currentDate.getDay()];
+                    if (k.hari_aktif[hariNama]) {
+                        datesToCheck.push(currentDate.toISOString().split('T')[0]);
+                    }
+                    currentDate.setDate(currentDate.getDate() + 1);
+                }
+            }
+
+            let monthsMap = {};
+            datesToCheck.forEach(d => {
+                let [yyyy, mm] = d.split('-');
+                let monthName = new Date(yyyy, parseInt(mm)-1, 1).toLocaleDateString('id-ID', { month: 'long', year: 'numeric' });
+                monthsMap[`${yyyy}-${mm}`] = monthName;
+            });
+            
+            let monthOptions = Object.keys(monthsMap).sort().reverse().map(key => {
+                return `<option value="${key}">${monthsMap[key]}</option>`;
+            }).join('');
+            
+            if (Object.keys(monthsMap).length === 0) {
+                monthOptions = `<option value="">Belum ada data bulan</option>`;
+            }
+
+            const modalHtml = `
+            <div id="modal-download-kas" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm opacity-0 transition-opacity duration-300">
+                <div class="bg-white rounded-2xl shadow-xl w-full max-w-sm overflow-hidden transform scale-95 transition-transform duration-300">
+                    <div class="p-5 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+                        <h3 class="font-bold text-lg text-slate-800"><i class="fas fa-file-download text-teal-500 mr-2"></i>Download Rekap Kas</h3>
+                        <button onclick="document.getElementById('modal-download-kas').remove()" class="text-slate-400 hover:text-red-500 transition text-2xl w-8 h-8 flex items-center justify-center rounded-full hover:bg-red-50">&times;</button>
+                    </div>
+                    <div class="p-6">
+                        <label class="block text-sm font-bold text-slate-700 mb-2">Pilih Bulan Rekapitulasi</label>
+                        <select id="kas-download-month" class="w-full border border-slate-300 rounded-xl p-3 outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition font-medium mb-6">
+                            ${monthOptions}
+                        </select>
+                        
+                        <div class="flex flex-col gap-3">
+                            <button onclick="window.downloadKasExcel()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 px-4 rounded-xl shadow-sm transition flex items-center justify-center gap-2">
+                                <i class="fas fa-file-excel text-lg"></i> Unduh Excel (XLSX)
+                            </button>
+                            <button onclick="window.cetakKasPDF()" class="bg-rose-600 hover:bg-rose-700 text-white font-bold py-3 px-4 rounded-xl shadow-sm transition flex items-center justify-center gap-2">
+                                <i class="fas fa-file-pdf text-lg"></i> Cetak PDF
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            `;
+            
+            let existing = document.getElementById('modal-download-kas');
+            if (existing) existing.remove();
+            document.body.insertAdjacentHTML('beforeend', modalHtml);
+            
+            setTimeout(() => {
+                const modal = document.getElementById('modal-download-kas');
+                if(modal) {
+                    modal.classList.remove('opacity-0');
+                    modal.children[0].classList.remove('scale-95');
+                }
+            }, 10);
+        };
+
+        window.downloadKasExcel = () => {
+            const select = document.getElementById('kas-download-month');
+            const monthKey = select.value;
+            const monthName = select.options[select.selectedIndex].text;
+            if (!monthKey) return alert('Bulan belum dipilih atau tidak ada data.');
+            
+            const k = db.kas_kelas;
+            const tglMulai = new Date(k.tanggal_mulai);
+            const hariIni = new Date();
+            let datesToCheck = [];
+            
+            if (!isNaN(tglMulai.getTime()) && tglMulai <= hariIni) {
+                let currentDate = new Date(tglMulai);
+                while (currentDate <= hariIni) {
+                    const hariNama = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'][currentDate.getDay()];
+                    if (k.hari_aktif[hariNama]) {
+                        let d = currentDate.toISOString().split('T')[0];
+                        if (d.startsWith(monthKey)) datesToCheck.push(d);
+                    }
+                    currentDate.setDate(currentDate.getDate() + 1);
+                }
+            }
+
+            const wb = XLSX.utils.book_new();
+
+            const parseDateStrToYYYYMMDD = (dStr) => {
+                if (dStr.includes('/')) {
+                    let parts = dStr.split('/');
+                    if (parts.length === 3) return `${parts[2]}-${parts[1].padStart(2, '0')}-${parts[0].padStart(2, '0')}`;
+                }
+                return dStr;
+            };
+
+            // 1. Sheet Pembayaran (Daftar Siswa)
+            let dataPembayaran = [];
+            let totalBulanIniSiswa = 0;
+            db.students.forEach((s, idx) => {
+                let row = { "No": idx + 1, "Nama Siswa": s.name };
+                let totalSiswa = 0;
+                datesToCheck.forEach(d => {
+                    let [yyyy, mm, dd] = d.split('-');
+                    let byr = (k.pembayaran[s.id] && k.pembayaran[s.id][d]) !== undefined ? k.pembayaran[s.id][d] : 0;
+                    row[`${dd}/${mm}`] = byr > 0 ? byr : '';
+                    totalSiswa += byr;
+                });
+                row["Total Dibayar"] = totalSiswa;
+                totalBulanIniSiswa += totalSiswa;
+                dataPembayaran.push(row);
+            });
+            
+            let rowTotal = { "No": "", "Nama Siswa": "TOTAL KESELURUHAN" };
+            datesToCheck.forEach(d => {
+                let [yyyy, mm, dd] = d.split('-');
+                rowTotal[`${dd}/${mm}`] = "";
+            });
+            rowTotal["Total Dibayar"] = totalBulanIniSiswa;
+            dataPembayaran.push(rowTotal);
+
+            const wsPembayaran = XLSX.utils.json_to_sheet(dataPembayaran);
+            let colWidths = [{wch: 5}, {wch: 30}];
+            datesToCheck.forEach(() => colWidths.push({wch: 10}));
+            colWidths.push({wch: 15});
+            wsPembayaran['!cols'] = colWidths;
+            XLSX.utils.book_append_sheet(wb, wsPembayaran, "Pembayaran Kas");
+
+            // 2. Sheet Pemasukan Lain
+            let dataPemasukan = [];
+            let totalPemasukanLain = 0;
+            (k.pemasukan_lain || []).forEach(p => {
+                const normTgl = parseDateStrToYYYYMMDD(p.tgl);
+                if (normTgl.startsWith(monthKey)) {
+                    dataPemasukan.push({ "Tanggal": normTgl, "Keterangan": p.keterangan, "Nominal": p.nominal });
+                    totalPemasukanLain += p.nominal;
+                }
+            });
+            dataPemasukan.push({ "Tanggal": "", "Keterangan": "TOTAL PEMASUKAN LAIN", "Nominal": totalPemasukanLain });
+            const wsPemasukan = XLSX.utils.json_to_sheet(dataPemasukan);
+            wsPemasukan['!cols'] = [{wch: 15}, {wch: 40}, {wch: 15}];
+            XLSX.utils.book_append_sheet(wb, wsPemasukan, "Pemasukan Lain");
+
+            // 3. Sheet Pengeluaran
+            let dataPengeluaran = [];
+            let pengeluaranBulanIni = 0;
+            k.pengeluaran.forEach(p => {
+                const normTgl = parseDateStrToYYYYMMDD(p.tgl);
+                if (normTgl.startsWith(monthKey)) {
+                    dataPengeluaran.push({ "Tanggal": normTgl, "Keterangan": p.keterangan, "Nominal": p.nominal });
+                    pengeluaranBulanIni += p.nominal;
+                }
+            });
+            dataPengeluaran.push({ "Tanggal": "", "Keterangan": "TOTAL PENGELUARAN", "Nominal": pengeluaranBulanIni });
+            const wsPengeluaran = XLSX.utils.json_to_sheet(dataPengeluaran);
+            wsPengeluaran['!cols'] = [{wch: 15}, {wch: 40}, {wch: 15}];
+            XLSX.utils.book_append_sheet(wb, wsPengeluaran, "Pengeluaran");
+
+            // 4. Sheet Ringkasan Saldo
+            let totalBayarAllTime = 0, totalBayarBefore = 0;
+            db.students.forEach(s => {
+                if(k.pembayaran[s.id]) {
+                    Object.keys(k.pembayaran[s.id]).forEach(d => {
+                        let byr = k.pembayaran[s.id][d];
+                        totalBayarAllTime += byr;
+                        if (d < monthKey + "-01") totalBayarBefore += byr;
+                    });
+                }
+            });
+            
+            let totalKeluarAllTime = 0, totalKeluarBefore = 0;
+            k.pengeluaran.forEach(p => {
+                const normTgl = parseDateStrToYYYYMMDD(p.tgl);
+                totalKeluarAllTime += p.nominal;
+                if (normTgl < monthKey + "-01") totalKeluarBefore += p.nominal;
+            });
+            
+            let totalMasukLainAllTime = 0, totalMasukLainBefore = 0;
+            (k.pemasukan_lain || []).forEach(p => {
+                const normTgl = parseDateStrToYYYYMMDD(p.tgl);
+                totalMasukLainAllTime += p.nominal;
+                if (normTgl < monthKey + "-01") totalMasukLainBefore += p.nominal;
+            });
+
+            let saldoAwalBulan = (totalBayarBefore + totalMasukLainBefore) - totalKeluarBefore;
+            let saldoAkhirBulan = saldoAwalBulan + totalBulanIniSiswa + totalPemasukanLain - pengeluaranBulanIni;
+            let saldoRiilSaatIni = (totalBayarAllTime + totalMasukLainAllTime) - totalKeluarAllTime;
+
+            let dataRingkasan = [
+                { "Keterangan": `Saldo Awal Bulan (sebelum ${monthName})`, "Nominal": saldoAwalBulan },
+                { "Keterangan": "Total Pembayaran Kas Bulan Ini", "Nominal": totalBulanIniSiswa },
+                { "Keterangan": "Total Pemasukan Lain Bulan Ini", "Nominal": totalPemasukanLain },
+                { "Keterangan": "Total Pengeluaran Bulan Ini", "Nominal": pengeluaranBulanIni },
+                { "Keterangan": "Saldo Akhir Bulan Ini", "Nominal": saldoAkhirBulan },
+                { "Keterangan": "Saldo Kas Saat Ini (Keseluruhan)", "Nominal": saldoRiilSaatIni }
+            ];
+            const wsRingkasan = XLSX.utils.json_to_sheet(dataRingkasan);
+            wsRingkasan['!cols'] = [{wch: 40}, {wch: 20}];
+            XLSX.utils.book_append_sheet(wb, wsRingkasan, "Ringkasan Saldo");
+
+            XLSX.writeFile(wb, `Rekap_Kas_Kelas_${monthKey}.xlsx`);
+            document.getElementById('modal-download-kas').remove();
+        };
+
+        window.cetakKasPDF = () => {
+            const select = document.getElementById('kas-download-month');
+            const monthKey = select.value;
+            const monthName = select.options[select.selectedIndex].text;
+            if (!monthKey) return alert('Bulan belum dipilih atau tidak ada data.');
+            
+            const k = db.kas_kelas;
+            const tglMulai = new Date(k.tanggal_mulai);
+            const hariIni = new Date();
+            let datesToCheck = [];
+            
+            if (!isNaN(tglMulai.getTime()) && tglMulai <= hariIni) {
+                let currentDate = new Date(tglMulai);
+                while (currentDate <= hariIni) {
+                    const hariNama = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'][currentDate.getDay()];
+                    if (k.hari_aktif[hariNama]) {
+                        let d = currentDate.toISOString().split('T')[0];
+                        if (d.startsWith(monthKey)) datesToCheck.push(d);
+                    }
+                    currentDate.setDate(currentDate.getDate() + 1);
+                }
+            }
+
+            let ths = datesToCheck.map(d => {
+                let [yyyy, mm, dd] = d.split('-');
+                return `<th style="border:1px solid #000; padding:4px;">${dd}/${mm}</th>`;
+            }).join('');
+            
+            let totalBulanIniSiswa = 0;
+            let trsSiswa = db.students.map((s, idx) => {
+                let totalSiswa = 0;
+                let tds = datesToCheck.map(d => {
+                    let byr = (k.pembayaran[s.id] && k.pembayaran[s.id][d]) !== undefined ? k.pembayaran[s.id][d] : 0;
+                    totalSiswa += byr;
+                    return `<td style="border:1px solid #000; padding:4px; text-align:right;">${byr > 0 ? byr.toLocaleString('id-ID') : '-'}</td>`;
+                }).join('');
+                totalBulanIniSiswa += totalSiswa;
+                
+                return `
+                <tr>
+                    <td style="border:1px solid #000; padding:4px; text-align:center;">${idx + 1}</td>
+                    <td style="border:1px solid #000; padding:4px;">${s.name}</td>
+                    ${tds}
+                    <td style="border:1px solid #000; padding:4px; text-align:right; font-weight:bold;">Rp ${totalSiswa.toLocaleString('id-ID')}</td>
+                </tr>
+                `;
+            }).join('');
+
+            let trsPengeluaran = '';
+            let pengeluaranBulanIni = 0;
+            k.pengeluaran.forEach(p => {
+                if (p.tgl.startsWith(monthKey)) {
+                    pengeluaranBulanIni += p.nominal;
+                    let [yyyy, mm, dd] = p.tgl.split('-');
+                    trsPengeluaran += `
+                    <tr>
+                        <td style="border:1px solid #000; padding:4px; text-align:center;">${dd}/${mm}/${yyyy}</td>
+                        <td style="border:1px solid #000; padding:4px;">${p.keterangan}</td>
+                        <td style="border:1px solid #000; padding:4px; text-align:right;">Rp ${p.nominal.toLocaleString('id-ID')}</td>
+                    </tr>`;
+                }
+            });
+            if (!trsPengeluaran) trsPengeluaran = '<tr><td colspan="3" style="border:1px solid #000; padding:4px; text-align:center;">Tidak ada pengeluaran</td></tr>';
+
+            let totalBayarAllTime = 0, totalBayarBefore = 0;
+            db.students.forEach(s => {
+                if(k.pembayaran[s.id]) {
+                    Object.keys(k.pembayaran[s.id]).forEach(d => {
+                        let byr = k.pembayaran[s.id][d];
+                        totalBayarAllTime += byr;
+                        if (d < monthKey + "-01") totalBayarBefore += byr;
+                    });
+                }
+            });
+            let totalKeluarAllTime = 0, totalKeluarBefore = 0;
+            k.pengeluaran.forEach(p => {
+                totalKeluarAllTime += p.nominal;
+                if (p.tgl < monthKey + "-01") totalKeluarBefore += p.nominal;
+            });
+            
+            let saldoAwalBulan = totalBayarBefore - totalKeluarBefore;
+            let saldoAkhirBulan = saldoAwalBulan + totalBulanIniSiswa - pengeluaranBulanIni;
+            
+            const htmlContent = `
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <title>Rekap Kas Kelas - ${monthName}</title>
+                <style>
+                    body { font-family: 'Times New Roman', Times, serif; color: #000; padding: 20px; font-size: 12px; }
+                    .header { text-align: center; border-bottom: 3px solid #000; padding-bottom: 10px; margin-bottom: 20px; }
+                    .header h1 { font-size: 18px; margin: 0 0 5px 0; text-transform: uppercase; }
+                    .header h2 { font-size: 16px; margin: 0 0 5px 0; }
+                    .header p { margin: 0; font-size: 14px; }
+                    h3 { font-size: 14px; margin-top: 20px; margin-bottom: 10px; border-bottom: 1px solid #ccc; padding-bottom: 5px; }
+                    table { width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 11px; }
+                    th { background-color: #f0f0f0; }
+                    .summary-box { width: 50%; float: left; }
+                    .ttd-box { width: 40%; float: right; text-align: center; margin-top: 30px; font-size: 12px; }
+                    .clear { clear: both; }
+                    @media print {
+                        @page { margin: 1cm; size: landscape; }
+                        body { padding: 0; }
+                    }
+                </style>
+            </head>
+            <body>
+                <div class="header">
+                    <h1>LAPORAN KEUANGAN KAS KELAS</h1>
+                    <h2>${db.pengaturan.sekolah || 'Nama Sekolah'}</h2>
+                    <p>Kelas: ${db.pengaturan.kelas || '-'} | Wali Kelas: ${db.pengaturan.nama || '-'} | Periode: ${monthName}</p>
+                </div>
+                
+                <h3>A. Rekapitulasi Pembayaran Siswa</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th style="border:1px solid #000; padding:4px; width:30px;">No</th>
+                            <th style="border:1px solid #000; padding:4px;">Nama Siswa</th>
+                            ${ths}
+                            <th style="border:1px solid #000; padding:4px; width:80px;">Total (Rp)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${trsSiswa}
+                        <tr>
+                            <td colspan="${2 + datesToCheck.length}" style="border:1px solid #000; padding:4px; text-align:right; font-weight:bold;">TOTAL PEMASUKAN BULAN INI</td>
+                            <td style="border:1px solid #000; padding:4px; text-align:right; font-weight:bold;">Rp ${totalBulanIniSiswa.toLocaleString('id-ID')}</td>
+                        </tr>
+                    </tbody>
+                </table>
+                
+                <div style="page-break-inside: avoid;">
+                    <h3>B. Rekapitulasi Pengeluaran</h3>
+                    <table style="width: 70%;">
+                        <thead>
+                            <tr>
+                                <th style="border:1px solid #000; padding:4px; width:80px;">Tanggal</th>
+                                <th style="border:1px solid #000; padding:4px;">Keterangan</th>
+                                <th style="border:1px solid #000; padding:4px; width:100px;">Nominal (Rp)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${trsPengeluaran}
+                            <tr>
+                                <td colspan="2" style="border:1px solid #000; padding:4px; text-align:right; font-weight:bold;">TOTAL PENGELUARAN BULAN INI</td>
+                                <td style="border:1px solid #000; padding:4px; text-align:right; font-weight:bold;">Rp ${pengeluaranBulanIni.toLocaleString('id-ID')}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <div style="page-break-inside: avoid;">
+                    <div class="summary-box">
+                        <h3>C. Ringkasan Saldo</h3>
+                        <table style="width: 90%;">
+                            <tr>
+                                <td style="padding: 4px;">Saldo Awal (Sebelum ${monthName})</td>
+                                <td style="padding: 4px; text-align:right;">Rp ${saldoAwalBulan.toLocaleString('id-ID')}</td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 4px;">Total Pemasukan Bulan Ini</td>
+                                <td style="padding: 4px; text-align:right; color: green;">Rp ${totalBulanIniSiswa.toLocaleString('id-ID')}</td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 4px; border-bottom: 1px solid #000;">Total Pengeluaran Bulan Ini</td>
+                                <td style="padding: 4px; text-align:right; border-bottom: 1px solid #000; color: red;">Rp ${pengeluaranBulanIni.toLocaleString('id-ID')}</td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 4px; font-weight:bold;">Saldo Akhir ${monthName}</td>
+                                <td style="padding: 4px; text-align:right; font-weight:bold;">Rp ${saldoAkhirBulan.toLocaleString('id-ID')}</td>
+                            </tr>
+                        </table>
+                    </div>
+                    
+                    <div class="ttd-box">
+                        <p>..................................., ${new Date().toLocaleDateString('id-ID', {day:'numeric', month:'long', year:'numeric'})}</p>
+                        <p>Wali Kelas,</p>
+                        <br><br><br><br>
+                        <p style="font-weight:bold; text-decoration:underline;">${db.pengaturan.nama || '(...................................)'}</p>
+                        <p>NIP. ${db.pengaturan.nip || '...................................'}</p>
+                    </div>
+                    <div class="clear"></div>
+                </div>
+                
+                <script>
+                    window.onload = function() {
+                        window.print();
+                    }
+                </script>
+            </body>
+            </html>
+            `;
+            
+            const printWindow = window.open('', '_blank');
+            printWindow.document.write(htmlContent);
+            printWindow.document.close();
+            
+            document.getElementById('modal-download-kas').remove();
+        };
+
+        window.updateBayarKasModal = (studentId, dateStr, valueStr) => {
+            const valueClean = String(valueStr).replace(/\./g, '');
+            let nominal = parseInt(valueClean) || 0;
+            if(!db.kas_kelas.pembayaran[studentId]) db.kas_kelas.pembayaran[studentId] = {};
+            if (nominal === 0) {
+                delete db.kas_kelas.pembayaran[studentId][dateStr];
+            } else {
+                db.kas_kelas.pembayaran[studentId][dateStr] = nominal;
+            }
+            saveDB();
+            window.bukaFilterTunggakan(); 
+            navigateTo('kas_kelas'); 
+        };
+
+        window.lunasiSatuTunggakan = (studentId, dateStr, nominal) => {
+            if(!db.kas_kelas.pembayaran[studentId]) db.kas_kelas.pembayaran[studentId] = {};
+            db.kas_kelas.pembayaran[studentId][dateStr] = nominal;
+            saveDB();
+            window.bukaFilterTunggakan(); 
+            navigateTo('kas_kelas'); 
+        };
+
+        window.lunasiSemuaTunggakanSiswa = (studentId) => {
+            const k = db.kas_kelas;
+            const nom = k.nominal;
+            const tglMulai = new Date(k.tanggal_mulai);
+            const hariIni = new Date();
+            
+            if(!k.pembayaran[studentId]) k.pembayaran[studentId] = {};
+
+            if (!isNaN(tglMulai.getTime()) && tglMulai <= hariIni) {
+                let currentDate = new Date(tglMulai);
+                while (currentDate <= hariIni) {
+                    const hariNama = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'][currentDate.getDay()];
+                    if (k.hari_aktif[hariNama]) {
+                        let d = currentDate.toISOString().split('T')[0];
+                        let byr = k.pembayaran[studentId][d] || 0;
+                        if(byr < nom) {
+                            k.pembayaran[studentId][d] = nom;
+                        }
+                    }
+                    currentDate.setDate(currentDate.getDate() + 1);
+                }
+            }
+            saveDB();
+            window.bukaFilterTunggakan(); 
+            navigateTo('kas_kelas'); 
+        };
+
+        window.bayarSemuaKas = (dateStr) => {
+            window.showModernConfirm(
+                "Gas auto-lunasin uang kas sekelas buat tanggal ini?",
+                '<span class="text-5xl">💸</span>',
+                () => {
+                    const nom = db.kas_kelas.nominal;
+                    db.students.forEach(s => {
+                        if(!db.kas_kelas.pembayaran[s.id]) db.kas_kelas.pembayaran[s.id] = {};
+                        db.kas_kelas.pembayaran[s.id][dateStr] = nom;
+                    });
+                    saveDB();
+                    navigateTo('kas_kelas');
+                }
+            );
+        };
+
+        window.updateBayarKas = (studentId, dateStr, valueStr) => {
+            const valueClean = String(valueStr).replace(/\./g, '');
+            let nominal = parseInt(valueClean) || 0;
+            
+            if(!db.kas_kelas.pembayaran[studentId]) db.kas_kelas.pembayaran[studentId] = {};
+            
+            if (nominal === 0) {
+                delete db.kas_kelas.pembayaran[studentId][dateStr];
+            } else {
+                db.kas_kelas.pembayaran[studentId][dateStr] = nominal;
+            }
+            
+            saveDB();
+            navigateTo('kas_kelas'); 
+        };
+
+        window.tambahPengeluaranKas = () => {
+            const ket = document.getElementById('pengeluaran-ket').value.trim();
+            const nomStr = document.getElementById('pengeluaran-nom').value || '0';
+            const nom = parseInt(nomStr.replace(/\./g, ''));
+            
+            if(!ket || isNaN(nom) || nom <= 0) {
+                alert("Lengkapi keterangan dan nominal pengeluaran yang valid!");
+                return;
+            }
+            
+            db.kas_kelas.pengeluaran.push({
+                id: Date.now().toString(),
+                tgl: new Date().toLocaleDateString('en-CA'),
+                keterangan: ket,
+                nominal: nom
+            });
+            
+            saveDB();
+            navigateTo('kas_kelas');
+        };
+
+        window.hapusPengeluaranKas = (id) => {
+            window.showModernConfirm(
+                "Yakin mau menghapus riwayat pengeluaran kas ini?",
+                '<span class="text-5xl">🗑️</span>',
+                () => {
+                    db.kas_kelas.pengeluaran = db.kas_kelas.pengeluaran.filter(p => p.id !== id);
+                    saveDB();
+                    navigateTo('kas_kelas');
+                }
+            );
+        };
+
+        window.editPengeluaranKas = (id) => {
+            const index = db.kas_kelas.pengeluaran.findIndex(p => p.id === id);
+            if (index !== -1) {
+                const item = db.kas_kelas.pengeluaran[index];
+                window.showModernPrompt(
+                    `Masukkan nominal baru untuk pengeluaran <b>"${item.keterangan}"</b>:`, 
+                    item.nominal.toString(),
+                    '<i class="fas fa-shopping-cart text-xl"></i>',
+                    (newNomStr) => {
+                        if (newNomStr !== null && newNomStr.trim() !== '') {
+                            const newNom = parseInt(newNomStr.replace(/\./g, ''));
+                            if (!isNaN(newNom) && newNom > 0) {
+                                db.kas_kelas.pengeluaran[index].nominal = newNom;
+                                saveDB();
+                                navigateTo('kas_kelas');
+                            } else {
+                                alert("Nominal tidak valid!");
+                            }
+                        }
+                    }
+                );
+            }
+        };
+
+        window.setPengeluaranPerPage = (val) => {
+            window.pengeluaranPerPage = val;
+            window.pengeluaranPage = 1;
+            navigateTo('kas_kelas');
+        };
+
+        window.navigasiPengeluaranPage = (dir) => {
+            window.pengeluaranPage += dir;
+            navigateTo('kas_kelas');
+        };
+
+        window.tambahPemasukanKas = () => {
+            const ket = document.getElementById('pemasukan-ket').value.trim();
+            const nomStr = document.getElementById('pemasukan-nom').value || '0';
+            const nom = parseInt(nomStr.replace(/\./g, ''));
+            
+            if(!ket || isNaN(nom) || nom <= 0) {
+                alert("Lengkapi keterangan dan nominal pemasukan yang valid!");
+                return;
+            }
+            
+            db.kas_kelas.pemasukan_lain.push({
+                id: Date.now().toString(),
+                tgl: new Date().toLocaleDateString('en-CA'),
+                keterangan: ket,
+                nominal: nom
+            });
+            
+            saveDB();
+            navigateTo('kas_kelas');
+        };
+
+        window.hapusPemasukanKas = (id) => {
+            window.showModernConfirm(
+                "Yakin mau menghapus riwayat pemasukan ini?",
+                '<span class="text-5xl">🗑️</span>',
+                () => {
+                    db.kas_kelas.pemasukan_lain = db.kas_kelas.pemasukan_lain.filter(p => p.id !== id);
+                    saveDB();
+                    navigateTo('kas_kelas');
+                }
+            );
+        };
+
+        window.editPemasukanKas = (id) => {
+            const index = db.kas_kelas.pemasukan_lain.findIndex(p => p.id === id);
+            if (index !== -1) {
+                const item = db.kas_kelas.pemasukan_lain[index];
+                window.showModernPrompt(
+                    `Masukkan nominal baru untuk pemasukan <b>"${item.keterangan}"</b>:`, 
+                    item.nominal.toString(),
+                    '<i class="fas fa-hand-holding-usd text-xl"></i>',
+                    (newNomStr) => {
+                        if (newNomStr !== null && newNomStr.trim() !== '') {
+                            const newNom = parseInt(newNomStr.replace(/\./g, ''));
+                            if (!isNaN(newNom) && newNom > 0) {
+                                db.kas_kelas.pemasukan_lain[index].nominal = newNom;
+                                saveDB();
+                                navigateTo('kas_kelas');
+                            } else {
+                                alert("Nominal tidak valid!");
+                            }
+                        }
+                    }
+                );
+            }
+        };
+
+        window.setPemasukanPerPage = (val) => {
+            window.pemasukanPerPage = val;
+            window.pemasukanPage = 1;
+            navigateTo('kas_kelas');
+        };
+
+        window.navigasiPemasukanPage = (dir) => {
+            window.pemasukanPage += dir;
+            navigateTo('kas_kelas');
+        };
+
+        // --- 7. Generator Soal AI ---

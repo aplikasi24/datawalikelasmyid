@@ -1,0 +1,2620 @@
+        function renderGeneratorSoal() {
+            return `
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Kolom Kiri: Form Generator (Lebar 2 Kolom) -->
+                <div class="lg:col-span-2 bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                        <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Kurikulum</label>
+                        <select id="gen-kurikulum" class="w-full bg-slate-50 border border-slate-200 text-slate-800 rounded-xl px-4 py-3 focus:ring-2 focus:ring-blue-500 outline-none">
+                            <option value="Kurikulum Merdeka">Kurikulum Merdeka</option>
+                            <option value="Kurikulum Internasional">Kurikulum Internasional</option>
+                            <option value="Kurikulum Custom">Kurikulum Custom</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Mata Pelajaran</label>
+                        <input type="text" id="gen-mapel" list="list-mapel" placeholder="Pilih atau ketik manual..." class="w-full bg-slate-50 border border-slate-200 text-slate-800 rounded-xl px-4 py-3 focus:ring-2 focus:ring-blue-500 outline-none">
+                        <datalist id="list-mapel">
+                            <option value="Pendidikan Agama dan Budi Pekerti">
+                            <option value="Pendidikan Pancasila">
+                            <option value="Bahasa Indonesia">
+                            <option value="Matematika">
+                            <option value="Ilmu Pengetahuan Alam dan Sosial (IPAS)">
+                            <option value="Seni dan Budaya">
+                            <option value="Pendidikan Jasmani, Olahraga, dan Kesehatan (PJOK)">
+                            <option value="Bahasa Inggris">
+                        </datalist>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Kelas</label>
+                        <select id="gen-kelas" class="w-full bg-slate-50 border border-slate-200 text-slate-800 rounded-xl px-4 py-3 focus:ring-2 focus:ring-blue-500 outline-none">
+                            ${[1,2,3,4,5,6,7,8,9,10,11,12].map(k => `<option value="Kelas ${k}">Kelas ${k}</option>`).join('')}
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Bab / Materi Pokok</label>
+                        <input type="text" id="gen-bab" class="w-full bg-slate-50 border border-slate-200 text-slate-800 rounded-xl px-4 py-3 focus:ring-2 focus:ring-blue-500 outline-none" placeholder="Contoh: Pecahan Campuran">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Jumlah Soal (Max 50) <span id="gen-quota-info" class="text-xs text-blue-600 font-normal ml-2"></span></label>
+                        <input type="number" id="gen-jumlah" min="1" max="50" value="5" class="w-full bg-slate-50 border border-slate-200 text-slate-800 rounded-xl px-4 py-3 focus:ring-2 focus:ring-blue-500 outline-none">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Tingkat Kesulitan</label>
+                        <select id="gen-kesulitan" class="w-full bg-slate-50 border border-slate-200 text-slate-800 rounded-xl px-4 py-3 focus:ring-2 focus:ring-blue-500 outline-none">
+                            <option value="Sangat Mudah">Sangat Mudah</option>
+                            <option value="Mudah">Mudah</option>
+                            <option value="Sedang" selected>Sedang</option>
+                            <option value="Sulit">Sulit</option>
+                            <option value="Sangat Sulit">Sangat Sulit</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Level Kognitif (Taksonomi Bloom)</label>
+                        <select id="gen-kognitif" class="w-full bg-slate-50 border border-slate-200 text-slate-800 rounded-xl px-4 py-3 focus:ring-2 focus:ring-blue-500 outline-none">
+                            <option value="Campuran" selected>Campuran (Semua Level)</option>
+                            <option value="C1 Mengingat">C1 Mengingat</option>
+                            <option value="C2 Memahami">C2 Memahami</option>
+                            <option value="C3 Menerapkan">C3 Menerapkan</option>
+                            <option value="C4 Menganalisis">C4 Menganalisis</option>
+                            <option value="C5 Mengevaluasi">C5 Mengevaluasi</option>
+                            <option value="C6 Mencipta">C6 Mencipta</option>
+                        </select>
+                    </div>
+                    <div class="md:col-span-2">
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Tipe Soal</label>
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                            <div class="flex flex-col gap-2 bg-slate-50 border border-slate-200 px-4 py-3 rounded-xl hover:bg-blue-50 transition">
+                                <label class="flex items-center gap-2 cursor-pointer font-medium">
+                                    <input type="checkbox" name="gen-tipe" value="Pilihan Ganda" checked class="w-5 h-5 text-blue-600 rounded border-gray-300" onchange="document.getElementById('pg-options').classList.toggle('hidden', !this.checked)"> Pilihan Ganda
+                                </label>
+                                <div id="pg-options" class="flex flex-col gap-2 text-sm mt-1">
+                                    <div class="flex justify-between items-center"><span class="text-gray-600">Jml Opsi:</span>
+                                    <select id="gen-pg-opsi" class="border border-slate-300 rounded px-2 py-1 outline-none text-gray-700 bg-white">
+                                        <option value="3">3 (A-C)</option>
+                                        <option value="4" selected>4 (A-D)</option>
+                                        <option value="5">5 (A-E)</option>
+                                    </select></div>
+                                </div>
+                            </div>
+                            
+                            <div class="flex flex-col gap-2 bg-slate-50 border border-slate-200 px-4 py-3 rounded-xl hover:bg-blue-50 transition">
+                                <label class="flex items-center gap-2 cursor-pointer font-medium">
+                                    <input type="checkbox" name="gen-tipe" value="Pilihan Ganda Kompleks" class="w-5 h-5 text-blue-600 rounded border-gray-300" onchange="document.getElementById('pgk-options').classList.toggle('hidden', !this.checked)"> Ganda Kompleks
+                                </label>
+                                <div id="pgk-options" class="hidden flex-col gap-2 text-sm mt-1">
+                                    <div class="flex items-center justify-between"><span class="text-gray-600">Total Opsi:</span><input type="number" id="gen-pgk-total" value="5" min="3" max="8" class="border border-slate-300 rounded px-2 py-1 w-16 outline-none text-center bg-white"></div>
+                                    <div class="flex items-center justify-between"><span class="text-gray-600">Jwb Benar:</span><input type="number" id="gen-pgk-benar" value="2" min="1" max="7" class="border border-slate-300 rounded px-2 py-1 w-16 outline-none text-center bg-white"></div>
+                                </div>
+                            </div>
+
+                            <div class="flex flex-col gap-2 bg-slate-50 border border-slate-200 px-4 py-3 rounded-xl hover:bg-blue-50 transition">
+                                <label class="flex items-center gap-2 cursor-pointer font-medium">
+                                    <input type="checkbox" name="gen-tipe" value="Menjodohkan" class="w-5 h-5 text-blue-600 rounded border-gray-300" onchange="document.getElementById('jodoh-options').classList.toggle('hidden', !this.checked)"> Menjodohkan
+                                </label>
+                                <div id="jodoh-options" class="hidden flex items-center justify-between text-sm mt-1">
+                                    <span class="text-gray-600">Jml Pasang:</span>
+                                    <input type="number" id="gen-jodoh-pasang" value="4" min="2" max="10" class="border border-slate-300 rounded px-2 py-1 w-16 outline-none text-center bg-white">
+                                </div>
+                            </div>
+
+                            <label class="flex items-center gap-2 bg-slate-50 border border-slate-200 px-4 py-3 rounded-xl cursor-pointer hover:bg-blue-50 transition font-medium">
+                                <input type="checkbox" name="gen-tipe" value="Isian Singkat" class="w-5 h-5 text-blue-600 rounded border-gray-300"> Isian Singkat
+                            </label>
+                            <label class="flex items-center gap-2 bg-slate-50 border border-slate-200 px-4 py-3 rounded-xl cursor-pointer hover:bg-blue-50 transition font-medium">
+                                <input type="checkbox" name="gen-tipe" value="Uraian" class="w-5 h-5 text-blue-600 rounded border-gray-300"> Uraian
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                <div class="flex flex-col sm:flex-row justify-end items-center gap-4 mt-2">
+                    <div class="w-full sm:w-auto flex items-center gap-3">
+                        <label class="text-sm font-semibold text-gray-700 whitespace-nowrap">Model API:</label>
+                        <select id="gen-api" class="bg-white border border-slate-300 text-slate-800 rounded-xl px-4 py-3 focus:ring-2 focus:ring-blue-500 outline-none shadow-sm cursor-pointer font-medium">
+                            <option value="groq" selected>Groq (Llama 3.3)</option>
+                            <option value="gemini">Google Gemini</option>
+                            <option value="mistral">Mistral AI (Large)</option>
+                        </select>
+                    </div>
+                    <button onclick="window.submitGeneratorSoal()" id="btn-generate-soal" class="w-full sm:w-auto bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold py-3 px-8 rounded-xl shadow-lg hover:shadow-xl transition transform hover:-translate-y-1 flex items-center justify-center gap-2">
+                        <i class="fas fa-magic"></i> Generate Soal Sekarang
+                    </button>
+                </div>
+            </div>
+
+            <!-- Kolom Kanan: Generate Prompt Manual -->
+            <div class="bg-gradient-to-br from-indigo-50 to-blue-50 rounded-2xl shadow-sm border border-indigo-100 p-6 flex flex-col h-full">
+                <h3 class="text-lg font-bold text-indigo-900 mb-3 flex items-center gap-2"><i class="fas fa-robot"></i> Generate AI Manual</h3>
+                <p class="text-sm text-indigo-700 mb-4">Gunakan prompt ini untuk membuat soal secara manual di ChatGPT atau Gemini menggunakan akun pribadi Anda.</p>
+                <div class="mb-3">
+                    <label class="block text-xs font-bold text-indigo-900 mb-1">Format Unduhan (Opsional)</label>
+                    <select id="gen-manual-format" class="w-full border border-indigo-200 rounded-xl px-3 py-2 text-sm bg-white focus:outline-none focus:border-indigo-400">
+                        <option value="">-- Teks Biasa (Tanpa File) --</option>
+                        <option value="Word (.docx)">Minta AI membuatkan file Word</option>
+                        <option value="PDF (.pdf)">Minta AI membuatkan file PDF</option>
+                    </select>
+                </div>
+                <button onclick="window.generateManualPromptSoal()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2 px-4 rounded-xl shadow transition mb-3 flex items-center justify-center gap-2">
+                    <i class="fas fa-bolt"></i> Buat & Copy Prompt
+                </button>
+                <textarea id="manual-prompt-soal" readonly class="w-full flex-grow bg-white border border-indigo-200 rounded-xl p-3 text-sm text-gray-700 focus:outline-none focus:border-indigo-400 resize-none min-h-[150px]" placeholder="Prompt akan muncul di sini..."></textarea>
+                <div class="grid grid-cols-2 gap-3 mt-4">
+                    <a href="https://chatgpt.com" target="_blank" class="bg-[#10a37f] hover:bg-[#0e906f] text-white text-center font-medium py-2 rounded-xl text-sm shadow transition flex items-center justify-center gap-1">
+                        <i class="fas fa-external-link-alt"></i> ChatGPT
+                    </a>
+                    <a href="https://gemini.google.com" target="_blank" class="bg-[#1a73e8] hover:bg-[#155db1] text-white text-center font-medium py-2 rounded-xl text-sm shadow transition flex items-center justify-center gap-1">
+                        <i class="fas fa-external-link-alt"></i> Gemini
+                    </a>
+                </div>
+            </div>
+            </div>
+
+            <!-- Hasil Generate -->
+            <div id="gen-result-container" class="hidden mt-8">
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-3">
+                    <h2 class="text-xl font-bold text-slate-800"><i class="fas fa-check-circle text-green-500 mr-2"></i>Hasil Generate Soal</h2>
+                    <div class="flex gap-2">
+                        <button onclick="window.downloadPdfSoal()" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg shadow font-medium flex items-center gap-2 text-sm transition">
+                            <i class="fas fa-file-pdf"></i> Unduh PDF
+                        </button>
+                        <button onclick="window.downloadWordSoal()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg shadow font-medium flex items-center gap-2 text-sm transition">
+                            <i class="fas fa-file-word"></i> Unduh Word
+                        </button>
+                    </div>
+                </div>
+                <div id="gen-result-content" class="bg-white border border-gray-200 p-8 rounded-2xl shadow-sm prose max-w-none text-slate-800">
+                    <!-- Hasil akan dimasukkan ke sini -->
+                </div>
+            </div>
+            `;
+        }
+
+        window.generateManualPromptSoal = function() {
+            const kurikulum = document.getElementById('gen-kurikulum').value;
+            const mapel = document.getElementById('gen-mapel').value;
+            const kelas = document.getElementById('gen-kelas').value;
+            const bab = document.getElementById('gen-bab').value;
+            const jumlah = document.getElementById('gen-jumlah').value;
+            const kesulitan = document.getElementById('gen-kesulitan').value;
+            const kognitif = document.getElementById('gen-kognitif').value;
+            const tipes = Array.from(document.querySelectorAll('input[name="gen-tipe"]:checked')).map(cb => cb.value).join(', ');
+            const formatOutput = document.getElementById('gen-manual-format') ? document.getElementById('gen-manual-format').value : "";
+
+            if(!bab) return Swal.fire('Perhatian', 'Harap isi Bab / Materi pokok terlebih dahulu.', 'warning');
+            if(!tipes) return Swal.fire('Perhatian', 'Pilih minimal satu tipe soal.', 'warning');
+
+            let promptText = `Tolong buatkan Soal Evaluasi/Ujian yang SANGAT LENGKAP dan PROFESIONAL dengan kriteria sebagai berikut:\n\n` +
+                               `- Kurikulum: ${kurikulum}\n` +
+                               `- Mata Pelajaran: ${mapel}\n` +
+                               `- Kelas: Kelas ${kelas}\n` +
+                               `- Bab / Materi Pokok: ${bab}\n` +
+                               `- Tingkat Kesulitan: ${kesulitan}\n` +
+                               `- Level Kognitif (Taksonomi Bloom): ${kognitif}\n` +
+                               `- Tipe Soal: ${tipes}\n` +
+                               `- Jumlah Soal: ${jumlah} Soal\n\n` +
+                               `Instruksi Khusus Pembuatan Soal:\n` +
+                               `1. Buatlah soal-soal yang kreatif, menguji pemahaman konsep, dan relevan dengan kehidupan sehari-hari (HOTS jika memungkinkan).\n` +
+                               `2. Pastikan bahasa yang digunakan baku, jelas, dan mudah dipahami oleh siswa kelas ${kelas}.\n` +
+                               `3. Jika ada soal Pilihan Ganda, sediakan opsi jawaban (A, B, C, D) dengan pengecoh (distraktor) yang logis dan tidak terlalu mencolok.\n` +
+                               `4. Format tampilan soal harus rapi dan terstruktur.\n` +
+                               `5. Di bagian paling bawah (setelah semua soal selesai), WAJIB sediakan "KUNCI JAWABAN DAN PEMBAHASAN" secara detail untuk setiap soal, agar siswa mengerti mengapa jawaban tersebut benar.`;
+                               
+            if (formatOutput) {
+                promptText += `\n\nPENTING: Di akhir respons, tolong sediakan soal ini dalam bentuk file ${formatOutput} yang bisa saya unduh langsung.`;
+            }
+
+            const textarea = document.getElementById('manual-prompt-soal');
+            textarea.value = promptText;
+            
+            // Copy to clipboard
+            textarea.select();
+            document.execCommand('copy');
+            
+            Swal.fire({
+                icon: 'success',
+                title: 'Disalin!',
+                text: 'Prompt berhasil disalin ke clipboard. Silakan buka ChatGPT atau Gemini lalu paste prompt tersebut.',
+                timer: 3000,
+                showConfirmButton: false
+            });
+        };
+
+        window.submitGeneratorSoal = function() {
+            if(!window.currentUser || !window.currentUser.email) return Swal.fire('Error', 'Sesi login tidak valid.', 'error');
+            
+            const kurikulum = document.getElementById('gen-kurikulum').value;
+            const mapel = document.getElementById('gen-mapel').value;
+            const kelas = document.getElementById('gen-kelas').value;
+            const bab = document.getElementById('gen-bab').value;
+            let jumlah = parseInt(document.getElementById('gen-jumlah').value);
+            const kesulitan = document.getElementById('gen-kesulitan').value;
+            const kognitif = document.getElementById('gen-kognitif').value;
+            
+            if(!bab) return Swal.fire('Perhatian', 'Harap isi Bab / Materi pokok.', 'warning');
+            if(jumlah > 50) {
+                Swal.fire('Info', 'Jumlah soal dibatasi maksimal 50.', 'info');
+                document.getElementById('gen-jumlah').value = 50;
+                jumlah = 50;
+            }
+            if(jumlah < 1) jumlah = 1;
+
+            const tipes = Array.from(document.querySelectorAll('input[name="gen-tipe"]:checked')).map(cb => cb.value);
+            if(tipes.length === 0) return Swal.fire('Perhatian', 'Pilih minimal satu tipe soal.', 'warning');
+
+            const pgOpsi = document.getElementById('gen-pg-opsi') ? document.getElementById('gen-pg-opsi').value : "4";
+            const pgkTotal = document.getElementById('gen-pgk-total') ? document.getElementById('gen-pgk-total').value : "5";
+            const pgkBenar = document.getElementById('gen-pgk-benar') ? document.getElementById('gen-pgk-benar').value : "2";
+            const jodohPasang = document.getElementById('gen-jodoh-pasang') ? document.getElementById('gen-jodoh-pasang').value : "4";
+
+            const apiProvider = document.getElementById('gen-api').value;
+
+            const payload = {
+                email: window.currentUser.email,
+                kurikulum, mapel, kelas, bab, jumlah, kesulitan, kognitif, tipes, apiProvider,
+                pgOpsi, pgkTotal, pgkBenar, jodohPasang
+            };
+
+            const btn = document.getElementById('btn-generate-soal');
+            const originalHtml = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-circle-notch animate-spin"></i> Memproses AI...';
+            btn.disabled = true;
+            document.getElementById('gen-result-container').classList.add('hidden');
+
+            fetch(APPSCRIPT_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: new URLSearchParams({
+                    action: 'generateSoal',
+                    data: JSON.stringify(payload)
+                })
+            })
+            .then(res => res.json())
+            .then(res => {
+                if(res.status === 'success') {
+                    const mapelVal = document.getElementById('gen-mapel').value || '...';
+                    const babVal = document.getElementById('gen-bab').value || '...';
+                    
+                    const headerTemplate = `
+<div style="text-align: center; margin-bottom: 20px; font-family: Arial, sans-serif; line-height: 1.2;">
+    <h2 style="margin: 0; font-size: 22px; font-weight: bold; text-transform: uppercase; color: black;">ULANGAN HARIAN ${mapelVal}</h2>
+    <h3 style="margin: 5px 0 0 0; font-size: 16px; font-weight: bold; text-transform: uppercase; color: black;">MATERI: ${babVal}</h3>
+</div>
+<div style="border: 2px solid black; border-radius: 8px; padding: 12px; margin-bottom: 15px; color: black;">
+    <table style="width: 100%; border: none; font-family: Arial, sans-serif; font-size: 14px; font-weight: bold; border-collapse: collapse;">
+        <tr>
+            <td style="border: none; width: 10%; padding: 4px; vertical-align: bottom;">Nama</td>
+            <td style="border: none; width: 40%; padding: 4px; vertical-align: bottom;">: ___________________________</td>
+            <td style="border: none; width: 15%; padding: 4px; vertical-align: bottom;">No. Absen</td>
+            <td style="border: none; width: 35%; padding: 4px; vertical-align: bottom;">: _______________</td>
+        </tr>
+        <tr>
+            <td style="border: none; padding: 4px; vertical-align: bottom;">Kelas</td>
+            <td style="border: none; padding: 4px; vertical-align: bottom;">: ___________________________</td>
+            <td style="border: none; padding: 4px; vertical-align: bottom;">Tanggal</td>
+            <td style="border: none; padding: 4px; vertical-align: bottom;">: _______________</td>
+        </tr>
+    </table>
+</div>
+
+`;
+
+                    // Escape HTML characters first to avoid injecting rogue HTML
+                    let htmlResult = res.data.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+                    
+                    // Simple Markdown Table parser (for Menjodohkan side-by-side format)
+                    htmlResult = htmlResult.replace(/((?:^|\n)\|.*\|\r?\n\|[-:| ]+\|\r?\n(?:\|.*\|\r?\n?)+)/g, function(match) {
+                        let lines = match.trim().split(/\r?\n/);
+                        let header = lines[0];
+                        let body = lines.slice(2);
+                        
+                        let ths = header.split('|').filter((s,i,a) => !(i===0 && s.trim()==='') && !(i===a.length-1 && s.trim()==='')).map(s => `<th style="border:1px solid #000; padding:8px; text-align:left;">${s.trim()}</th>`).join('');
+                        let trs = body.map(row => {
+                            let tds = row.split('|').filter((s,i,a) => !(i===0 && s.trim()==='') && !(i===a.length-1 && s.trim()==='')).map(s => `<td style="border:1px solid #000; padding:8px; vertical-align:top;">${s.trim()}</td>`).join('');
+                            return `<tr>${tds}</tr>`;
+                        }).join('');
+                        
+                        return `\n<table style="border-collapse: collapse; width: 100%; margin: 15px 0;"><thead><tr style="background:#f3f4f6;">${ths}</tr></thead><tbody>${trs}</tbody></table>\n`;
+                    });
+                    
+                    // Style section headers like **A. PILIHAN GANDA**
+                    htmlResult = htmlResult.replace(/\*\*([A-E]\.\s+.*?)\*\*/g, function(match, p1) {
+                        if (p1.toUpperCase().includes('PILIHAN GANDA') || p1.toUpperCase().includes('MENJODOHKAN') || p1.toUpperCase().includes('ISIAN') || p1.toUpperCase().includes('URAIAN') || p1.toUpperCase().includes('ESSAY')) {
+                            return `<div style="background-color: black; color: white; padding: 4px 12px; font-weight: bold; display: inline-block; margin-bottom: 10px; margin-top: 15px; border-radius: 4px; column-span: all; -webkit-column-span: all; font-family: Arial, sans-serif; font-size: 14px;">${p1.toUpperCase()}</div>`;
+                        }
+                        return `<strong>${p1}</strong>`;
+                    });
+
+                    // Format Pilihan Ganda options into 2x2 grid (A-E)
+                    htmlResult = htmlResult.replace(/(^|\n)\s*(?:[-*]\s*)?(?:\*\*|)?([Aa])[.)](?:\*\*|)?\s+(.*?)\s+(?:[-*]\s*)?(?:\*\*|)?([Bb])[.)](?:\*\*|)?\s+(.*?)\s+(?:[-*]\s*)?(?:\*\*|)?([Cc])[.)](?:\*\*|)?\s+(.*?)\s+(?:[-*]\s*)?(?:\*\*|)?([Dd])[.)](?:\*\*|)?\s+(.*?)\s+(?:[-*]\s*)?(?:\*\*|)?([Ee])[.)](?:\*\*|)?\s+(.*?)(?=\n|$)/gm, 
+                    function(match, prefix, lA, txtA, lB, txtB, lC, txtC, lD, txtD, lE, txtE) {
+                        return `${prefix}<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 4px 16px; margin-top: 8px; margin-bottom: 16px; padding-left: 16px; width: 100%;"><div><div style="display: flex; margin-bottom: 4px;"><strong style="width: 28px; flex-shrink: 0;">${lA.toUpperCase()}.</strong> <div>${txtA.trim()}</div></div><div style="display: flex; margin-bottom: 4px;"><strong style="width: 28px; flex-shrink: 0;">${lB.toUpperCase()}.</strong> <div>${txtB.trim()}</div></div><div style="display: flex; margin-bottom: 4px;"><strong style="width: 28px; flex-shrink: 0;">${lC.toUpperCase()}.</strong> <div>${txtC.trim()}</div></div></div><div><div style="display: flex; margin-bottom: 4px;"><strong style="width: 28px; flex-shrink: 0;">${lD.toUpperCase()}.</strong> <div>${txtD.trim()}</div></div><div style="display: flex; margin-bottom: 4px;"><strong style="width: 28px; flex-shrink: 0;">${lE.toUpperCase()}.</strong> <div>${txtE.trim()}</div></div></div></div>`;
+                    });
+
+                    // Format Pilihan Ganda options into 2x2 grid (A-D saja)
+                    htmlResult = htmlResult.replace(/(^|\n)\s*(?:[-*]\s*)?(?:\*\*|)?([Aa])[.)](?:\*\*|)?\s+(.*?)\s+(?:[-*]\s*)?(?:\*\*|)?([Bb])[.)](?:\*\*|)?\s+(.*?)\s+(?:[-*]\s*)?(?:\*\*|)?([Cc])[.)](?:\*\*|)?\s+(.*?)\s+(?:[-*]\s*)?(?:\*\*|)?([Dd])[.)](?:\*\*|)?\s+(.*?)(?=\n|$)/gm, 
+                    function(match, prefix, lA, txtA, lB, txtB, lC, txtC, lD, txtD) {
+                        return `${prefix}<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 4px 16px; margin-top: 8px; margin-bottom: 16px; padding-left: 16px; width: 100%;"><div><div style="display: flex; margin-bottom: 4px;"><strong style="width: 28px; flex-shrink: 0;">${lA.toUpperCase()}.</strong> <div>${txtA.trim()}</div></div><div style="display: flex; margin-bottom: 4px;"><strong style="width: 28px; flex-shrink: 0;">${lB.toUpperCase()}.</strong> <div>${txtB.trim()}</div></div></div><div><div style="display: flex; margin-bottom: 4px;"><strong style="width: 28px; flex-shrink: 0;">${lC.toUpperCase()}.</strong> <div>${txtC.trim()}</div></div><div style="display: flex; margin-bottom: 4px;"><strong style="width: 28px; flex-shrink: 0;">${lD.toUpperCase()}.</strong> <div>${txtD.trim()}</div></div></div></div>`;
+                    });
+
+                    // Wrap blocks in avoid-page-break containers
+                    let blocks = htmlResult.split(/\n{2,}/);
+                    htmlResult = blocks.map(block => {
+                        if (!block.trim()) return '';
+                        return `<div style="page-break-inside: avoid; break-inside: avoid; margin-bottom: 12px;">${block.replace(/\n/g, '<br>')}</div>`;
+                    }).join('');
+                    
+                    // Convert markdown bold
+                    htmlResult = htmlResult.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+                    
+                    // Convert the custom delimiter into a page break
+                    htmlResult = htmlResult.replace(/===KUNCI_JAWABAN===/g, '<div style="page-break-before: always; column-span: all; -webkit-column-span: all; margin-top: 2rem; border-top: 2px dashed #ccc; padding-top: 1rem;"><h3 class="text-xl font-bold mb-4" style="font-family: Arial, sans-serif;">Kunci Jawaban & Pembahasan</h3></div>');
+
+                    // Wrap in single-column layout
+                    let contentWrapper = `<div style="font-family: Arial, sans-serif; font-size: 13px; text-align: left; line-height: 1.5; color: black;">${htmlResult}</div>`;
+
+                    document.getElementById('gen-result-content').innerHTML = headerTemplate + contentWrapper;
+                    if (window.MathJax && typeof MathJax.typesetPromise === 'function') { 
+                        MathJax.typesetPromise([document.getElementById('gen-result-content')]).catch(err => console.error(err)); 
+                    }
+                    document.getElementById('gen-result-container').classList.remove('hidden');
+                    setTimeout(() => {
+                        document.getElementById('gen-result-container').scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    }, 300);
+                    Swal.fire('Sukses', 'Soal berhasil dibuat!', 'success');
+                } else {
+                    Swal.fire('Gagal', res.message || 'Terjadi kesalahan.', 'error');
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                Swal.fire('Error', 'Gagal terhubung ke server.', 'error');
+            })
+            .finally(() => {
+                btn.innerHTML = originalHtml;
+                btn.disabled = false;
+            });
+        };
+
+        window.downloadPdfSoal = function() {
+            const element = document.getElementById('gen-result-content');
+            if(!element || element.innerHTML.trim() === '') return;
+            const kelas = document.getElementById('gen-kelas') ? document.getElementById('gen-kelas').value : '...';
+            const mapel = document.getElementById('gen-mapel') ? document.getElementById('gen-mapel').value : '...';
+            const sekolah = window.currentUser && window.currentUser.sekolah ? window.currentUser.sekolah : 'Sekolah';
+            const mapelSafe = mapel.replace(/[^a-zA-Z0-9 ]/g, "").trim();
+            const sekolahSafe = sekolah.replace(/[^a-zA-Z0-9 ]/g, "").trim();
+            const fileName = `Soal_Kelas_${kelas}_${mapelSafe}_${sekolahSafe}.pdf`.replace(/\s+/g, '_');
+
+            const opt = {
+                margin:       10,
+                filename:     fileName,
+                image:        { type: 'jpeg', quality: 0.98 },
+                html2canvas:  { scale: 2 },
+                jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+            };
+            if (typeof html2pdf !== 'undefined') {
+                html2pdf().set(opt).from(element).save();
+            } else {
+                Swal.fire('Error', 'Library PDF belum dimuat. Coba refresh halaman.', 'error');
+            }
+        };
+
+        window.downloadWordSoal = function() {
+            const element = document.getElementById('gen-result-content');
+            if(!element || element.innerHTML.trim() === '') return;
+            
+            const header = "<html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'><head><meta charset='utf-8'><title>Export HTML To Doc</title></head><body>";
+            const footer = "</body></html>";
+            const html = header + element.innerHTML + footer;
+            
+            const kelas = document.getElementById('gen-kelas') ? document.getElementById('gen-kelas').value : '...';
+            const mapel = document.getElementById('gen-mapel') ? document.getElementById('gen-mapel').value : '...';
+            const sekolah = window.currentUser && window.currentUser.sekolah ? window.currentUser.sekolah : 'Sekolah';
+            const mapelSafe = mapel.replace(/[^a-zA-Z0-9 ]/g, "").trim();
+            const sekolahSafe = sekolah.replace(/[^a-zA-Z0-9 ]/g, "").trim();
+            const fileName = `Soal_Kelas_${kelas}_${mapelSafe}_${sekolahSafe}.doc`.replace(/\s+/g, '_');
+            
+            const blob = new Blob(['\\ufeff', html], {
+                type: 'application/msword'
+            });
+            const url = 'data:application/vnd.ms-word;charset=utf-8,' + encodeURIComponent(html);
+            const downloadLink = document.createElement("a");
+            document.body.appendChild(downloadLink);
+            if (navigator.msSaveOrOpenBlob) {
+                navigator.msSaveOrOpenBlob(blob, fileName);
+            } else {
+                downloadLink.href = url;
+                downloadLink.download = fileName;
+                downloadLink.click();
+            }
+            document.body.removeChild(downloadLink);
+        };
+
+        window.fetchQuotaSoal = function() {
+            if(!window.currentUser || !window.currentUser.email) return;
+            fetch(APPSCRIPT_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: new URLSearchParams({
+                    action: 'getQuotaSoal',
+                    data: JSON.stringify({ email: window.currentUser.email })
+                })
+            }).then(res => res.json()).then(res => {
+                if(res.status === 'success') {
+                    const quota = res.quota;
+                    const limit = res.limit;
+                    const sisa = limit - quota;
+                    const el = document.getElementById('gen-quota-info');
+                    const btn = document.getElementById('btn-generate-soal');
+                    const input = document.getElementById('gen-jumlah');
+                    
+                    if(el) {
+                        el.innerHTML = `(Terpakai: ${quota}/${limit} soal hari ini)`;
+                        el.classList.remove('text-blue-600', 'text-red-600');
+                        
+                        if(sisa <= 0) {
+                            el.innerHTML = `(Limit harian 50 tercapai!)`;
+                            el.classList.add('text-red-600', 'font-bold');
+                            if(btn) btn.disabled = true;
+                            if(input) {
+                               input.disabled = true;
+                               input.value = 0;
+                            }
+                        } else {
+                            el.classList.add('text-blue-600');
+                            if(input) {
+                                input.max = sisa;
+                                if(parseInt(input.value) > sisa) input.value = sisa;
+                            }
+                        }
+                    }
+                }
+            }).catch(e => console.log('Gagal fetch kuota soal', e));
+        };
+
+        window.isMasaAktifClosed = localStorage.getItem('isMasaAktifClosed') === 'true';
+        window.toggleMasaAktif = () => {
+            const content = document.getElementById('masa-aktif-content');
+            const chevron = document.getElementById('masa-aktif-chevron');
+            if (!content || !chevron) return;
+            
+            window.isMasaAktifClosed = !window.isMasaAktifClosed;
+            localStorage.setItem('isMasaAktifClosed', window.isMasaAktifClosed);
+            
+            if (!window.isMasaAktifClosed) {
+                content.style.maxWidth = '300px';
+                content.style.opacity = '1';
+                content.style.marginLeft = '0.75rem';
+                chevron.style.transform = 'rotate(0deg)';
+                chevron.style.marginLeft = '0.5rem';
+            } else {
+                content.style.maxWidth = '0px';
+                content.style.opacity = '0';
+                content.style.marginLeft = '0px';
+                chevron.style.transform = 'rotate(180deg)';
+                chevron.style.marginLeft = '0.25rem';
+            }
+        };
+
+        // --- Modul Aplikasi Lain ---
+        window.currentAplikasiLainUrl = null;
+        
+        window.bukaAplikasiLain = (url) => {
+            window.currentAplikasiLainUrl = url;
+            navigateTo('aplikasi_lain');
+        };
+
+        window.tutupAplikasiLain = () => {
+            window.currentAplikasiLainUrl = null;
+            navigateTo('aplikasi_lain');
+        };
+
+        function renderAplikasiLain() {
+            if (window.currentAplikasiLainUrl) {
+                // Jangan merender header default karena bisa makan tempat, return langsung content iframe
+                return `
+                <div style="padding: 0; width: 100%; height: 100vh; box-sizing: border-box; background: white; position: relative; overflow: hidden;">
+                    <button onclick="window.tutupAplikasiLain()" style="position: absolute; top: 12px; left: 12px; z-index: 50;" class="bg-white/95 backdrop-blur text-gray-800 px-4 py-2 rounded-xl border border-gray-300 hover:bg-gray-100 transition shadow-lg flex items-center font-bold text-sm">
+                        <i class="fas fa-arrow-left mr-2"></i> Kembali
+                    </button>
+                  <iframe 
+                    src="${window.currentAplikasiLainUrl}" 
+                    style="
+                      width: 100%; 
+                      height: 100%; 
+                      border: none;
+                    " 
+                    allowfullscreen>
+                  </iframe>
+                </div>
+                `;
+            } else {
+                return `
+                <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                    <div onclick="window.bukaAplikasiLain('https://games.appzain.my.id')" class="cursor-pointer bg-white rounded-2xl shadow-sm border border-gray-200 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 overflow-hidden flex flex-col group">
+                        <div class="h-40 w-full bg-gradient-to-r from-indigo-500 to-purple-600 relative flex items-center justify-center">
+                            <i class="fas fa-gamepad text-6xl text-white opacity-90 group-hover:scale-110 transition-transform duration-300"></i>
+                            <div class="absolute bottom-3 right-3 bg-white/20 backdrop-blur-sm px-2.5 py-1 rounded-md text-xs text-white font-bold border border-white/30">Game</div>
+                        </div>
+                        <div class="p-5 flex flex-col flex-1">
+                            <h3 class="font-bold text-gray-800 text-lg mb-2">Games AppZain</h3>
+                            <p class="text-sm text-gray-500 flex-1">Kumpulan game seru dan interaktif yang langsung dapat dimainkan.</p>
+                            <div class="mt-4 flex items-center text-blue-600 font-bold text-sm">
+                                Buka Aplikasi <i class="fas fa-arrow-right ml-2 transform group-hover:translate-x-1 transition-transform"></i>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div onclick="window.bukaAplikasiLain('https://halamanrapordownload.vercel.app/')" class="cursor-pointer bg-white rounded-2xl shadow-sm border border-gray-200 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 overflow-hidden flex flex-col group">
+                        <div class="h-40 w-full bg-gradient-to-r from-emerald-500 to-teal-600 relative flex items-center justify-center">
+                            <i class="fas fa-book-open text-6xl text-white opacity-90 group-hover:scale-110 transition-transform duration-300"></i>
+                            <div class="absolute bottom-3 right-3 bg-white/20 backdrop-blur-sm px-2.5 py-1 rounded-md text-xs text-white font-bold border border-white/30">Pendidikan</div>
+                        </div>
+                        <div class="p-5 flex flex-col flex-1">
+                            <h3 class="font-bold text-gray-800 text-lg mb-2">Rapor Integrasi E-Rapor</h3>
+                            <p class="text-sm text-gray-500 flex-1">Aplikasi untuk integrasi dan download rapor.</p>
+                            <div class="mt-4 flex items-center text-blue-600 font-bold text-sm">
+                                Buka Aplikasi <i class="fas fa-arrow-right ml-2 transform group-hover:translate-x-1 transition-transform"></i>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div onclick="window.bukaAplikasiLain('https://cbt.akseskita.my.id')" class="cursor-pointer bg-white rounded-2xl shadow-sm border border-gray-200 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 overflow-hidden flex flex-col group">
+                        <div class="h-40 w-full bg-gradient-to-r from-blue-500 to-indigo-600 relative flex items-center justify-center">
+                            <i class="fas fa-laptop-code text-6xl text-white opacity-90 group-hover:scale-110 transition-transform duration-300"></i>
+                            <div class="absolute bottom-3 right-3 bg-white/20 backdrop-blur-sm px-2.5 py-1 rounded-md text-xs text-white font-bold border border-white/30">Ujian/CBT</div>
+                        </div>
+                        <div class="p-5 flex flex-col flex-1">
+                            <h3 class="font-bold text-gray-800 text-lg mb-2">CBT pro TKA/ANBK</h3>
+                            <p class="text-sm text-gray-500 flex-1">Ujian apapun dengan mudah dan sharing soal dengan guru lain.</p>
+                            <div class="mt-4 flex items-center text-blue-600 font-bold text-sm">
+                                Buka Aplikasi <i class="fas fa-arrow-right ml-2 transform group-hover:translate-x-1 transition-transform"></i>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div onclick="window.bukaAplikasiLain('https://kuis.appzain.my.id')" class="cursor-pointer bg-white rounded-2xl shadow-sm border border-gray-200 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 overflow-hidden flex flex-col group">
+                        <div class="h-40 w-full bg-gradient-to-r from-amber-500 to-orange-600 relative flex items-center justify-center">
+                            <i class="fas fa-stopwatch text-6xl text-white opacity-90 group-hover:scale-110 transition-transform duration-300"></i>
+                            <div class="absolute bottom-3 right-3 bg-white/20 backdrop-blur-sm px-2.5 py-1 rounded-md text-xs text-white font-bold border border-white/30">Kuis Cepat</div>
+                        </div>
+                        <div class="p-5 flex flex-col flex-1">
+                            <h3 class="font-bold text-gray-800 text-lg mb-2">Adu Cepat & Tepat</h3>
+                            <p class="text-sm text-gray-500 flex-1">Kuis interaktif seru untuk adu kecepatan dan ketepatan menjawab pertanyaan.</p>
+                            <div class="mt-4 flex items-center text-orange-600 font-bold text-sm">
+                                Buka Aplikasi <i class="fas fa-arrow-right ml-2 transform group-hover:translate-x-1 transition-transform"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                `;
+            }
+        }
+
+        function renderModulAjarAI() {
+            const defaultGuru = window.currentUser && window.currentUser.nama ? window.currentUser.nama : '';
+            const defaultSekolah = window.currentUser && window.currentUser.sekolah ? window.currentUser.sekolah : '';
+
+            return `
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Kolom Kiri: Form Input -->
+                <div class="lg:col-span-2 bg-white rounded-2xl shadow-sm border border-gray-100 p-6 flex flex-col h-full">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                    <div class="md:col-span-3 grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">Nama Guru (Penyusun)</label>
+                            <input type="text" id="modul-guru" value="${defaultGuru}" readonly class="w-full bg-slate-100 border border-slate-200 text-slate-500 rounded-xl px-4 py-3 focus:ring-2 focus:ring-blue-500 outline-none cursor-not-allowed" title="Nama ditarik dari profil">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">Instansi / Sekolah</label>
+                            <input type="text" id="modul-sekolah" value="${defaultSekolah}" readonly class="w-full bg-slate-100 border border-slate-200 text-slate-500 rounded-xl px-4 py-3 focus:ring-2 focus:ring-blue-500 outline-none cursor-not-allowed" title="Instansi ditarik dari profil">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Mata Pelajaran</label>
+                        <input type="text" id="modul-mapel" class="w-full bg-slate-50 border border-slate-200 text-slate-800 rounded-xl px-4 py-3 focus:ring-2 focus:ring-blue-500 outline-none" placeholder="Contoh: IPAS, Matematika">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Fase</label>
+                        <select id="modul-fase" class="w-full bg-slate-50 border border-slate-200 text-slate-800 rounded-xl px-4 py-3 focus:ring-2 focus:ring-blue-500 outline-none">
+                            <option value="A">Fase A (Kelas 1-2)</option>
+                            <option value="B">Fase B (Kelas 3-4)</option>
+                            <option value="C">Fase C (Kelas 5-6)</option>
+                            <option value="D">Fase D (SMP)</option>
+                            <option value="E">Fase E (Kelas 10)</option>
+                            <option value="F">Fase F (Kelas 11-12)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Kelas</label>
+                        <select id="modul-kelas" class="w-full bg-slate-50 border border-slate-200 text-slate-800 rounded-xl px-4 py-3 focus:ring-2 focus:ring-blue-500 outline-none">
+                            ${[1,2,3,4,5,6,7,8,9,10,11,12].map(k => `<option value="${k}">Kelas ${k}</option>`).join('')}
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Alokasi Waktu (Pertemuan)</label>
+                        <input type="number" id="modul-waktu" min="1" max="10" value="2" class="w-full bg-slate-50 border border-slate-200 text-slate-800 rounded-xl px-4 py-3 focus:ring-2 focus:ring-blue-500 outline-none">
+                    </div>
+                    <div class="md:col-span-2">
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Model Pembelajaran</label>
+                        <input list="model-pembelajaran-list" id="modul-model" class="w-full bg-slate-50 border border-slate-200 text-slate-800 rounded-xl px-4 py-3 focus:ring-2 focus:ring-blue-500 outline-none" placeholder="Pilih atau ketik manual...">
+                        <datalist id="model-pembelajaran-list">
+                            <option value="Problem Based Learning (PBL)">
+                            <option value="Project Based Learning (PjBL)">
+                            <option value="Inkuiri (Inquiry)">
+                            <option value="Kooperatif (Cooperative Learning)">
+                            <option value="Kontekstual (CTL)">
+                            <option value="Discovery Learning">
+                        </datalist>
+                    </div>
+                    <div class="md:col-span-3">
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Bab (Nomor & Judul)</label>
+                        <input type="text" id="modul-bab" class="w-full bg-slate-50 border border-slate-200 text-slate-800 rounded-xl px-4 py-3 focus:ring-2 focus:ring-blue-500 outline-none" placeholder="Contoh: Bab 1 - Tumbuhan, Sumber Kehidupan di Bumi">
+                    </div>
+                    <div class="md:col-span-3">
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Capaian Pembelajaran (Opsional)</label>
+                        <textarea id="modul-cp" rows="3" class="w-full bg-slate-50 border border-slate-200 text-slate-800 rounded-xl px-4 py-3 focus:ring-2 focus:ring-blue-500 outline-none" placeholder="Kosongkan jika ingin AI merumuskan CP otomatis. Atau paste teks CP Anda di sini..."></textarea>
+                    </div>
+                    <div class="md:col-span-3">
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Materi Pokok</label>
+                        <textarea id="modul-materi" rows="3" class="w-full bg-slate-50 border border-slate-200 text-slate-800 rounded-xl px-4 py-3 focus:ring-2 focus:ring-blue-500 outline-none" placeholder="Contoh: Bagian tubuh tumbuhan dan fungsinya, Proses fotosintesis"></textarea>
+                    </div>
+                    <div class="md:col-span-3">
+                        <label class="block text-sm font-semibold text-gray-700 mb-3">Pilih AI Engine</label>
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                            <label class="flex items-center gap-3 cursor-pointer p-4 border border-slate-200 rounded-xl hover:bg-blue-50 transition w-full">
+                                <input type="radio" name="modul-ai-engine" value="groq" checked class="w-5 h-5 text-blue-600 focus:ring-blue-500">
+                                <span class="text-slate-800 font-medium">AI 1 (Groq Llama 3)</span>
+                            </label>
+                            <label class="flex items-center gap-3 cursor-pointer p-4 border border-slate-200 rounded-xl hover:bg-blue-50 transition w-full">
+                                <input type="radio" name="modul-ai-engine" value="gemini" class="w-5 h-5 text-blue-600 focus:ring-blue-500">
+                                <span class="text-slate-800 font-medium">AI 2 (Gemini Flash)</span>
+                            </label>
+                            <label class="flex items-center gap-3 cursor-pointer p-4 border border-slate-200 rounded-xl hover:bg-blue-50 transition w-full">
+                                <input type="radio" name="modul-ai-engine" value="mistral" class="w-5 h-5 text-blue-600 focus:ring-blue-500">
+                                <span class="text-slate-800 font-medium">AI 3 (Mistral AI)</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                <div class="flex justify-end mt-6">
+                    <button onclick="window.submitModulAjarAI()" id="btn-generate-modul" class="w-full sm:w-auto bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold py-3 px-8 rounded-xl shadow-lg hover:shadow-xl transition transform hover:-translate-y-1 flex items-center justify-center gap-2">
+                        <i class="fas fa-magic"></i> Generate Modul Ajar
+                    </button>
+                </div>
+            </div>
+
+            <!-- Kolom Kanan: Generate Prompt Manual -->
+            <div class="bg-gradient-to-br from-indigo-50 to-blue-50 rounded-2xl shadow-sm border border-indigo-100 p-6 flex flex-col h-full">
+                <h3 class="text-lg font-bold text-indigo-900 mb-3 flex items-center gap-2"><i class="fas fa-robot"></i> Generate AI Manual</h3>
+                <p class="text-sm text-indigo-700 mb-4">Gunakan prompt ini untuk membuat Modul Ajar secara manual di ChatGPT atau Gemini menggunakan akun pribadi Anda.</p>
+                <div class="mb-3">
+                    <label class="block text-xs font-bold text-indigo-900 mb-1">Format Unduhan (Opsional)</label>
+                    <select id="modul-manual-format" class="w-full border border-indigo-200 rounded-xl px-3 py-2 text-sm bg-white focus:outline-none focus:border-indigo-400">
+                        <option value="">-- Teks Biasa (Tanpa File) --</option>
+                        <option value="Word (.docx)">Minta AI membuatkan file Word</option>
+                        <option value="PDF (.pdf)">Minta AI membuatkan file PDF</option>
+                    </select>
+                </div>
+                <button onclick="window.generateManualPromptModul()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2 px-4 rounded-xl shadow transition mb-3 flex items-center justify-center gap-2">
+                    <i class="fas fa-bolt"></i> Buat & Copy Prompt
+                </button>
+                <textarea id="manual-prompt-modul" readonly class="w-full flex-grow bg-white border border-indigo-200 rounded-xl p-3 text-sm text-gray-700 focus:outline-none focus:border-indigo-400 resize-none min-h-[150px]" placeholder="Prompt akan muncul di sini..."></textarea>
+                <div class="grid grid-cols-2 gap-3 mt-4">
+                    <a href="https://chatgpt.com" target="_blank" class="bg-[#10a37f] hover:bg-[#0e906f] text-white text-center font-medium py-2 rounded-xl text-sm shadow transition flex items-center justify-center gap-1">
+                        <i class="fas fa-external-link-alt"></i> ChatGPT
+                    </a>
+                    <a href="https://gemini.google.com" target="_blank" class="bg-[#1a73e8] hover:bg-[#155db1] text-white text-center font-medium py-2 rounded-xl text-sm shadow transition flex items-center justify-center gap-1">
+                        <i class="fas fa-external-link-alt"></i> Gemini
+                    </a>
+                </div>
+            </div>
+            </div>
+
+            <!-- Hasil Generate -->
+            <div id="modul-result-container" class="hidden mt-8">
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-3">
+                    <h2 class="text-xl font-bold text-slate-800"><i class="fas fa-check-circle text-green-500 mr-2"></i>Hasil Modul Ajar AI</h2>
+                    <div class="flex gap-2">
+                        <button onclick="window.copyModulAjar()" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg shadow font-medium flex items-center gap-2 text-sm transition">
+                            <i class="fas fa-copy"></i> Salin (Copy)
+                        </button>
+                        <button onclick="window.downloadWordModul()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg shadow font-medium flex items-center gap-2 text-sm transition">
+                            <i class="fas fa-file-word"></i> Unduh Word
+                        </button>
+                    </div>
+                </div>
+                <div id="modul-result-content" class="bg-white border border-gray-200 p-8 rounded-2xl shadow-sm prose max-w-none text-slate-800" style="overflow-x:auto;">
+                    <!-- Hasil akan dimasukkan ke sini -->
+                </div>
+            </div>
+            `;
+        }
+
+        window.generateManualPromptModul = function() {
+            const mapel = document.getElementById('modul-mapel').value;
+            const fase = document.getElementById('modul-fase').value;
+            const kelas = document.getElementById('modul-kelas').value;
+            const bab = document.getElementById('modul-bab').value;
+            const cp = document.getElementById('modul-cp').value;
+            const materi = document.getElementById('modul-materi').value;
+            const waktu = document.getElementById('modul-waktu').value;
+            const model = document.getElementById('modul-model').value || 'Sesuai Kurikulum Merdeka';
+            const formatOutput = document.getElementById('modul-manual-format') ? document.getElementById('modul-manual-format').value : "";
+
+            if(!mapel || !bab || !materi) return Swal.fire('Perhatian', 'Harap lengkapi Mata Pelajaran, Bab, dan Materi Pokok terlebih dahulu.', 'warning');
+            
+            const guruNamaInput = document.getElementById('modul-guru').value || (window.currentUser && window.currentUser.nama ? window.currentUser.nama : '.......................');
+            const instansiInput = document.getElementById('modul-sekolah').value || (window.currentUser && window.currentUser.sekolah ? window.currentUser.sekolah : '.......................');
+
+            let promptText = `Tolong buatkan Modul Ajar Kurikulum Merdeka yang SANGAT LENGKAP dan KOMPREHENSIF dengan kriteria berikut:\n\n` +
+                               `- Penyusun: ${guruNamaInput}\n` +
+                               `- Instansi: ${instansiInput}\n` +
+                               `- Mata Pelajaran: ${mapel}\n` +
+                               `- Fase/Kelas: Fase ${fase} / Kelas ${kelas}\n` +
+                               `- Alokasi Waktu: ${waktu} Pertemuan\n` +
+                               `- Model Pembelajaran: ${model}\n` +
+                               `- Bab: ${bab}\n` +
+                               `- Materi Pokok: ${materi}\n`;
+                               
+            if (cp && cp.trim() !== "") {
+                promptText += `- Capaian Pembelajaran (CP): ${cp}\n\n`;
+            } else {
+                promptText += `- Capaian Pembelajaran (CP): (Tolong rumuskan Capaian Pembelajaran yang paling relevan dengan materi di atas sesuai Kurikulum Merdeka)\n\n`;
+            }
+            
+            promptText += `Instruksi Khusus Pembuatan Modul:\n` +
+                          `1. Buatlah modul ini dengan sangat detail dan profesional (standar Kemdikbudristek).\n` +
+                          `2. Sertakan tabel pembagian waktu (time breakdown) yang jelas untuk setiap langkah kegiatan pembelajaran (Pendahuluan, Inti, Penutup).\n` +
+                          `3. Susun Informasi Umum (Identitas, Kompetensi Awal, Profil Pelajar Pancasila, Sarana Prasarana, Target Peserta Didik) dalam bentuk tabel agar rapi.\n` +
+                          `4. Uraikan Komponen Inti secara mendalam (Tujuan Pembelajaran yang spesifik, Pemahaman Bermakna, Pertanyaan Pemantik, Langkah Kegiatan yang detail per pertemuan, dan Asesmen yang lengkap dengan rubrik penilaian).\n` +
+                          `5. Sediakan Lampiran yang komprehensif, meliputi: Lembar Kerja Peserta Didik (LKPD) yang siap cetak, ringkasan Bahan Bacaan Guru & Peserta Didik, Glosarium, dan Daftar Pustaka.`;
+                               
+            if (formatOutput) {
+                promptText += `\n\nPENTING: Di akhir respons, tolong sediakan Modul Ajar ini dalam bentuk file ${formatOutput} yang bisa saya unduh langsung.`;
+            }
+
+            const textarea = document.getElementById('manual-prompt-modul');
+            textarea.value = promptText;
+            
+            textarea.select();
+            document.execCommand('copy');
+            
+            Swal.fire({
+                icon: 'success',
+                title: 'Disalin!',
+                text: 'Prompt berhasil disalin ke clipboard. Silakan buka ChatGPT atau Gemini lalu paste prompt tersebut.',
+                timer: 3000,
+                showConfirmButton: false
+            });
+        };
+
+        window.submitModulAjarAI = function() {
+            if(!window.currentUser || !window.currentUser.email) return Swal.fire('Error', 'Sesi login tidak valid.', 'error');
+            
+            const mapel = document.getElementById('modul-mapel').value;
+            const fase = document.getElementById('modul-fase').value;
+            const kelas = document.getElementById('modul-kelas').value;
+            const bab = document.getElementById('modul-bab').value;
+            const cp = document.getElementById('modul-cp').value;
+            const materi = document.getElementById('modul-materi').value;
+            const waktu = document.getElementById('modul-waktu').value;
+            const model = document.getElementById('modul-model').value || 'Sesuai Kurikulum Merdeka';
+            const aiEngineRadio = document.querySelector('input[name="modul-ai-engine"]:checked');
+            const aiEngine = aiEngineRadio ? aiEngineRadio.value : 'groq';
+            
+            if(!mapel || !bab || !materi) return Swal.fire('Perhatian', 'Harap lengkapi Mata Pelajaran, Bab, dan Materi Pokok.', 'warning');
+            
+            const guruNamaInput = document.getElementById('modul-guru').value || (window.currentUser && window.currentUser.nama ? window.currentUser.nama : '.......................');
+            const instansiInput = document.getElementById('modul-sekolah').value || (window.currentUser && window.currentUser.sekolah ? window.currentUser.sekolah : '.......................');
+
+            const payload = {
+                email: window.currentUser.email,
+                mapel, fase, kelas, bab, cp, materi, waktu, model, aiEngine,
+                guruNama: guruNamaInput,
+                instansi: instansiInput
+            };
+
+            const btn = document.getElementById('btn-generate-modul');
+            const originalHtml = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-circle-notch animate-spin"></i> Memproses AI (Tunggu ~30 detik)...';
+            btn.disabled = true;
+            document.getElementById('modul-result-container').classList.add('hidden');
+
+            fetch(APPSCRIPT_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: new URLSearchParams({
+                    action: 'generateModulAjar',
+                    data: JSON.stringify(payload)
+                })
+            })
+            .then(res => res.json())
+            .then(res => {
+                if(res.status === 'success') {
+                    let md = res.data;
+                    
+                    // --- Robust Markdown to HTML Parser ---
+                    function parseMarkdownToHtml(text) {
+                        const lines = text.split('\n');
+                        let html = '';
+                        let i = 0;
+                        
+                        while (i < lines.length) {
+                            let line = lines[i];
+                            
+                            // --- Detect Markdown Table ---
+                            if (line.trim().startsWith('|') && line.trim().endsWith('|')) {
+                                // Collect all contiguous table lines
+                                let tableLines = [];
+                                while (i < lines.length && lines[i].trim().startsWith('|') && lines[i].trim().endsWith('|')) {
+                                    tableLines.push(lines[i].trim());
+                                    i++;
+                                }
+                                
+                                if (tableLines.length >= 2) {
+                                    let tHtml = '<div class="overflow-x-auto"><table class="w-full text-xs border-collapse my-2 border border-slate-300">';
+                                    
+                                    // Header row
+                                    let hCells = tableLines[0].split('|').slice(1, -1);
+                                    tHtml += '<thead><tr>';
+                                    hCells.forEach(c => {
+                                        tHtml += '<th class="border border-slate-300 bg-blue-50 px-2 py-1 font-bold text-left align-top">' + inlineFormat(c.trim()) + '</th>';
+                                    });
+                                    tHtml += '</tr></thead><tbody>';
+                                    
+                                    // Skip separator row (index 1), parse body
+                                    for (let r = 2; r < tableLines.length; r++) {
+                                        let bCells = tableLines[r].split('|').slice(1, -1);
+                                        tHtml += '<tr class="' + (r % 2 === 0 ? 'bg-white' : 'bg-slate-50') + '">';
+                                        bCells.forEach((c, ci) => {
+                                            let cellClass = ci === 0 ? 'border border-slate-300 px-2 py-1 font-medium align-top' : 'border border-slate-300 px-2 py-1 align-top';
+                                            tHtml += '<td class="' + cellClass + '">' + inlineFormat(c.trim()) + '</td>';
+                                        });
+                                        tHtml += '</tr>';
+                                    }
+                                    tHtml += '</tbody></table></div>';
+                                    html += tHtml;
+                                }
+                                continue;
+                            }
+                            
+                            // --- Headings ---
+                            if (line.startsWith('###### ')) { html += '<h6 class="text-sm font-bold mt-4 mb-1 text-slate-700">' + inlineFormat(line.slice(7)) + '</h6>'; i++; continue; }
+                            if (line.startsWith('##### ')) { html += '<h5 class="text-base font-bold mt-4 mb-2 text-slate-800">' + inlineFormat(line.slice(6)) + '</h5>'; i++; continue; }
+                            if (line.startsWith('#### ')) { html += '<h4 class="text-md font-bold mt-5 mb-2 text-slate-800">' + inlineFormat(line.slice(5)) + '</h4>'; i++; continue; }
+                            if (line.startsWith('### ')) { html += '<h3 class="text-lg font-bold mt-6 mb-2 text-slate-800">' + inlineFormat(line.slice(4)) + '</h3>'; i++; continue; }
+                            if (line.startsWith('## '))  { html += '<h2 class="text-xl font-bold mt-8 mb-3 pb-2 border-b-2 border-blue-500 text-blue-800">' + inlineFormat(line.slice(3)) + '</h2>'; i++; continue; }
+                            if (line.startsWith('# '))   { html += '<h1 class="text-2xl font-bold mt-8 mb-4 text-center text-slate-900 uppercase tracking-wide">' + inlineFormat(line.slice(2)) + '</h1>'; i++; continue; }
+                            
+                            // --- Horizontal Rule ---
+                            if (/^-{3,}$/.test(line.trim()) || /^={3,}$/.test(line.trim())) { html += '<hr class="my-6 border-t-2 border-slate-200">'; i++; continue; }
+                            
+                            // --- Page Break ---
+                            if (line.trim() === '---PAGE_BREAK---') {
+                                html += '<br clear="all" style="page-break-before: always" />';
+                                i++; continue;
+                            }
+                            
+                            // --- Unordered List ---
+                            if (/^[\-\*] /.test(line.trim())) {
+                                html += '<ul class="ml-6 my-2 list-disc space-y-1">';
+                                while (i < lines.length && /^[\-\*] /.test(lines[i].trim())) {
+                                    html += '<li class="text-slate-700">' + inlineFormat(lines[i].trim().replace(/^[\-\*] /, '')) + '</li>';
+                                    i++;
+                                }
+                                html += '</ul>';
+                                continue;
+                            }
+                            
+                            // --- Ordered List ---
+                            if (/^\d+\. /.test(line.trim())) {
+                                html += '<ol class="ml-6 my-2 list-decimal space-y-1">';
+                                while (i < lines.length && /^\d+\. /.test(lines[i].trim())) {
+                                    html += '<li class="text-slate-700">' + inlineFormat(lines[i].trim().replace(/^\d+\. /, '')) + '</li>';
+                                    i++;
+                                }
+                                html += '</ol>';
+                                continue;
+                            }
+                            
+                            // --- Empty line ---
+                            if (line.trim() === '') { i++; continue; }
+                            
+                            // --- Regular paragraph ---
+                            html += '<p class="my-1.5 text-slate-700 leading-relaxed">' + inlineFormat(line) + '</p>';
+                            i++;
+                        }
+                        return html;
+                    }
+                    
+                    function inlineFormat(text) {
+                        text = text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+                        
+                        // Restore <br> tags that the AI was instructed to generate for line breaks inside tables
+                        text = text.replace(/&lt;br\/?&gt;/gi, '<br>');
+                        
+                        // Clean up markdown headings that leaked into inline text (e.g. inside table cells)
+                        text = text.replace(/(^|<br>)\s*#{1,6}\s+(.*?)(?=<br>|$)/g, '$1<strong>$2</strong>');
+                        
+                        // LaTeX math formulas will be handled by MathJax.
+                        // Do not strip $, \[, \], \(, \) anymore so MathJax can detect and render them.
+                        // We also add a fallback for \rightarrow outside of math blocks just in case.
+                        text = text.replace(/\\rightarrow/g, '&rarr;');
+                        
+                        text = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+                        text = text.replace(/\*(.*?)\*/g, '<em>$1</em>');
+                        text = text.replace(/\\n/g, '<br>');
+                        return text;
+                    }
+                    
+                    let htmlResult = parseMarkdownToHtml(md);
+
+                    window.modulAjarRawHtml = htmlResult; // Save for copy
+                    document.getElementById('modul-result-content').innerHTML = htmlResult;
+                    if (window.MathJax && typeof MathJax.typesetPromise === 'function') { 
+                        MathJax.typesetPromise([document.getElementById('modul-result-content')]).catch(err => console.error(err)); 
+                    }
+                    const container = document.getElementById('modul-result-container');
+                    container.classList.remove('hidden');
+                    setTimeout(() => {
+                        container.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    }, 300);
+                    Swal.fire('Sukses', 'Modul Ajar berhasil dibuat!', 'success');
+                } else {
+                    Swal.fire('Gagal', res.message || 'Terjadi kesalahan.', 'error');
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                Swal.fire('Error', 'Gagal terhubung ke server. (Timeout/Error)', 'error');
+            })
+            .finally(() => {
+                btn.innerHTML = originalHtml;
+                btn.disabled = false;
+            });
+        };
+
+        window.copyModulAjar = function() {
+            const content = document.getElementById('modul-result-content');
+            if(!content || content.innerHTML.trim() === '') return;
+            
+            // Create a temporary element to copy HTML properly so Word reads it as tables/text
+            const tempDiv = document.createElement("div");
+            tempDiv.contentEditable = true;
+            tempDiv.innerHTML = content.innerHTML;
+            document.body.appendChild(tempDiv);
+            
+            const range = document.createRange();
+            range.selectNodeContents(tempDiv);
+            const selection = window.getSelection();
+            selection.removeAllRanges();
+            selection.addRange(range);
+            
+            try {
+                document.execCommand('copy');
+                Swal.fire('Disalin!', 'Modul Ajar berhasil disalin. Anda dapat menempelkannya (Paste) di Microsoft Word.', 'success');
+            } catch (err) {
+                Swal.fire('Error', 'Gagal menyalin.', 'error');
+            }
+            
+            selection.removeAllRanges();
+            document.body.removeChild(tempDiv);
+        };
+
+        window.downloadWordModul = function() {
+            const element = document.getElementById('modul-result-content');
+            if(!element || element.innerHTML.trim() === '') return;
+            
+            const mapel = document.getElementById('modul-mapel').value || '...';
+            const fase = document.getElementById('modul-fase').value || '...';
+            const kelas = document.getElementById('modul-kelas').value || '...';
+            const bab = document.getElementById('modul-bab').value || '...';
+            const guruNama = window.currentUser ? window.currentUser.nama : '.......................................';
+
+            const coverPage = `
+            <div style="text-align: center; margin-top: 100pt; margin-bottom: 100pt;">
+              <h1 style="font-size: 36pt; font-family: Arial; border: none;">MODUL AJAR</h1>
+              <h2 style="font-size: 24pt; font-family: Arial;">${mapel.toUpperCase()}</h2>
+              <br><br><br>
+              <p style="font-size: 14pt; font-style: italic; font-weight: bold;">(Pembelajaran dengan Pendekatan DEEP LEARNING)</p>
+              <br><br><br>
+              <h3 style="font-size: 18pt;">FASE ${fase} / KELAS ${kelas}</h3>
+              <br><br><br><br><br>
+              <p style="font-size: 14pt; font-weight: bold;">DI SUSUN OLEH</p>
+              <br>
+              <p style="font-size: 14pt; font-weight: bold;">( ${guruNama} )</p>
+              <br><br><br><br><br>
+              <h3 style="font-size: 18pt;">${bab.toUpperCase()}</h3>
+              <h3 style="font-size: 16pt;">TAHUN AJARAN ${new Date().getFullYear()}/${new Date().getFullYear()+1}</h3>
+            </div>
+            <br clear="all" style="page-break-before:always" />
+            `;
+
+            const cssStyles = `
+            <style>
+              body { font-family: 'Times New Roman', Times, serif; font-size: 11pt; line-height: 1.5; }
+              table { border-collapse: collapse; width: 100%; margin-bottom: 15pt; }
+              th, td { border: 1pt solid #000000; padding: 6pt; vertical-align: top; }
+              th { background-color: #d9e1f2; font-weight: bold; text-align: left; }
+              h1, h2, h3, h4, h5, h6 { font-family: Arial, Helvetica, sans-serif; color: #000000; }
+              h1 { font-size: 16pt; margin-top: 24pt; margin-bottom: 12pt; text-transform: uppercase; border-bottom: 2pt solid #000000; padding-bottom: 4pt; }
+              h2 { font-size: 14pt; margin-top: 18pt; margin-bottom: 8pt; }
+              h3 { font-size: 12pt; margin-top: 12pt; margin-bottom: 6pt; }
+              h4 { font-size: 11pt; font-weight: bold; margin-top: 10pt; margin-bottom: 4pt; }
+              h5 { font-size: 11pt; font-weight: bold; font-style: italic; margin-top: 8pt; margin-bottom: 4pt; }
+              h6 { font-size: 11pt; font-weight: normal; font-style: italic; margin-top: 8pt; margin-bottom: 4pt; }
+              ul, ol { margin-top: 0pt; margin-bottom: 10pt; }
+              li { margin-bottom: 4pt; }
+            </style>
+            `;
+
+            const header = "<html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'><head><meta charset='utf-8'><title>Modul Ajar</title>" + cssStyles + "</head><body>";
+            const footer = "</body></html>";
+            
+            const p = db.pengaturan || {};
+            const kepsek = p.kepsek || '.......................';
+            const nipKepsek = p.nip_kepsek || '.......................';
+            const guruNamaVal = window.currentUser ? window.currentUser.nama : (p.nama || '.......................');
+            const nipGuru = p.nip || '.......................';
+            
+            const signatureBlock = `
+            <br><br>
+            <table style="width: 100%; border: none; margin-top: 30pt; text-align: center; page-break-inside: avoid;">
+              <tr>
+                <td style="border: none; width: 50%;"></td>
+                <td style="border: none; width: 50%;">Mengetahui,<br>..................., ................. 20..</td>
+              </tr>
+              <tr>
+                <td style="border: none; width: 50%;">Guru Kelas/Mapel</td>
+                <td style="border: none; width: 50%;">Kepala Sekolah</td>
+              </tr>
+              <tr>
+                <td style="border: none; height: 60pt;"></td>
+                <td style="border: none; height: 60pt;"></td>
+              </tr>
+              <tr>
+                <td style="border: none; font-weight: bold;"><u>${guruNamaVal}</u><br>NIP. ${nipGuru}</td>
+                <td style="border: none; font-weight: bold;"><u>${kepsek}</u><br>NIP. ${nipKepsek}</td>
+              </tr>
+            </table>
+            `;
+
+            // Bersihkan html dari class tailwind agar tidak konflik (opsional tapi disarankan untuk word)
+            let cleanHtml = element.innerHTML.replace(/class="[^"]*"/g, '');
+            cleanHtml = cleanHtml.replace(/\[BLOK_TANDA_TANGAN\]/g, signatureBlock);
+            
+            const html = header + coverPage + cleanHtml + footer;
+            
+            const blob = new Blob(['\\ufeff', html], {
+                type: 'application/msword'
+            });
+            const url = 'data:application/vnd.ms-word;charset=utf-8,' + encodeURIComponent(html);
+            const sekolah = document.getElementById('modul-sekolah') ? document.getElementById('modul-sekolah').value : (window.currentUser ? window.currentUser.sekolah : 'Sekolah');
+            const mapelSafe = mapel.replace(/[^a-zA-Z0-9 ]/g, "").trim();
+            const sekolahSafe = sekolah.replace(/[^a-zA-Z0-9 ]/g, "").trim();
+            const fileName = `Kelas_${kelas}_${mapelSafe}_${sekolahSafe}.doc`.replace(/\s+/g, '_');
+            
+            const downloadLink = document.createElement("a");
+            document.body.appendChild(downloadLink);
+            if (navigator.msSaveOrOpenBlob) {
+                navigator.msSaveOrOpenBlob(blob, fileName);
+            } else {
+                downloadLink.href = url;
+                downloadLink.download = fileName;
+                downloadLink.click();
+            }
+            document.body.removeChild(downloadLink);
+        };
+
+        // --- 7. Navigation Router ---
+        window.navigateTo = function(menuId, preventLoadMessages = false) {
+            const isSamePage = (window.currentPage === menuId);
+            const currentScrollPos = typeof mainScrollArea !== 'undefined' ? mainScrollArea.scrollTop : 0;
+            
+            window.currentPage = menuId;
+            try {
+                localStorage.setItem('mwk_lastMenu', menuId);
+            } catch(e) {}
+            const menu = appMenus.find(m => m.id === menuId);
+            
+            if (menuId === 'pesan' && !preventLoadMessages) {
+                window.syncPesanFromServer();
+            }
+            
+            renderSidebar(); 
+            // Hanya update tampilan bottom nav (tidak rebuild) - aman untuk modal
+            renderBottomNav();
+            
+            let extraHeader = '';
+            if (menuId === 'dashboard') {
+                const isDark = document.documentElement.classList.contains('dark');
+                const themeIcon = isDark ? 'fa-sun text-yellow-500' : 'fa-moon text-blue-600';
+                const themeText = isDark ? 'Mode Terang' : 'Mode Gelap';
+                extraHeader = `
+                    <div class="mt-4 md:mt-0 flex-1 flex flex-col sm:flex-row justify-end items-end sm:items-center gap-2 sm:gap-3">
+                        <div class="flex items-center justify-end gap-2 flex-nowrap w-full sm:w-auto">
+                            <button id="install-app-btn" onclick="window.handleInstallApp()" class="hidden bg-orange-500 text-white border border-orange-600 h-10 sm:h-11 px-3 sm:px-4 rounded-xl shadow-sm hover:bg-orange-600 transition flex items-center gap-1 sm:gap-2 print-hide whitespace-nowrap" title="Instal Aplikasi">
+                                <i class="fas fa-download"></i> <span class="text-xs sm:text-sm font-bold">Instal App</span>
+                            </button>
+                            <button onclick="window.toggleFullScreen()" class="bg-white border border-gray-200 w-10 h-10 sm:w-11 sm:h-11 rounded-xl shadow-sm hover:shadow transition flex items-center justify-center print-hide shrink-0" title="Layar Penuh">
+                                <i class="fas fa-expand text-gray-600"></i>
+                            </button>
+                            <button onclick="window.toggleTheme()" class="bg-white border border-gray-200 w-10 h-10 sm:w-11 sm:h-11 rounded-xl shadow-sm hover:shadow transition flex items-center justify-center print-hide shrink-0" title="Ubah Tema">
+                                <i class="fas ${themeIcon} text-base sm:text-lg"></i>
+                            </button>
+                        </div>
+                        <div class="flex flex-col sm:flex-row gap-2 w-full sm:w-auto items-stretch sm:items-center">
+                            <div id="dashboard-timer-container" class="hidden cursor-pointer bg-slate-800 border border-slate-700 rounded-xl px-2 sm:px-3 h-10 sm:h-11 flex items-center shadow-inner w-auto transition-all duration-300 group" onclick="window.toggleMasaAktif()">
+                                <div class="bg-slate-700 text-orange-400 w-7 h-7 sm:w-8 sm:h-8 rounded-lg flex items-center justify-center shrink-0">
+                                    <i class="fas fa-hourglass-half text-[10px] sm:text-xs"></i>
+                                </div>
+                                <div id="masa-aktif-content" style="${window.isMasaAktifClosed ? 'max-width: 0px; opacity: 0; margin-left: 0px;' : 'max-width: 300px; opacity: 1; margin-left: 0.75rem;'}" class="flex flex-col text-left justify-center overflow-hidden transition-all duration-300 whitespace-nowrap">
+                                    <span class="text-[8px] sm:text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-0.5">Masa Aktif | 20 Rb/ Tahun</span>
+                                    <span id="dashboard-active-countdown" class="text-[11px] sm:text-[13px] font-bold text-orange-400 leading-none font-mono tracking-wide">Memuat...</span>
+                                </div>
+                                <div id="masa-aktif-chevron" class="text-slate-500 transition-transform duration-300 shrink-0 opacity-50 group-hover:opacity-100" style="${window.isMasaAktifClosed ? 'transform: rotate(180deg); margin-left: 0.25rem;' : 'transform: rotate(0deg); margin-left: 0.5rem;'}"><i class="fas fa-chevron-left text-xs"></i></div>
+                            </div>
+                            <div class="bg-indigo-50 border border-indigo-100 rounded-xl px-3 sm:px-4 h-10 sm:h-11 flex items-center gap-2 sm:gap-3 shadow-sm min-w-[150px] w-full sm:w-auto">
+                                <div class="bg-indigo-100 text-indigo-600 w-7 h-7 sm:w-8 sm:h-8 rounded-lg flex items-center justify-center shrink-0">
+                                    <i class="fas fa-clock text-[10px] sm:text-xs"></i>
+                                </div>
+                                <div class="flex flex-col flex-1 text-right justify-center">
+                                    <span id="realtime-date" class="text-[8px] sm:text-[9px] font-bold text-indigo-800 uppercase tracking-widest mb-0.5">Memuat...</span>
+                                    <span id="realtime-time" class="text-[13px] sm:text-[15px] font-black text-indigo-900 leading-none font-mono">--:--:--</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            } else if (menuId === 'nilai') {
+                extraHeader = `
+                    <div class="mt-4 md:mt-0 md:ml-6 md:pl-6 md:border-l border-gray-200 flex-1">
+                        <div class="bg-blue-50 border border-blue-100 rounded-xl p-3.5 flex gap-3 text-sm leading-relaxed shadow-sm">
+                            <i class="fas fa-info-circle text-blue-500 text-lg mt-0.5"></i>
+                            <div class="text-blue-900">
+                                <strong>Info:</strong> Asesmen Formatif bertujuan untuk memperbaiki proses pembelajaran baik bagi guru maupun siswa. Hasil asesmen formatif <strong>tidak digunakan</strong> dalam pengolahan rapor namun sebagai bahan pertimbangan untuk membuat deskripsi pada laporan hasil belajar siswa, dan Asesmen Sumatif digunakan untuk menentukan nilai capaian hasil belajar peserta didik sebagai dasar pengolahan nilai dalam laporan hasil belajar (Rapor).
+                            </div>
+                        </div>
+                    </div>
+                `;
+            } else if (menuId === 'presensi') {
+                extraHeader = `
+                    <div class="mt-4 md:mt-0 md:ml-6 flex-1 flex justify-start md:justify-end">
+                        <div class="bg-white border border-gray-200 shadow-sm rounded-xl px-4 py-2 flex items-center gap-3 w-full md:w-auto overflow-x-auto">
+                            <label class="text-sm font-bold text-gray-700 whitespace-nowrap"><i class="fas fa-calendar-alt text-blue-500 mr-2"></i>Mulai Presensi:</label>
+                            <input id="input-tgl-presensi" type="date" value="${db.tglMulaiPresensi || '2026-07-13'}" onchange="window.simpanTglMulaiPresensi(event)" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm font-bold rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-1.5 cursor-pointer outline-none">
+                        </div>
+                    </div>
+                `;
+            } else if (menuId === 'pesan') {
+                extraHeader = `
+                    <div class="mt-4 md:mt-0 md:ml-6 md:pl-6 md:border-l border-gray-200 flex-1 max-w-2xl">
+                        <div class="bg-amber-50 border border-amber-200 rounded-xl p-3.5 flex gap-3 text-sm leading-relaxed shadow-sm">
+                            <i class="fas fa-shield-alt text-amber-600 text-lg mt-0.5 animate-pulse"></i>
+                            <div class="text-amber-900">
+                                <strong>Informasi Keamanan Data:</strong> Aplikasi ini berjalan sepenuhnya di browser Anda. Jangan lupa untuk melakukan <strong>Backup / Sinkronisasi</strong> jika Anda ingin keluar dari aplikasi atau ganti perangkat. Selalu lakukan <strong>Restore</strong> untuk memulihkan data terbaru Anda kembali ke perangkat ini!
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            let contentHtml = `
+                <div>
+                    ${menuId !== 'struktur' && menuId !== 'jadwal' && menuId !== 'aplikasi_lain' ? `
+                    <header class="mb-8 border-b border-gray-200 pb-4 flex flex-col md:flex-row md:items-start justify-between">
+                        <div class="flex-shrink-0 max-w-sm">
+                            <h1 class="text-3xl font-bold text-gray-800">${menu.title}</h1>
+                            <p class="text-gray-500 mt-1">${menu.desc}</p>
+                        </div>
+                        ${extraHeader}
+                    </header>
+                    ` : ''}
+            `;
+            
+            try {
+                // Route Logic
+                switch(menuId) {
+                    case 'dashboard': contentHtml += renderDashboard(); break;
+                    case 'pesan': contentHtml += renderPesanInfo(); break;
+                    case 'siswa': contentHtml += renderDataSiswa(); break;
+                    case 'struktur': contentHtml += renderStrukturOrganisasi(); break;
+                    case 'mapel': contentHtml += renderMapel(); break;
+                    case 'jadwal': contentHtml += renderJadwal(); break;
+                    case 'presensi': contentHtml += renderPresensi(); break;
+                    case 'nilai': contentHtml += renderNilai(); break;
+                    case 'jurnal': contentHtml += renderJurnal(); break;
+                    case 'tugas': contentHtml += renderTugas(); break;
+                    case 'catatan': contentHtml += renderCatatan(); break;
+                    case 'piket': contentHtml += renderPiket(); break;
+                    case 'refleksi': contentHtml += renderRefleksi(); break;
+                    case 'inventaris': contentHtml += renderInventaris(); break;
+                    case 'kas_kelas': contentHtml += renderKasKelas(); break;
+                    case 'pembayaran_kelas': contentHtml += renderPembayaranKelas(); break;
+                    case 'generator_soal': contentHtml += renderGeneratorSoal(); setTimeout(window.fetchQuotaSoal, 200); break;
+                    case 'modul_ajar_ai': contentHtml += renderModulAjarAI(); break;
+                    case 'aplikasi_lain': contentHtml += renderAplikasiLain(); break;
+                    case 'sync': contentHtml += renderSync(); break;
+                    case 'pengaturan': contentHtml += renderPengaturan(); break;
+                    default: contentHtml += `<div class="text-center p-10 text-gray-500">Modul belum tersedia.</div>`;
+                }
+                contentHtml += `</div>`;
+            } catch (renderError) {
+                contentHtml = `<div class="p-8 bg-red-100 text-red-800 rounded-xl font-bold">ERROR RENDERING ${menuId}: ${renderError.message}<br><pre class="text-xs mt-4">${renderError.stack}</pre></div>`;
+            }
+            
+            const targetAppContent = document.getElementById('app-content');
+            if (targetAppContent) {
+                targetAppContent.innerHTML = contentHtml;
+                // Paksa elemen untuk selalu terlihat dan mengambil ruang
+                targetAppContent.style.display = 'block';
+                targetAppContent.style.minHeight = '500px'; 
+                
+                // Maksimalkan area untuk iframe Aplikasi Lain
+                if (menuId === 'aplikasi_lain' && window.currentAplikasiLainUrl) {
+                    targetAppContent.classList.remove('max-w-7xl', 'md:p-8', 'p-4', 'p-2', 'md:p-4');
+                    targetAppContent.classList.add('max-w-full', 'p-0', 'flex', 'flex-col');
+                } else {
+                    targetAppContent.classList.add('max-w-7xl', 'md:p-8', 'p-4');
+                    targetAppContent.classList.remove('max-w-full', 'p-0', 'p-2', 'md:p-4', 'flex', 'flex-col');
+                }
+            } else {
+                console.error("CRITICAL: #app-content element NOT FOUND in DOM!");
+                alert("Kesalahan Sistem: Elemen #app-content tidak ditemukan!");
+            }
+            
+            const floatingChat = document.getElementById('floating-chat-wrapper');
+            if (floatingChat) {
+                if (menuId === 'pesan') {
+                    floatingChat.classList.remove('hidden');
+                } else {
+                    floatingChat.classList.add('hidden');
+                }
+            }
+            
+            if (isSamePage && typeof mainScrollArea !== 'undefined') {
+                mainScrollArea.scrollTop = currentScrollPos;
+                requestAnimationFrame(() => mainScrollArea.scrollTop = currentScrollPos);
+            } else if (typeof mainScrollArea !== 'undefined') {
+                mainScrollArea.scrollTop = 0;
+            }
+            
+            if (menuId === 'dashboard') {
+                setTimeout(() => {
+                    if (window.renderDashboardCharts) window.renderDashboardCharts();
+                    
+                    // Cek apakah mode standalone (sudah terinstal)
+                    const installBtn = document.getElementById('install-app-btn');
+                    if (installBtn) {
+                        const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+                        const isChromium = window.chrome !== undefined || /Chrome|Edge|Edg|SamsungBrowser/i.test(navigator.userAgent);
+                        
+                        if (!isStandalone) {
+                            if (!isChromium || window.deferredPrompt) {
+                                installBtn.classList.remove('hidden');
+                            }
+                        }
+                    }
+                }, 50);
+            }
+
+            if (window.innerWidth < 768) {
+                const sb = document.getElementById('sidebar');
+                const ov = document.getElementById('sidebar-overlay');
+                if (sb) sb.classList.add('-translate-x-full');
+                if (ov) ov.classList.add('hidden');
+            }
+            document.title = `${menu.title} | Manajemen Wali Kelas`;
+            
+            if(menuId === 'pesan') {
+                if (!isSamePage) {
+                    setTimeout(() => {
+                        const chatContainer = document.getElementById('chat-container');
+                        if(chatContainer) chatContainer.scrollTop = 0;
+                    }, 100);
+                }
+            }
+        }
+
+        // --- Sidebar Mobile Toggle Logic ---
+        function toggleSidebar() {
+            const isClosed = sidebar.classList.contains('-translate-x-full');
+            if (isClosed) {
+                sidebar.classList.remove('-translate-x-full');
+                overlay.classList.remove('hidden');
+            } else {
+                sidebar.classList.add('-translate-x-full');
+                overlay.classList.add('hidden');
+            }
+        }
+        
+        window.updateUIIdentitas = () => {
+            try {
+                const p = db.pengaturan || {nama: window.currentUser ? window.currentUser.nama : '', nip: '-', sekolah: window.currentUser ? window.currentUser.sekolah : ''};
+                const mobileSekolah = document.getElementById('mobile-header-sekolah');
+                const sidebarNama = document.getElementById('sidebar-nama');
+                const sidebarSekolah = document.getElementById('sidebar-sekolah');
+                const sidebarAvatar = document.getElementById('sidebar-avatar');
+                
+                if (mobileSekolah) mobileSekolah.textContent = p.sekolah || 'Sekolah';
+                if (sidebarNama) sidebarNama.textContent = p.nama || 'Wali Kelas';
+                if (sidebarSekolah) sidebarSekolah.textContent = p.sekolah || 'Sekolah';
+                if (sidebarAvatar) {
+                    if (p.foto) {
+                        sidebarAvatar.src = p.foto;
+                        sidebarAvatar.onerror = function() {
+                            const encName = encodeURIComponent(p.nama || 'Wali');
+                            this.onerror = null;
+                            this.src = "https://ui-avatars.com/api/?name=" + encName + "&background=f97316&color=fff&size=150";
+                        };
+                    } else {
+                        const encName = encodeURIComponent(p.nama || 'Wali');
+                        sidebarAvatar.src = "https://ui-avatars.com/api/?name=" + encName + "&background=f97316&color=fff&size=150";
+                    }
+                }
+                document.title = "Manajemen Wali Kelas | " + (p.sekolah || 'Sekolah');
+            } catch (err) {
+                console.error("UI Update error:", err);
+            }
+        };
+
+        document.getElementById('mobile-menu-btn').addEventListener('click', toggleSidebar);
+        document.getElementById('close-sidebar-btn').addEventListener('click', toggleSidebar);
+        overlay.addEventListener('click', toggleSidebar);
+
+        // --- Boot App ---
+        async function bootApp() {
+            // Guard: mencegah bootApp dijalankan lebih dari sekali
+            if (window._bootAppExecuted) {
+                console.log('[DEBUG] bootApp sudah pernah dijalankan, skip.');
+                return;
+            }
+            window._bootAppExecuted = true;
+
+            if (window.currentUser && window.currentUser.email) {
+                DB_KEY = 'manajemenWaliKelasDB_' + window.currentUser.email.replace(/[^a-zA-Z0-9]/g, '_');
+            }
+
+            let dbJson = localStorage.getItem(DB_KEY);
+            let isLegacyMigrated = false;
+            
+            // Migrasi untuk user lama yang sudah punya data di key default (hanya dilakukan sekali)
+            if (!dbJson && window.currentUser) {
+                const legacyDbJson = localStorage.getItem('manajemenWaliKelasDB');
+                if (legacyDbJson) {
+                    dbJson = legacyDbJson;
+                    isLegacyMigrated = true;
+                    // Hapus key lama agar user berikutnya tidak inherit data yang sama
+                    localStorage.removeItem('manajemenWaliKelasDB'); 
+                }
+            }
+            
+            // Jika localStorage kosong, coba pulihkan secara diam-diam dari IndexedDB Cache
+            if (!dbJson) {
+                dbJson = await new Promise(resolve => {
+                    try {
+                        const req = indexedDB.open('MWK_CacheDB', 1);
+                        req.onupgradeneeded = e => e.target.result.createObjectStore('cache');
+                        req.onsuccess = e => {
+                            const idb = e.target.result;
+                            // Tangani case jika objectStore belum terbuat
+                            if(!idb.objectStoreNames.contains('cache')) {
+                                idb.close(); resolve(null); return;
+                            }
+                            const tx = idb.transaction('cache', 'readonly');
+                            const getReq = tx.objectStore('cache').get(DB_KEY + '_json');
+                            getReq.onsuccess = () => { 
+                                idb.close(); resolve(getReq.result || null);
+                            };
+                            getReq.onerror = () => { idb.close(); resolve(null); };
+                        };
+                        req.onerror = () => resolve(null);
+                    } catch(err) { resolve(null); }
+                });
+                
+            if (dbJson) {
+                    try {
+                        localStorage.setItem(DB_KEY, dbJson); // Kembalikan data ke localStorage
+                    } catch(err) {}
+                }
+            }
+
+            db = dbJson ? JSON.parse(dbJson) : null;
+
+            if (!db) {
+                db = JSON.parse(JSON.stringify(defaultData));
+                db.hari_efektif = ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat'];
+            }
+            
+            // Proses Migrasi Kunci Baru & Validasi Struktur (Selalu dijalankan)
+            ['mapel', 'jurnal', 'tugas', 'catatan', 'inventaris', 'jadwal', 'piket', 'nilai', 'pengaturan_nilai', 'libur_dates', 'pengaturan', 'refleksi_mingguan', 'pesan_info', 'struktur_organisasi', 'kas_kelas'].forEach(k => {
+                if(!db[k]) db[k] = defaultData[k] || (k === 'nilai' || k === 'pengaturan_nilai' || k === 'libur_dates' ? {} : (k === 'pengaturan' ? {nama: window.currentUser ? window.currentUser.nama : '', nip: '-', sekolah: window.currentUser ? window.currentUser.sekolah : '', npsn: window.currentUser ? window.currentUser.npsn : ''} : (k === 'refleksi_mingguan' ? {emoji: '', teks: ''} : (k === 'kas_kelas' ? {nominal: 0, tanggal_mulai: "", hari_aktif: {Senin: true, Selasa: true, Rabu: true, Kamis: true, Jumat: true, Sabtu: false, Minggu: false}, pengeluaran: [], pembayaran: {}} : []))));
+            });
+            if (db.kas_kelas && (db.kas_kelas.tanggal_mulai === '2023-07-17' || db.kas_kelas.tanggal_mulai === '2026-07-13')) {
+                db.kas_kelas.tanggal_mulai = '';
+                if (db.kas_kelas.nominal === 1000) db.kas_kelas.nominal = 0;
+            }
+            if (Array.isArray(db.libur_dates)) {
+                let obj = {};
+                db.libur_dates.forEach(d => obj[d] = 'Libur');
+                db.libur_dates = obj;
+            }
+            if(!db.hari_efektif) db.hari_efektif = ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat'];
+            if(!db.attendance) {
+                db.attendance = {};
+            }
+            
+            // Auto-fill "Hadir" for today if empty (so it defaults to Hadir)
+            const todayStr = new Date().toLocaleDateString('en-CA');
+            if(!db.attendance[todayStr] && db.students && db.students.length > 0) {
+                const namaHariIndo = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
+                const nHariToday = namaHariIndo[new Date(todayStr).getDay()];
+                const isLiburManToday = db.libur_dates && !!db.libur_dates[todayStr];
+                const isEfektifToday = db.hari_efektif && db.hari_efektif.includes(nHariToday) && !isLiburManToday;
+                if (isEfektifToday) {
+                    db.attendance[todayStr] = {};
+                    db.students.forEach(s => db.attendance[todayStr][s.id] = 'Hadir');
+                }
+            }
+            saveDB();
+
+            window.updateUIIdentitas();
+            renderSidebar();
+            renderBottomNav();
+            const lastMenu = localStorage.getItem('mwk_lastMenu') || "dashboard";
+            window.navigateTo(lastMenu);
+            
+            window.checkLocalTempRun = () => {
+                const currentUrl = window.location.href.toLowerCase();
+                if (currentUrl.startsWith('file:///') && (currentUrl.includes('/temp/') || currentUrl.includes('/appdata/local/temp/') || currentUrl.includes('rar$') || currentUrl.includes('zip'))) {
+                    setTimeout(() => {
+                        alert("⚠️ PERINGATAN PENTING! ⚠️\n\nSepertinya Anda menjalankan aplikasi ini LANGSUNG dari dalam file ZIP tanpa mengekstraknya terlebih dahulu.\n\nAkibatnya, Windows membuat folder sementara (Temp) yang baru setiap kali Anda membukanya, sehingga semua data yang Anda simpan akan SELALU HILANG saat Anda menutup browser!\n\nSOLUSI:\n1. Tutup browser ini.\n2. Klik Kanan pada file ZIP yang Anda unduh.\n3. Pilih 'Extract Here' (Ekstrak di sini) atau 'Extract All'.\n4. Buka file index.html dari folder hasil ekstraksi tersebut.\n\nDengan begitu, data Anda akan tersimpan secara permanen.");
+                    }, 1000);
+                }
+            };
+            window.checkLocalTempRun();
+        }
+
+        // --- Modals Pembayaran Kelas ---
+        window.bukaModalKelolaItemPK = () => {
+            let pk = db.pembayaran_kelas;
+            let itemHtml = pk.items.map((item, index) => `
+                <div class="flex items-center justify-between bg-slate-50 p-3 rounded-lg border border-slate-200 mb-2 relative">
+                    <div class="absolute -left-2 -top-2 w-6 h-6 bg-indigo-500 text-white font-bold rounded-full flex items-center justify-center text-xs shadow-sm border-2 border-white">${index + 1}</div>
+                    <div class="ml-3">
+                        <div class="font-bold text-slate-700">${item.name}</div>
+                        <div class="text-sm text-indigo-600 font-bold">Rp ${parseInt(item.nominal).toLocaleString('id-ID')}</div>
+                    </div>
+                    <div class="flex gap-1">
+                        <button onclick="window.editItemPK('${item.id}')" class="text-blue-500 hover:text-blue-700 p-2"><i class="fas fa-edit"></i></button>
+                        <button onclick="window.hapusItemPK('${item.id}')" class="text-red-500 hover:text-red-700 p-2"><i class="fas fa-trash"></i></button>
+                    </div>
+                </div>
+            `).join('');
+
+            if (pk.items.length === 0) {
+                itemHtml = `<div class="text-center text-slate-400 p-4 text-sm">Belum ada item tagihan. Tambahkan di bawah.</div>`;
+            }
+
+            let totalTagihanHarusBayar = pk.items.reduce((sum, item) => sum + parseInt(item.nominal || 0), 0);
+
+            const modalHtml = `
+            <div id="modal-kelola-item-pk" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm opacity-0 transition-opacity duration-300">
+                <div class="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden transform scale-95 transition-transform duration-300 flex flex-col max-h-[90vh]">
+                    <div class="p-5 border-b border-slate-100 flex justify-between items-center bg-slate-50 shrink-0 gap-2">
+                        <h3 class="font-bold text-lg text-slate-800 flex-1 truncate"><i class="fas fa-cog text-indigo-500 mr-2"></i>Kelola Item</h3>
+                        <div class="text-right flex flex-col items-end shrink-0">
+                            <span class="text-[9px] text-slate-500 font-bold uppercase tracking-wider mb-0.5">Total Tagihan</span>
+                            <span class="text-xs font-bold text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded border border-indigo-100 shadow-sm">Rp ${totalTagihanHarusBayar.toLocaleString('id-ID')}</span>
+                        </div>
+                        <button onclick="document.getElementById('modal-kelola-item-pk').remove()" class="text-slate-400 hover:text-red-500 transition text-2xl w-8 h-8 flex items-center justify-center rounded-full hover:bg-red-50 shrink-0 ml-1">&times;</button>
+                    </div>
+                    <div class="p-6 overflow-y-auto flex-1">
+                        <div class="mb-4">
+                            <h4 class="font-bold text-slate-700 text-sm mb-2">Item Saat Ini:</h4>
+                            ${itemHtml}
+                        </div>
+                        <div class="border-t border-slate-200 pt-4 mt-2">
+                            <h4 id="form-title-pk" class="font-bold text-slate-700 text-sm mb-3">Tambah Item Baru:</h4>
+                            <input type="hidden" id="pk-item-id" value="">
+                            <div class="mb-3">
+                                <label class="block text-xs font-bold text-slate-500 mb-1">Nama Tagihan (Misal: Seragam, Buku Tema)</label>
+                                <input type="text" id="pk-item-name" class="w-full border border-slate-300 rounded-lg p-2.5 outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 text-sm" placeholder="Masukkan nama item">
+                            </div>
+                            <div class="mb-4">
+                                <label class="block text-xs font-bold text-slate-500 mb-1">Nominal (Rp)</label>
+                                <input type="text" id="pk-item-nominal" oninput="this.value = this.value.replace(/\\D/g, '').replace(/\\B(?=(\\d{3})+(?!\\d))/g, '.')" class="w-full border border-slate-300 rounded-lg p-2.5 outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 text-sm" placeholder="Contoh: 150.000">
+                            </div>
+                            <button id="btn-simpan-pk" onclick="window.simpanItemPK()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2.5 rounded-lg text-sm transition flex items-center justify-center">
+                                <i id="icon-simpan-pk" class="fas fa-plus mr-1.5"></i> <span id="text-simpan-pk">Tambah Item</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            `;
+            let existing = document.getElementById('modal-kelola-item-pk');
+            if (existing) existing.remove();
+            document.body.insertAdjacentHTML('beforeend', modalHtml);
+            setTimeout(() => {
+                const modal = document.getElementById('modal-kelola-item-pk');
+                if(modal) { modal.classList.remove('opacity-0'); modal.children[0].classList.remove('scale-95'); }
+            }, 10);
+        };
+
+        window.editItemPK = (itemId) => {
+            let pk = db.pembayaran_kelas;
+            let item = pk.items.find(i => i.id === itemId);
+            if (!item) return;
+            
+            document.getElementById('pk-item-id').value = itemId;
+            document.getElementById('pk-item-name').value = item.name;
+            document.getElementById('pk-item-nominal').value = item.nominal.toLocaleString('id-ID');
+            
+            document.getElementById('form-title-pk').innerText = 'Edit Item Tagihan:';
+            document.getElementById('icon-simpan-pk').className = 'fas fa-save mr-1.5';
+            document.getElementById('text-simpan-pk').innerText = 'Simpan Perubahan';
+            let btn = document.getElementById('btn-simpan-pk');
+            btn.classList.remove('bg-indigo-600', 'hover:bg-indigo-700');
+            btn.classList.add('bg-green-600', 'hover:bg-green-700');
+        };
+
+        window.simpanItemPK = () => {
+            const idToEdit = document.getElementById('pk-item-id').value;
+            const name = document.getElementById('pk-item-name').value.trim();
+            const nominalStr = document.getElementById('pk-item-nominal').value;
+            const nominal = parseInt(nominalStr.replace(/\./g, ''));
+
+            if (!name || isNaN(nominal) || nominal <= 0) {
+                return alert("Harap isi nama item dan nominal dengan benar!");
+            }
+
+            if (idToEdit) {
+                let item = db.pembayaran_kelas.items.find(i => i.id === idToEdit);
+                if (item) {
+                    item.name = name;
+                    item.nominal = nominal;
+                }
+            } else {
+                db.pembayaran_kelas.items.push({
+                    id: 'pk_' + Date.now(),
+                    name: name,
+                    nominal: nominal
+                });
+            }
+            
+            saveDB();
+            document.getElementById('modal-kelola-item-pk').remove();
+            navigateTo('pembayaran_kelas');
+            window.bukaModalKelolaItemPK();
+        };
+
+        window.hapusItemPK = (itemId) => {
+            if (confirm("Yakin ingin menghapus item ini? Transaksi siswa terkait item ini akan tetap ada namun item tagihannya hilang.")) {
+                db.pembayaran_kelas.items = db.pembayaran_kelas.items.filter(i => i.id !== itemId);
+                saveDB();
+                document.getElementById('modal-kelola-item-pk').remove();
+                navigateTo('pembayaran_kelas');
+                window.bukaModalKelolaItemPK();
+            }
+        };
+
+        window.updateBadgeKurang = (itemId, sisaAwal) => {
+            let input = document.getElementById('input_pk_' + itemId);
+            let badge = document.getElementById('badge_kurang_' + itemId);
+            if (!input || !badge) return;
+            let val = parseInt(input.value.replace(/\./g, '')) || 0;
+            let sisaBaru = sisaAwal - val;
+            if (sisaBaru < 0) {
+                badge.className = 'text-xs bg-green-100 text-green-700 px-2 py-1 rounded font-bold';
+                badge.innerHTML = 'Lebih: Rp ' + Math.abs(sisaBaru).toLocaleString('id-ID');
+            } else if (sisaBaru === 0) {
+                badge.className = 'text-xs bg-green-100 text-green-700 px-2 py-1 rounded font-bold';
+                badge.innerHTML = 'LUNAS';
+            } else {
+                badge.className = 'text-xs bg-red-100 text-red-700 px-2 py-1 rounded font-bold';
+                badge.innerHTML = 'Kurang: Rp ' + sisaBaru.toLocaleString('id-ID');
+            }
+        };
+
+        window.updateGlobalSummaryPK = (studentId) => {
+            let pk = db.pembayaran_kelas;
+            if(!pk) return;
+            
+            let totalHarus = 0;
+            let totalTerbayar = 0;
+            
+            pk.items.forEach(item => {
+                totalHarus += parseInt(item.nominal);
+                let dibayarLama = (pk.transaksi[studentId] && pk.transaksi[studentId][item.id]) ? parseInt(pk.transaksi[studentId][item.id]) : 0;
+                
+                let inputEl = document.getElementById('input_pk_' + item.id);
+                let dibayarBaru = 0;
+                if(inputEl && inputEl.value) {
+                    dibayarBaru = parseInt(inputEl.value.replace(/\./g, '')) || 0;
+                }
+                
+                totalTerbayar += (dibayarLama + dibayarBaru);
+            });
+            
+            let sisaKurang = totalHarus - totalTerbayar;
+            
+            let elTerbayar = document.getElementById('summary_terbayar');
+            let elSisa = document.getElementById('summary_sisa');
+            
+            if(elTerbayar) elTerbayar.innerHTML = 'Rp ' + totalTerbayar.toLocaleString('id-ID');
+            if(elSisa) {
+                if(sisaKurang <= 0) {
+                    elSisa.className = 'font-bold text-green-600';
+                    elSisa.innerHTML = 'LUNAS';
+                } else {
+                    elSisa.className = 'font-bold text-red-600';
+                    elSisa.innerHTML = 'Rp ' + sisaKurang.toLocaleString('id-ID');
+                }
+            }
+        };
+
+        window.hapusRiwayatPK = (studentId, itemId, rIndex) => {
+            if(typeof Swal !== 'undefined') {
+                Swal.fire({
+                    title: 'Hapus Cicilan?',
+                    text: 'Riwayat pembayaran ini akan dihapus dan total tagihan akan disesuaikan.',
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#ef4444',
+                    cancelButtonColor: '#94a3b8',
+                    confirmButtonText: 'Ya, Hapus',
+                    cancelButtonText: 'Batal'
+                }).then((result) => {
+                    if (result.isConfirmed) processHapus();
+                });
+            } else {
+                if(confirm('Yakin ingin menghapus riwayat pembayaran ini?')) processHapus();
+            }
+
+            function processHapus() {
+                let pk = db.pembayaran_kelas;
+                if(!pk.riwayat_bayar[studentId] || !pk.riwayat_bayar[studentId][itemId]) return;
+                
+                let deletedNominal = pk.riwayat_bayar[studentId][itemId][rIndex].nominal;
+                pk.riwayat_bayar[studentId][itemId].splice(rIndex, 1);
+                
+                if(pk.transaksi[studentId] && pk.transaksi[studentId][itemId]) {
+                    pk.transaksi[studentId][itemId] -= deletedNominal;
+                    if(pk.transaksi[studentId][itemId] < 0) pk.transaksi[studentId][itemId] = 0;
+                }
+                
+                saveDB();
+                let existing = document.getElementById('modal-bayar-pk');
+                if (existing) existing.remove();
+                window.bukaModalBayarPK(studentId);
+            }
+        };
+
+        window.bukaModalBayarPK = (studentId) => {
+            let pk = db.pembayaran_kelas;
+            const student = db.students.find(s => String(s.id) === String(studentId));
+            if(!student) return;
+
+            if (pk.items.length === 0) {
+                if(typeof window.showAlert === 'function') {
+                    return window.showAlert("Belum ada item tagihan! Silakan tambahkan Item Tagihan terlebih dahulu.");
+                } else {
+                    return alert("Belum ada item tagihan! Silakan tambahkan Item Tagihan terlebih dahulu.");
+                }
+            }
+
+            if(!pk.transaksi[studentId]) pk.transaksi[studentId] = {};
+            if(!pk.riwayat_bayar) pk.riwayat_bayar = {};
+            if(!pk.riwayat_bayar[studentId]) pk.riwayat_bayar[studentId] = {};
+
+            let todayStr = new Date().toLocaleDateString('en-CA');
+
+            let formHtml = pk.items.map((item, index) => {
+                let terbayar = pk.transaksi[studentId][item.id] ? parseInt(pk.transaksi[studentId][item.id]) : 0;
+                let kurang = parseInt(item.nominal) - terbayar;
+                let isLunas = kurang <= 0;
+                let badgeHtml = '';
+                let badgeClass = '';
+                if (kurang < 0) {
+                    badgeClass = 'bg-green-100 text-green-700';
+                    badgeHtml = 'Lebih: Rp ' + Math.abs(kurang).toLocaleString('id-ID');
+                } else if (kurang === 0) {
+                    badgeClass = 'bg-green-100 text-green-700';
+                    badgeHtml = 'LUNAS';
+                } else {
+                    badgeClass = 'bg-red-100 text-red-700';
+                    badgeHtml = 'Kurang: Rp ' + kurang.toLocaleString('id-ID');
+                }
+                
+                let riwayat = pk.riwayat_bayar[studentId][item.id] || [];
+                if (riwayat.length === 0 && terbayar > 0) {
+                    let oldTgl = (pk.tanggal_bayar && pk.tanggal_bayar[studentId] && pk.tanggal_bayar[studentId][item.id]) ? pk.tanggal_bayar[studentId][item.id] : 'Tanggal Lama';
+                    riwayat = [{ tgl: oldTgl, nominal: terbayar }];
+                }
+
+                let riwayatHtml = riwayat.map((r, rIndex) => {
+                    let formattedTgl = r.tgl;
+                    if(formattedTgl && formattedTgl.includes('-')) {
+                        let parts = formattedTgl.split('-');
+                        if(parts.length === 3 && parts[0].length === 4) formattedTgl = `${parts[2]}-${parts[1]}-${parts[0]}`;
+                    }
+                    return `
+                    <div class="flex justify-between items-center bg-white p-2 rounded border border-slate-100 mb-1 text-xs">
+                        <div class="text-slate-500"><i class="far fa-calendar-alt mr-1"></i>${formattedTgl}</div>
+                        <div class="font-bold text-slate-700 flex items-center">
+                            Rp ${r.nominal.toLocaleString('id-ID')}
+                            <button onclick="window.hapusRiwayatPK('${studentId}', '${item.id}', ${rIndex})" class="text-red-400 hover:text-red-600 ml-3 transition" title="Hapus Pembayaran"><i class="fas fa-times-circle"></i></button>
+                        </div>
+                    </div>
+                `}).join('');
+
+                let formBayarBaruHtml = '';
+                if (!isLunas) {
+                    formBayarBaruHtml = `
+                    <div class="mt-3 border-t border-slate-200 pt-3">
+                        <label class="block text-xs font-bold text-slate-500 mb-2">Pembayaran Baru</label>
+                        <div class="mb-2">
+                            <input type="date" id="tgl_pk_${item.id}" value="${todayStr}" class="w-full border border-slate-300 rounded p-1.5 outline-none focus:border-indigo-500 text-xs font-bold text-slate-800">
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="text-slate-500 font-bold text-sm shrink-0">Rp</span>
+                            <input type="text" id="input_pk_${item.id}" oninput="this.value = this.value.replace(/\\D/g, '').replace(/\\B(?=(\\d{3})+(?!\\d))/g, '.'); window.updateBadgeKurang('${item.id}', ${kurang}); window.updateGlobalSummaryPK('${studentId}');" class="flex-1 min-w-0 border border-slate-300 rounded-lg p-2 outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 text-sm font-bold text-slate-800" placeholder="0">
+                            <button onclick="document.getElementById('input_pk_${item.id}').value = '${kurang.toLocaleString('id-ID')}'; window.updateBadgeKurang('${item.id}', ${kurang}); window.updateGlobalSummaryPK('${studentId}');" class="bg-indigo-100 text-indigo-700 px-3 py-2 rounded-lg text-xs font-bold hover:bg-indigo-200 transition shrink-0 whitespace-nowrap">Lunasi Sisa</button>
+                        </div>
+                    </div>
+                    `;
+                }
+
+                return `
+                <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 relative">
+                    <div class="absolute -left-2 -top-2 w-6 h-6 bg-indigo-500 text-white font-bold rounded-full flex items-center justify-center text-xs shadow-sm border-2 border-white">${index + 1}</div>
+                    <div class="flex justify-between items-center mb-2 ml-3">
+                        <div class="font-bold text-slate-700 text-sm">${item.name} <span class="text-xs text-slate-400 font-normal ml-1">(Rp ${parseInt(item.nominal).toLocaleString('id-ID')})</span></div>
+                        <div id="badge_kurang_${item.id}" class="text-xs ${badgeClass} px-2 py-1 rounded font-bold">
+                            ${badgeHtml}
+                        </div>
+                    </div>
+                    ${riwayatHtml ? `<div class="mb-2"><div class="text-[10px] font-bold text-slate-400 mb-1">RIWAYAT CICILAN:</div>${riwayatHtml}</div>` : ''}
+                    ${formBayarBaruHtml}
+                </div>
+                `;
+            }).join('');
+
+            let totalHarus = pk.items.reduce((sum, item) => sum + parseInt(item.nominal), 0);
+            let totalTerbayar = 0;
+            pk.items.forEach(item => {
+                if(pk.transaksi[studentId] && pk.transaksi[studentId][item.id]) {
+                    totalTerbayar += parseInt(pk.transaksi[studentId][item.id]);
+                }
+            });
+            let sisaKurang = totalHarus - totalTerbayar;
+
+            const modalHtml = `
+            <div id="modal-bayar-pk" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm opacity-0 transition-opacity duration-300">
+                <div class="bg-white rounded-2xl shadow-xl w-full max-w-3xl overflow-hidden transform scale-95 transition-transform duration-300 flex flex-col max-h-[90vh]">
+                    <div class="p-5 border-b border-slate-100 flex justify-between items-center bg-slate-50 shrink-0">
+                        <div class="flex items-center justify-between flex-1 pr-4">
+                            <div>
+                                <h3 class="font-bold text-lg text-slate-800"><i class="fas fa-money-bill-wave text-indigo-500 mr-2"></i>Bayar Tagihan</h3>
+                                <p class="text-xs text-slate-500 mt-1">${student.name}</p>
+                            </div>
+                            <div class="text-right text-xs bg-white py-1.5 px-3 rounded-lg border border-slate-200 shadow-sm">
+                                <div class="text-slate-500 mb-0.5">Total Tagihan: <span class="font-bold text-slate-700">Rp ${totalHarus.toLocaleString('id-ID')}</span></div>
+                                <div class="text-slate-500 mb-0.5">Sudah Dibayar: <span id="summary_terbayar" class="font-bold text-green-600">Rp ${totalTerbayar.toLocaleString('id-ID')}</span></div>
+                                <div class="text-slate-500">Sisa / Kurang: <span id="summary_sisa" class="font-bold ${sisaKurang <= 0 ? 'text-green-600' : 'text-red-600'}">${sisaKurang <= 0 ? 'LUNAS' : 'Rp ' + sisaKurang.toLocaleString('id-ID')}</span></div>
+                            </div>
+                        </div>
+                        <button onclick="document.getElementById('modal-bayar-pk').remove()" class="text-slate-400 hover:text-red-500 transition text-2xl w-8 h-8 flex items-center justify-center rounded-full hover:bg-red-50 shrink-0">&times;</button>
+                    </div>
+                    <div class="p-6 overflow-y-auto flex-1">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            ${formHtml}
+                        </div>
+                    </div>
+                    <div class="p-4 border-t border-slate-100 bg-white shrink-0">
+                        <button onclick="window.simpanPembayaranPK('${studentId}')" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 rounded-xl text-sm transition shadow-sm flex items-center justify-center">
+                            <i class="fas fa-save mr-1.5"></i> Simpan Pembayaran
+                        </button>
+                    </div>
+                </div>
+            </div>
+            `;
+            let existing = document.getElementById('modal-bayar-pk');
+            if (existing) existing.remove();
+            document.body.insertAdjacentHTML('beforeend', modalHtml);
+            setTimeout(() => {
+                const modal = document.getElementById('modal-bayar-pk');
+                if(modal) { modal.classList.remove('opacity-0'); modal.children[0].classList.remove('scale-95'); }
+            }, 10);
+        };
+
+        window.simpanPembayaranPK = (studentId) => {
+            let pk = db.pembayaran_kelas;
+            if(!pk.transaksi[studentId]) pk.transaksi[studentId] = {};
+            if(!pk.riwayat_bayar) pk.riwayat_bayar = {};
+            if(!pk.riwayat_bayar[studentId]) pk.riwayat_bayar[studentId] = {};
+            
+            pk.items.forEach(item => {
+                let inputEl = document.getElementById('input_pk_' + item.id);
+                let tglEl = document.getElementById('tgl_pk_' + item.id);
+                
+                if(inputEl && inputEl.value.trim() !== '') {
+                    let valBaru = parseInt(inputEl.value.replace(/\./g, ''));
+                    if(!isNaN(valBaru) && valBaru > 0) {
+                        if(!pk.riwayat_bayar[studentId][item.id]) pk.riwayat_bayar[studentId][item.id] = [];
+                        let tglBaru = tglEl ? tglEl.value : new Date().toLocaleDateString('en-CA');
+                        pk.riwayat_bayar[studentId][item.id].push({
+                            tgl: tglBaru,
+                            nominal: valBaru
+                        });
+                        
+                        let totalSebelumnya = pk.transaksi[studentId][item.id] ? parseInt(pk.transaksi[studentId][item.id]) : 0;
+                        pk.transaksi[studentId][item.id] = totalSebelumnya + valBaru;
+                    }
+                }
+            });
+            saveDB();
+            document.getElementById('modal-bayar-pk').remove();
+            navigateTo('pembayaran_kelas');
+        };
+
+        window.bukaModalViewPK = (studentId) => {
+            let pk = db.pembayaran_kelas;
+            const student = db.students.find(s => String(s.id) === String(studentId));
+            if(!student) return;
+
+            let totalHarus = 0;
+            let totalBayar = 0;
+
+            let rincianHtml = pk.items.map((item, index) => {
+                let nominal = parseInt(item.nominal);
+                let terbayar = (pk.transaksi[studentId] && pk.transaksi[studentId][item.id]) ? parseInt(pk.transaksi[studentId][item.id]) : 0;
+                let kurang = nominal - terbayar;
+                
+                totalHarus += nominal;
+                totalBayar += terbayar;
+
+                let statusHtml = '';
+                if(kurang < 0) {
+                    statusHtml = `<span class="text-green-600 font-bold"><i class="fas fa-check-circle mr-1"></i>Lebih Rp ${Math.abs(kurang).toLocaleString('id-ID')}</span>`;
+                } else if(kurang === 0) {
+                    statusHtml = '<span class="text-green-600 font-bold"><i class="fas fa-check-circle mr-1"></i>Lunas</span>';
+                } else if(terbayar > 0) {
+                    statusHtml = `<span class="text-orange-500 font-bold">Cicil (Kurang Rp ${kurang.toLocaleString('id-ID')})</span>`;
+                } else {
+                    statusHtml = '<span class="text-red-500 font-bold">Belum Bayar</span>';
+                }
+
+                let riwayat = (pk.riwayat_bayar && pk.riwayat_bayar[studentId] && pk.riwayat_bayar[studentId][item.id]) ? pk.riwayat_bayar[studentId][item.id] : [];
+                if (riwayat.length === 0 && terbayar > 0) {
+                    let oldTgl = (pk.tanggal_bayar && pk.tanggal_bayar[studentId] && pk.tanggal_bayar[studentId][item.id]) ? pk.tanggal_bayar[studentId][item.id] : 'Lama';
+                    riwayat = [{ tgl: oldTgl, nominal: terbayar }];
+                }
+                
+                let riwayatHtml = riwayat.length > 0 ? `<div class="mt-2 text-xs border-t border-slate-100 pt-2"><div class="text-[10px] font-bold text-slate-400 mb-1">RIWAYAT CICILAN:</div>` + riwayat.map(r => {
+                    let formattedTgl = r.tgl;
+                    if(formattedTgl && formattedTgl.includes('-')) {
+                        let parts = formattedTgl.split('-');
+                        if(parts.length === 3 && parts[0].length === 4) formattedTgl = `${parts[2]}-${parts[1]}-${parts[0]}`;
+                    }
+                    return `
+                    <div class="flex justify-between text-slate-500 mb-1">
+                        <span><i class="far fa-calendar-alt mr-1"></i>${formattedTgl}</span>
+                        <span>Rp ${r.nominal.toLocaleString('id-ID')}</span>
+                    </div>
+                `}).join('') + `</div>` : '';
+
+                return `
+                <div class="py-2 border-b border-slate-100 last:border-0 text-sm flex items-start gap-3">
+                    <div class="mt-1 w-5 h-5 bg-indigo-100 text-indigo-700 font-bold rounded-full flex items-center justify-center text-[10px] shrink-0">${index + 1}</div>
+                    <div class="flex-1">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <div class="font-bold text-slate-700">${item.name}</div>
+                                <div class="text-xs text-slate-400">Tarif: Rp ${nominal.toLocaleString('id-ID')}</div>
+                            </div>
+                        <div class="text-right">
+                            <div>${statusHtml}</div>
+                            <div class="text-xs text-slate-500 mt-0.5">Total Bayar: Rp ${terbayar.toLocaleString('id-ID')}</div>
+                        </div>
+                    </div>
+                    ${riwayatHtml}
+                    </div>
+                </div>
+                `;
+            }).join('');
+
+            if (pk.items.length === 0) {
+                rincianHtml = `<div class="text-center text-slate-400 p-4 text-sm">Tidak ada rincian tagihan.</div>`;
+            }
+
+            let sisaGlobal = totalHarus - totalBayar;
+
+            const modalHtml = `
+            <div id="modal-view-pk" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm opacity-0 transition-opacity duration-300">
+                <div class="bg-white rounded-2xl shadow-xl w-full max-w-sm overflow-hidden transform scale-95 transition-transform duration-300 flex flex-col max-h-[90vh]">
+                    <div class="p-5 border-b border-slate-100 flex justify-between items-center bg-indigo-50 shrink-0">
+                        <div>
+                            <h3 class="font-bold text-lg text-indigo-900"><i class="fas fa-file-invoice mr-2"></i>Rincian Tagihan</h3>
+                            <p class="text-xs text-indigo-600 font-medium mt-1">${student.name}</p>
+                        </div>
+                        <button onclick="document.getElementById('modal-view-pk').remove()" class="text-indigo-400 hover:text-red-500 transition text-2xl w-8 h-8 flex items-center justify-center rounded-full hover:bg-white">&times;</button>
+                    </div>
+                    <div class="p-5 overflow-y-auto flex-1">
+                        <div class="bg-indigo-500 text-white rounded-xl p-4 mb-4 shadow-sm">
+                            <div class="flex justify-between items-center mb-1">
+                                <span class="text-xs text-indigo-100">Total Harus Dibayar</span>
+                                <span class="text-sm font-bold">Rp ${totalHarus.toLocaleString('id-ID')}</span>
+                            </div>
+                            <div class="flex justify-between items-center mb-2">
+                                <span class="text-xs text-indigo-100">Total Terbayar</span>
+                                <span class="text-sm font-bold">Rp ${totalBayar.toLocaleString('id-ID')}</span>
+                            </div>
+                            <div class="border-t border-indigo-400 pt-2 flex justify-between items-center">
+                                <span class="text-sm font-bold">${sisaGlobal < 0 ? 'Lebih Bayar' : 'Sisa Kekurangan'}</span>
+                                <span class="text-lg font-bold ${sisaGlobal < 0 ? 'text-green-300' : 'text-yellow-300'}">Rp ${Math.abs(sisaGlobal).toLocaleString('id-ID')}</span>
+                            </div>
+                        </div>
+                        
+                        <h4 class="font-bold text-slate-700 text-sm mb-3 border-b border-slate-200 pb-2">Rincian Per Item:</h4>
+                        ${rincianHtml}
+
+                    </div>
+                    <div class="p-4 border-t border-slate-100 bg-white shrink-0 flex gap-2">
+                        <button onclick="window.cetakPDFRincianPK('${studentId}')" class="flex-1 bg-red-500 hover:bg-red-600 text-white font-bold py-2 rounded-xl text-sm transition shadow-sm flex items-center justify-center gap-2">
+                            <i class="fas fa-file-pdf"></i> Unduh PDF
+                        </button>
+                        <button onclick="window.shareWARincianPK('${studentId}')" class="flex-1 bg-green-500 hover:bg-green-600 text-white font-bold py-2 rounded-xl text-sm transition shadow-sm flex items-center justify-center gap-2">
+                            <i class="fab fa-whatsapp text-lg"></i> Share Teks WA
+                        </button>
+                    </div>
+                </div>
+            </div>
+            `;
+            let existing = document.getElementById('modal-view-pk');
+            if (existing) existing.remove();
+            document.body.insertAdjacentHTML('beforeend', modalHtml);
+            setTimeout(() => {
+                const modal = document.getElementById('modal-view-pk');
+                if(modal) { modal.classList.remove('opacity-0'); modal.children[0].classList.remove('scale-95'); }
+            }, 10);
+        };
+
+        window.cetakPDFRincianPK = (studentId) => {
+            let pk = db.pembayaran_kelas;
+            const student = db.students.find(s => String(s.id) === String(studentId));
+            if(!student) return;
+
+            let totalHarus = 0;
+            let totalBayar = 0;
+            
+            let trs = pk.items.map((item, idx) => {
+                let nominal = parseInt(item.nominal);
+                let terbayar = (pk.transaksi[studentId] && pk.transaksi[studentId][item.id]) ? parseInt(pk.transaksi[studentId][item.id]) : 0;
+                let kurang = nominal - terbayar;
+                totalHarus += nominal;
+                totalBayar += terbayar;
+                
+                let status = kurang < 0 ? `LEBIH (Rp ${Math.abs(kurang).toLocaleString('id-ID')})` : (kurang === 0 ? 'LUNAS' : (terbayar > 0 ? 'CICIL' : 'BELUM BAYAR'));
+                
+                let riwayat = (pk.riwayat_bayar && pk.riwayat_bayar[studentId] && pk.riwayat_bayar[studentId][item.id]) ? pk.riwayat_bayar[studentId][item.id] : [];
+                if (riwayat.length === 0 && terbayar > 0) {
+                    let oldTgl = (pk.tanggal_bayar && pk.tanggal_bayar[studentId] && pk.tanggal_bayar[studentId][item.id]) ? pk.tanggal_bayar[studentId][item.id] : 'Lama';
+                    riwayat = [{ tgl: oldTgl, nominal: terbayar }];
+                }
+                
+                let riwayatHtml = '';
+                if (riwayat.length > 0) {
+                    riwayatHtml = `<br><span style="font-size:11px; color:#555;">Riwayat: ` + riwayat.map(r => {
+                        let formattedTgl = r.tgl;
+                        if(formattedTgl && formattedTgl.includes('-')) {
+                            let parts = formattedTgl.split('-');
+                            if(parts.length === 3 && parts[0].length === 4) formattedTgl = `${parts[2]}-${parts[1]}-${parts[0]}`;
+                        }
+                        return `${formattedTgl} (Rp ${r.nominal.toLocaleString('id-ID')})`;
+                    }).join(', ') + `</span>`;
+                }
+
+                return `
+                <tr>
+                    <td style="border:1px solid #000; padding:8px; text-align:center;">${idx+1}</td>
+                    <td style="border:1px solid #000; padding:8px;">${item.name}${riwayatHtml}</td>
+                    <td style="border:1px solid #000; padding:8px; text-align:right;">Rp ${nominal.toLocaleString('id-ID')}</td>
+                    <td style="border:1px solid #000; padding:8px; text-align:right;">Rp ${terbayar.toLocaleString('id-ID')}</td>
+                    <td style="border:1px solid #000; padding:8px; text-align:right;">Rp ${kurang.toLocaleString('id-ID')}</td>
+                    <td style="border:1px solid #000; padding:8px; text-align:center; font-weight:bold;">${status}</td>
+                </tr>
+                `;
+            }).join('');
+            
+            let sisaGlobal = totalHarus - totalBayar;
+
+            const htmlContent = `
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <title>Rincian Tagihan - ${student.name}</title>
+                <style>
+                    body { font-family: 'Arial', sans-serif; color: #000; padding: 20px; font-size: 14px; }
+                    .header { text-align: center; border-bottom: 2px solid #000; padding-bottom: 15px; margin-bottom: 25px; }
+                    .header h1 { font-size: 20px; margin: 0 0 5px 0; text-transform: uppercase; }
+                    .header p { margin: 5px 0; font-size: 14px; }
+                    table { width: 100%; border-collapse: collapse; margin-bottom: 30px; font-size: 13px; }
+                    th { background-color: #f0f0f0; }
+                    .summary { width: 40%; float: right; }
+                    .summary table { font-size: 14px; font-weight: bold; }
+                    .clear { clear: both; }
+                    @media print {
+                        @page { margin: 1.5cm; }
+                    }
+                </style>
+            </head>
+            <body>
+                <div class="header">
+                    <h1>RINCIAN TAGIHAN KELAS</h1>
+                    <p><strong>${db.pengaturan.sekolah || 'Nama Sekolah'}</strong></p>
+                    <p>Kelas: ${db.pengaturan.kelas || '-'} | Wali Kelas: ${db.pengaturan.nama || '-'}</p>
+                </div>
+                
+                <p><strong>Nama Siswa:</strong> ${student.name}</p>
+                <p><strong>Tanggal Cetak:</strong> ${new Date().toLocaleDateString('id-ID', {day:'numeric', month:'long', year:'numeric'})}</p>
+                
+                <table>
+                    <thead>
+                        <tr>
+                            <th style="border:1px solid #000; padding:8px; width:40px;">No</th>
+                            <th style="border:1px solid #000; padding:8px;">Nama Tagihan</th>
+                            <th style="border:1px solid #000; padding:8px;">Tarif (Rp)</th>
+                            <th style="border:1px solid #000; padding:8px;">Terbayar (Rp)</th>
+                            <th style="border:1px solid #000; padding:8px;">Kekurangan (Rp)</th>
+                            <th style="border:1px solid #000; padding:8px;">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${trs}
+                    </tbody>
+                </table>
+                
+                <div class="summary">
+                    <table style="width: 100%;">
+                        <tr>
+                            <td style="padding: 5px;">Total Tagihan</td>
+                            <td style="padding: 5px; text-align:right;">Rp ${totalHarus.toLocaleString('id-ID')}</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 5px;">Total Terbayar</td>
+                            <td style="padding: 5px; text-align:right; color: green;">Rp ${totalBayar.toLocaleString('id-ID')}</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 5px; border-bottom: 2px solid #000;">${sisaGlobal < 0 ? 'Lebih Bayar' : 'Sisa Kekurangan'}</td>
+                            <td style="padding: 5px; text-align:right; border-bottom: 2px solid #000; color: ${sisaGlobal < 0 ? 'green' : 'red'};">Rp ${Math.abs(sisaGlobal).toLocaleString('id-ID')}</td>
+                        </tr>
+                    </table>
+                </div>
+                <div class="clear"></div>
+                
+                <script>
+                    window.onload = function() {
+                        window.print();
+                    }
+                </script>
+            </body>
+            </html>
+            `;
+            
+            const printWindow = window.open('', '_blank');
+            printWindow.document.write(htmlContent);
+            printWindow.document.close();
+        };
+
+        window.shareWARincianPK = (studentId) => {
+            let pk = db.pembayaran_kelas;
+            const student = db.students.find(s => String(s.id) === String(studentId));
+            if(!student) return;
+
+            let totalHarus = 0;
+            let totalBayar = 0;
+            
+            let text = `*RINCIAN TAGIHAN KELAS*\n`;
+            text += `Nama: *${student.name}*\n`;
+            text += `Tanggal: ${new Date().toLocaleDateString('id-ID')}\n\n`;
+            
+            pk.items.forEach((item, idx) => {
+                let nominal = parseInt(item.nominal);
+                let terbayar = (pk.transaksi[studentId] && pk.transaksi[studentId][item.id]) ? parseInt(pk.transaksi[studentId][item.id]) : 0;
+                let kurang = nominal - terbayar;
+                totalHarus += nominal;
+                totalBayar += terbayar;
+                
+                let status = kurang < 0 ? `LEBIH Rp ${Math.abs(kurang).toLocaleString('id-ID')} ✅` : (kurang === 0 ? 'LUNAS ✅' : (terbayar > 0 ? 'CICIL ⏳' : 'BELUM BAYAR ❌'));
+                
+                let riwayat = (pk.riwayat_bayar && pk.riwayat_bayar[studentId] && pk.riwayat_bayar[studentId][item.id]) ? pk.riwayat_bayar[studentId][item.id] : [];
+                if (riwayat.length === 0 && terbayar > 0) {
+                    let oldTgl = (pk.tanggal_bayar && pk.tanggal_bayar[studentId] && pk.tanggal_bayar[studentId][item.id]) ? pk.tanggal_bayar[studentId][item.id] : 'Lama';
+                    riwayat = [{ tgl: oldTgl, nominal: terbayar }];
+                }
+                
+                let riwayatText = '';
+                if (riwayat.length > 0) {
+                    riwayatText = `\n   Riwayat Cicilan:\n` + riwayat.map(r => {
+                        let formattedTgl = r.tgl;
+                        if(formattedTgl && formattedTgl.includes('-')) {
+                            let parts = formattedTgl.split('-');
+                            if(parts.length === 3 && parts[0].length === 4) formattedTgl = `${parts[2]}-${parts[1]}-${parts[0]}`;
+                        }
+                        return `      - ${formattedTgl}: Rp ${r.nominal.toLocaleString('id-ID')}`;
+                    }).join('\n');
+                }
+
+                text += `${idx+1}. *${item.name}*\n`;
+                text += `   Tagihan: Rp ${nominal.toLocaleString('id-ID')}\n`;
+                text += `   Total Dibayar: Rp ${terbayar.toLocaleString('id-ID')}${riwayatText}\n`;
+                if(kurang > 0) text += `   Kurang: Rp ${kurang.toLocaleString('id-ID')}\n`;
+                if(kurang < 0) text += `   Lebih: Rp ${Math.abs(kurang).toLocaleString('id-ID')}\n`;
+                text += `   Status: ${status}\n\n`;
+            });
+            
+            let sisaGlobal = totalHarus - totalBayar;
+            
+            text += `*TOTAL KESELURUHAN*\n`;
+            text += `Tagihan: Rp ${totalHarus.toLocaleString('id-ID')}\n`;
+            text += `Terbayar: Rp ${totalBayar.toLocaleString('id-ID')}\n`;
+            if (sisaGlobal < 0) {
+                text += `*Lebih Bayar Keseluruhan: Rp ${Math.abs(sisaGlobal).toLocaleString('id-ID')}*\n\n`;
+            } else {
+                text += `*Sisa Kurang: Rp ${sisaGlobal.toLocaleString('id-ID')}*\n\n`;
+            }
+            text += `Terima kasih atas kerja samanya.`;
+            
+            const waUrl = `https://wa.me/?text=${encodeURIComponent(text)}`;
+            window.open(waUrl, '_blank');
+        };
+
+        // Global Real-time Clock Updater
+        setInterval(() => {
+            const dateEl = document.getElementById('realtime-date');
+            const timeEl = document.getElementById('realtime-time');
+            const dashDateEl = document.getElementById('dashboard-date');
+            const dashTimeEl = document.getElementById('dashboard-clock');
+            
+            const now = new Date();
+            const days = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
+            const months = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Ags', 'Sep', 'Okt', 'Nov', 'Des'];
+            
+            const dateStr = `${days[now.getDay()]}, ${now.getDate()} ${months[now.getMonth()]} ${now.getFullYear()}`;
+            const h = String(now.getHours()).padStart(2, '0');
+            const m = String(now.getMinutes()).padStart(2, '0');
+            const s = String(now.getSeconds()).padStart(2, '0');
+            const timeStr = `${h}:${m}:${s}`;
+            
+            if (dateEl) dateEl.textContent = dateStr;
+            if (timeEl) timeEl.textContent = timeStr;
+            if (dashDateEl) dashDateEl.textContent = dateStr;
+            if (dashTimeEl) dashTimeEl.textContent = timeStr;
+        }, 1000);
+
+        // ----------------- FITUR MASA AKTIF AKUN -----------------
+        window.userExpireDate = null;
+        window.userActivationDate = null;
+        window.hasShownExpireBlocker = false;
+        
+        function updateExpireCountdown() {
+            const now = new Date().getTime();
+            
+            // 1. UPDATE SETTINGS TIMER (Telah Aktif Selama - Count Up)
+            const settingsTimerEl = document.getElementById('settings-active-countdown');
+            if (settingsTimerEl) {
+                let actTime = window.userActivationDate ? window.userActivationDate.getTime() : now;
+                let activeDiff = now - actTime;
+                if (activeDiff < 0) activeDiff = 0; // Prevent negative
+                
+                const dDays = Math.floor(activeDiff / (1000 * 60 * 60 * 24));
+                const dHours = Math.floor((activeDiff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                const dMins = Math.floor((activeDiff % (1000 * 60 * 60)) / (1000 * 60));
+                
+                let timeStr = "";
+                if (dDays > 0) timeStr += `${dDays} Hari `;
+                timeStr += `${dHours} Jam ${dMins} Menit`;
+                settingsTimerEl.textContent = timeStr;
+            }
+
+            // 2. UPDATE DASHBOARD TIMER (Masa Aktif Tersisa - Count Down)
+            const dashboardTimerContainer = document.getElementById('dashboard-timer-container');
+            const dashboardTimerEl = document.getElementById('dashboard-active-countdown');
+            
+            // HANYA tampilkan jika user mendaftar saat mode Auto Konfirmasi ON (isAutoApprove === true)
+            let showTimer = true;
+            if (!window.currentUser || window.currentUser.isAutoApprove !== true) {
+                showTimer = false;
+            }
+            
+            if (!window.userExpireDate || isNaN(window.userExpireDate.getTime())) {
+                showTimer = false; // Sembunyikan untuk akun lama/tanpa limit
+            }
+            
+            if (dashboardTimerContainer) {
+                if (showTimer) dashboardTimerContainer.classList.remove('hidden');
+                else dashboardTimerContainer.classList.add('hidden');
+            }
+            
+            // Lanjutkan cek expired walau timer disembunyikan
+            if (!window.userExpireDate || isNaN(window.userExpireDate.getTime())) return;
+            
+            const exp = window.userExpireDate.getTime();
+            
+            // Check blocking state (expired)
+            if (now >= exp) {
+                if (dashboardTimerEl) {
+                    dashboardTimerEl.textContent = "KEDALUWARSA";
+                    dashboardTimerEl.classList.replace('text-orange-400', 'text-red-400');
+                    dashboardTimerEl.parentElement.classList.replace('bg-slate-800', 'bg-red-900');
+                    dashboardTimerEl.parentElement.classList.replace('border-slate-700', 'border-red-500');
+                }
+                if (!window.hasShownExpireBlocker) showExpireBlocker();
+                return;
+            }
+            // Hitung mundur (Waktu tersisa sebelum kedaluwarsa)
+            const diff = exp - now;
+            
+            // Jika lebih dari 100 tahun (Aktif Terus)
+            if (diff > (36000 * 24 * 60 * 60 * 1000)) {
+                if (dashboardTimerEl) {
+                    dashboardTimerEl.innerHTML = '<i class="fas fa-infinity text-sm mr-1"></i> Tanpa Batas';
+                    dashboardTimerEl.classList.replace('text-orange-400', 'text-blue-400');
+                    dashboardTimerEl.parentElement.classList.replace('bg-slate-800', 'bg-blue-900');
+                    dashboardTimerEl.parentElement.classList.replace('border-slate-700', 'border-blue-500');
+                }
+                return;
+            }
+            
+            // diff in ms
+            const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+            const secs = Math.floor((diff % (1000 * 60)) / 1000);
+            
+            if (dashboardTimerEl) dashboardTimerEl.textContent = `${days}hr ${hours}jm ${mins}m ${secs}d`;
+        }
+
+        function showExpireBlocker() {
+            window.hasShownExpireBlocker = true;
+            // Create full screen overlay
+            const overlay = document.createElement('div');
+            overlay.className = "fixed inset-0 bg-slate-900/95 z-[99999] flex flex-col items-center justify-center p-6 backdrop-blur-md";
+            
+            const userName = window.currentUser ? window.currentUser.nama : "Guru";
+            const userEmail = window.currentUser ? window.currentUser.email : "";
+            const waText = encodeURIComponent(`Halo Admin, masa aktif aplikasi Manajemen Wali Kelas saya, atas nama ${userName} email: ${userEmail} telah habis. Mohon bantuannya untuk memperpanjang akses.`);
+            
+            overlay.innerHTML = `
+                <div class="bg-white rounded-3xl p-10 shadow-2xl max-w-md w-full text-center transform scale-100 transition-all">
+                    <div class="w-24 h-24 bg-red-100 text-red-500 rounded-full flex items-center justify-center mx-auto mb-6 shadow-inner">
+                        <i class="fas fa-lock text-5xl"></i>
+                    </div>
+                    <h2 class="text-2xl font-black text-slate-800 mb-3">Masa Aktif Habis</h2>
+                    <p class="text-slate-500 mb-8 text-sm leading-relaxed">Masa aktif aplikasi Manajemen Wali Kelas Anda telah berakhir. Silakan hubungi Administrator untuk memperpanjang akses Anda agar dapat terus mengelola data kelas dengan lancar.</p>
+                    <a href="https://wa.me/6285643263818?text=${waText}" target="_blank" class="block w-full bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-4 rounded-xl shadow-lg hover:shadow-xl transition transform hover:-translate-y-1">
+                        <i class="fab fa-whatsapp text-xl mr-2"></i> Konfirmasi ke Admin
+                    </a>
+                    <button onclick="window.manualRefreshStatus(this)" class="mt-4 text-slate-500 hover:text-slate-700 text-sm font-semibold w-full flex justify-center items-center gap-2 transition outline-none">
+                        <i class="fas fa-sync-alt"></i> Cek Ulang Status (Refresh)
+                    </button>
+                </div>
+            `;
+            document.body.appendChild(overlay);
+        }
+
+        window.manualRefreshStatus = async function(btn) {
+            if (!navigator.onLine) {
+                alert("Anda sedang offline. Pastikan koneksi internet aktif.");
+                return;
+            }
+            if (!window.currentUser || !window.currentUser.email) return;
+            
+            const originalHtml = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Mengecek ke server...';
+            btn.disabled = true;
+            
+            try {
+                const res = await fetch(APPSCRIPT_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: new URLSearchParams({ action: 'checkStatus', data: JSON.stringify({ email: window.currentUser.email }) })
+                });
+                const data = await res.json();
+                if (data.status === 'success') {
+                    window.currentUser.expireDate = data.expireDate || window.currentUser.expireDate;
+                    window.currentUser.activationDate = data.activationDate || window.currentUser.activationDate;
+                    if (data.hasOwnProperty('isAutoApprove')) window.currentUser.isAutoApprove = data.isAutoApprove;
+                    localStorage.setItem('auth_user', JSON.stringify(window.currentUser));
+                    
+                    const newExp = new Date(window.currentUser.expireDate).getTime();
+                    if (new Date().getTime() < newExp) {
+                        alert("Berhasil! Masa aktif Anda telah diperpanjang. Halaman akan dimuat ulang.");
+                        window.location.reload();
+                    } else {
+                        alert("Masa aktif Anda belum diperpanjang oleh Admin. Silakan hubungi Admin jika Anda sudah melakukan konfirmasi.");
+                    }
+                } else {
+                    alert("Gagal mengecek status: " + data.message);
+                }
+            } catch (e) {
+                alert("Terjadi kesalahan jaringan saat mengecek ke server.");
+            } finally {
+                btn.innerHTML = originalHtml;
+                btn.disabled = false;
+            }
+        };
+
+        function checkUserActiveStatus() {
+            if (!window.currentUser) return;
+            
+            // Sync pesan from server
+            if (typeof window.syncPesanFromServer === 'function') {
+                window.syncPesanFromServer();
+            }
+            
+            // Cek offline dari cache localstorage (diset saat login)
+            if (window.currentUser.expireDate) {
+                window.userExpireDate = new Date(window.currentUser.expireDate);
+            }
+            if (window.currentUser.activationDate) {
+                window.userActivationDate = new Date(window.currentUser.activationDate);
+            } else {
+                window.currentUser.activationDate = new Date().toISOString();
+                window.userActivationDate = new Date(window.currentUser.activationDate);
+                localStorage.setItem('currentUser', JSON.stringify(window.currentUser)); localStorage.setItem('auth_user', JSON.stringify(window.currentUser)); document.cookie = "auth_user=" + encodeURIComponent(JSON.stringify(window.currentUser)) + "; max-age=31536000; path=/";
+            }
+            updateExpireCountdown();
+            
+            // Cek online ke server agar up-to-date jika admin mengubah dari jarak jauh
+            fetch(APPSCRIPT_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: new URLSearchParams({ action: 'checkStatus', data: JSON.stringify({ email: window.currentUser.email }) })
+            })
+            .then(r => r.json())
+            .then(res => {
+                if (res.status === 'success') {
+                    if (res.accountStatus !== 'approved' || res.isExpired) {
+                        showExpireBlocker();
+                    } else if (window.hasShownExpireBlocker) {
+                        // Jika ternyata diperpanjang, refresh halaman agar blocker hilang
+                        window.location.reload();
+                    }
+                    if (res.expireDate) {
+                        window.currentUser.expireDate = res.expireDate;
+                        window.userExpireDate = new Date(res.expireDate);
+                    }
+                    if (res.activationDate) {
+                        window.currentUser.activationDate = res.activationDate;
+                        window.userActivationDate = new Date(res.activationDate);
+                    }
+                    if (res.hasOwnProperty('isAutoApprove')) {
+                        window.currentUser.isAutoApprove = res.isAutoApprove;
+                    }
+                    localStorage.setItem('currentUser', JSON.stringify(window.currentUser)); localStorage.setItem('auth_user', JSON.stringify(window.currentUser)); document.cookie = "auth_user=" + encodeURIComponent(JSON.stringify(window.currentUser)) + "; max-age=31536000; path=/";
+                    updateExpireCountdown();
+                } else if (res.status === 'error' && (res.message === 'User not found' || res.message.toLowerCase().includes('tidak ditemukan'))) {
+                    alert('Akun Anda telah dihapus oleh Administrator. Sesi Anda dihentikan.');
+                    window.currentUser = null;
+                    localStorage.removeItem('auth_user'); document.cookie = "auth_user=; max-age=0; path=/";
+                    window.location.reload();
+                }
+            }).catch(e => console.log('Check status offline:', e.message));
+        }
+
+        // Run checker every second for timer
+        setInterval(updateExpireCountdown, 1000);
+        
+        // Run full status check on boot and every 5 mins
+        checkUserActiveStatus();
+        setInterval(checkUserActiveStatus, 5 * 60 * 1000);
+        // ---------------------------------------------------------
+
+        // --- FLOATING PRIVATE CHAT LOGIC ---
+        window.isFloatingChatOpen = false;
+        
+        window.updateUnreadChatBadge = function() {
+            if (!db.pesan_info || !window.currentUser) return;
+            const badge = document.getElementById('floating-chat-badge');
+            if (!badge) return;
+            
+            const privateMsgs = db.pesan_info.filter(m => {
+                const isAdmin = m.pengirim && m.pengirim.toLowerCase() === 'admin';
+                return isAdmin && m.judul === 'Balasan Pesan Pribadi';
+            });
+            
+            const lastRead = localStorage.getItem('last_read_admin_chat_' + window.currentUser.email) || '1970-01-01T00:00:00.000Z';
+            let unreadCount = 0;
+            
+            privateMsgs.forEach(m => {
+                let msgDate = m.id || m.tanggal || m.waktu;
+                if (msgDate && new Date(msgDate).getTime() > new Date(lastRead).getTime()) {
+                    unreadCount++;
+                }
+            });
+            
+            if (unreadCount > 0 && !window.isFloatingChatOpen) {
+                badge.innerText = unreadCount;
+                badge.classList.remove('hidden');
+            } else {
+                badge.classList.add('hidden');
+            }
+        };
+        
+        window.toggleFloatingChat = function() {
+            window.isFloatingChatOpen = !window.isFloatingChatOpen;
+            const panel = document.getElementById('floating-chat-panel');
+            const btnIcon = document.getElementById('floating-chat-btn').querySelector('i');
+            const badge = document.getElementById('floating-chat-badge');
+            
+            if (window.isFloatingChatOpen) {
+                panel.classList.remove('hidden');
+                panel.classList.add('flex');
+                btnIcon.classList.remove('fa-comment-dots');
+                btnIcon.classList.add('fa-times');
+                if(badge) badge.classList.add('hidden'); // Sembunyikan badge jika dibuka
+                if(window.currentUser) {
+                    localStorage.setItem('last_read_admin_chat_' + window.currentUser.email, new Date().toISOString());
+                }
+                window.renderPrivateChat(); // render saat dibuka
+            } else {
+                panel.classList.add('hidden');
+                panel.classList.remove('flex');
+                btnIcon.classList.remove('fa-times');
+                btnIcon.classList.add('fa-comment-dots');
+            }
+        };
+
+        window.renderPrivateChat = function() {
+            const container = document.getElementById('floating-chat-body');
+            if(!container) return;
+            
+            // Ambil pesan privat: dari Guru atau Balasan Pesan Pribadi dari Admin
+            const privateMsgs = db.pesan_info.filter(m => {
+                const isAdmin = m.pengirim && m.pengirim.toLowerCase() === 'admin';
+                return !isAdmin || (isAdmin && m.judul === 'Balasan Pesan Pribadi');
+            }).reverse(); // Reverse agar urutan dari atas (lama) ke bawah (baru)
+            
+            let html = privateMsgs.map(m => {
+                const isAdmin = m.pengirim && m.pengirim.toLowerCase() === 'admin';
+                let dateInput = m.waktu || m.tanggal || new Date().toISOString();
+                const waktuJam = new Date(dateInput).toLocaleString('id-ID', {hour: '2-digit', minute:'2-digit'});
+                
+                let mediaHtml = '';
+                if(m.gambar_url) {
+                    let directImgUrl = m.gambar_url;
+                    if(directImgUrl.includes('drive.google.com/file/d/')) {
+                        const matchId = directImgUrl.match(/\/d\/([a-zA-Z0-9_-]+)/);
+                        if(matchId) directImgUrl = 'https://drive.google.com/uc?export=view&id=' + matchId[1];
+                    }
+                    mediaHtml += `<img src="${directImgUrl}" class="w-full max-h-32 object-contain bg-black/5 rounded mb-1 cursor-pointer" onclick="window.open('${directImgUrl}', '_blank')">`;
+                }
+                if(m.link_url) {
+                    mediaHtml += `<a href="${m.link_url.startsWith('http') ? m.link_url : 'http://'+m.link_url}" target="_blank" class="block bg-black/5 rounded p-1 text-[10px] text-blue-700 underline truncate break-all mb-1"><i class="fas fa-link"></i> ${m.link_url}</a>`;
+                }
+
+                let rawTeks = m.teks || m.isi || m.pesan || '';
+                if (String(rawTeks) === 'undefined') rawTeks = '';
+                let formattedTeks = String(rawTeks).replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank" class="text-blue-600 underline break-all">$1</a>');
+                
+                if (isAdmin) {
+                    return `
+                        <div class="flex justify-start mb-2 group">
+                            <div class="bg-white text-gray-800 p-2 rounded-tr-xl rounded-bl-xl rounded-br-xl shadow-sm max-w-[85%] text-xs relative">
+                                <div class="font-bold text-blue-600 text-[10px] mb-0.5">Admin</div>
+                                ${mediaHtml}
+                                <div class="whitespace-pre-wrap leading-relaxed">${formattedTeks}</div>
+                                <div class="text-[9px] text-gray-400 mt-1 text-right">${waktuJam}</div>
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    return `
+                        <div class="flex justify-end mb-2 group">
+                            <div class="relative max-w-[85%] flex items-start justify-end">
+                                <div class="absolute right-full mr-2 top-0 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col gap-1 z-10">
+                                    <button onclick="window.editPesanInfo('${m.id}')" class="text-blue-500 hover:text-blue-700 w-6 h-6 bg-white border border-gray-200 rounded-full shadow-md flex items-center justify-center"><i class="fas fa-edit text-[10px]"></i></button>
+                                    <button onclick="window.hapusPesanInfo('${m.id}')" class="text-red-500 hover:text-red-700 w-6 h-6 bg-white border border-gray-200 rounded-full shadow-md flex items-center justify-center"><i class="fas fa-trash text-[10px]"></i></button>
+                                </div>
+                                <div class="bg-green-100 text-gray-800 p-2 rounded-tl-xl rounded-bl-xl rounded-br-xl shadow-sm text-xs w-full">
+                                    ${mediaHtml}
+                                    <div class="whitespace-pre-wrap leading-relaxed">${formattedTeks}</div>
+                                    <div class="text-[9px] text-gray-400 mt-1 text-right flex justify-end gap-1 items-center">${waktuJam} <i class="fas fa-check-double text-blue-400"></i></div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }
+            }).join('');
+            
+            if(privateMsgs.length === 0) {
+                html = `<div class="h-full flex flex-col items-center justify-center text-gray-400 p-4 text-center"><i class="far fa-comments text-3xl mb-2 opacity-50"></i><p class="text-xs">Kirim pesan pertama Anda ke Admin.</p></div>`;
+            }
+            
+            container.innerHTML = html;
+            
+            // Scroll ke paling bawah
+            setTimeout(() => {
+                container.scrollTop = container.scrollHeight;
+            }, 50);
+        };
+        
+        function injectFloatingChat() {
+            if(document.getElementById('floating-chat-wrapper')) return;
+            const isPesanPage = window.currentPage === 'pesan';
+            const chatHtml = `
+            <div id="floating-chat-wrapper" class="${isPesanPage ? '' : 'hidden'} fixed bottom-24 md:bottom-8 right-4 md:right-8 z-50 flex flex-col items-end print-hide" style="height: max-content;">
+                <!-- Panel Chat -->
+                <div id="floating-chat-panel" class="hidden bg-white w-[320px] max-w-[calc(100vw-32px)] h-[450px] max-h-[calc(100vh-120px)] rounded-2xl shadow-2xl border border-gray-200 flex-col mb-4 overflow-hidden transition-all transform origin-bottom-right">
+                    <!-- Header -->
+                    <div class="bg-green-600 text-white p-3 flex justify-between items-center shadow-md z-10 cursor-pointer" onclick="window.toggleFloatingChat()">
+                        <div class="flex items-center gap-2">
+                            <div class="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center">
+                                <i class="fas fa-user-shield text-sm"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-bold text-sm leading-tight">Admin </h3>
+                                <p class="text-[10px] text-green-100"><i class="fas fa-circle text-[8px] text-green-300 mr-1 animate-pulse"></i>Online</p>
+                            </div>
+                        </div>
+                        <button class="w-8 h-8 hover:bg-black/10 rounded-full transition flex items-center justify-center">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                    
+                    <!-- Body -->
+                    <div id="floating-chat-body" class="flex-1 bg-[#e5ddd5] p-3 overflow-y-auto flex flex-col custom-scrollbar">
+                        <!-- Messages go here -->
+                    </div>
+                    
+                    <!-- Footer / Input -->
+                    <div class="bg-gray-100 p-2 border-t border-gray-300">
+                        <div id="fc-input-link-container" class="hidden mb-2 px-1">
+                            <input type="text" form="form-floating-chat" id="fc-link-input" name="link" placeholder="Tuliskan tautan/link URL di sini..." class="w-full text-xs border border-gray-300 rounded p-2 focus:ring-2 focus:ring-green-500 shadow-inner">
+                        </div>
+                        <form id="form-floating-chat" onsubmit="window.kirimPesanInfo(event)" class="flex gap-1 items-end">
+                            <button type="button" onclick="document.getElementById('fc-input-link-container').classList.toggle('hidden')" class="p-2 text-gray-500 hover:text-gray-700 transition" title="Sisipkan Link">
+                                <i class="fas fa-paperclip"></i>
+                            </button>
+                            <label class="p-2 text-gray-500 hover:text-gray-700 transition cursor-pointer" title="Sisipkan Gambar">
+                                <i class="fas fa-camera"></i>
+                                <input type="file" id="fc-gambar-input" name="gambar" accept="image/*" class="hidden">
+                            </label>
+                            <textarea id="fc-pesan-input" name="pesan" rows="1" placeholder="Ketik pesan..." class="flex-1 resize-none rounded-xl border border-gray-300 p-2 text-xs focus:ring-2 focus:ring-green-500 outline-none shadow-sm max-h-[80px] custom-scrollbar" oninput="this.style.height = ''; this.style.height = Math.min(this.scrollHeight, 80) + 'px';" required></textarea>
+                            <button type="submit" class="bg-green-600 text-white w-9 h-9 rounded-full flex items-center justify-center hover:bg-green-700 transition shadow-md flex-shrink-0 ml-1">
+                                <i class="fas fa-paper-plane text-xs"></i>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+                
+                <!-- Floating Button -->
+                <button onclick="window.toggleFloatingChat()" id="floating-chat-btn" class="bg-green-600 hover:bg-green-700 text-white w-14 h-14 rounded-full shadow-lg flex items-center justify-center text-2xl transition-transform hover:scale-110 relative ml-auto">
+                    <i class="fas fa-comment-dots"></i>
+                    <span id="floating-chat-badge" class="hidden absolute top-0 right-0 bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full border-2 border-white"></span>
+                </button>
+            </div>
+            `;
+            document.body.insertAdjacentHTML('beforeend', chatHtml);
+        }
+
+        window.onerror = function(msg, url, line, col, error) {
+            console.error('Global JS Error:', msg, 'Line:', line, error ? error.stack : '');
+            return false;
+        };
+
+        // bootApp dipanggil dari login handler atau DOMContentLoaded jika sudah login
+        try {
+            if (window.currentUser && !window._bootAppExecuted) {
+                bootApp();
+                setTimeout(() => { injectFloatingChat(); }, 500); // Inject after boot
+            }
+        } catch (e) {
+            console.error('BootApp Error:', e.stack);
+        }

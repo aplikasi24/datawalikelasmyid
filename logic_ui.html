@@ -1,0 +1,490 @@
+        // --- 4. Sidebar Rendering ---
+        function renderSidebar() {
+            try {
+                if (!sidebarNav) return;
+                sidebarNav.innerHTML = '';
+                
+                if (!db.pengaturan) db.pengaturan = {};
+                // Hitung unread pesan
+                if (db.pengaturan.read_pesan_count === undefined) {
+                    db.pengaturan.read_pesan_count = db.pesan_info ? db.pesan_info.length : 0;
+                }
+                const unreadCount = Math.max(0, (db.pesan_info ? db.pesan_info.length : 0) - db.pengaturan.read_pesan_count);
+
+                let currentGroup = "";
+
+                appMenus.forEach((menu) => {
+                    try {
+                        if (menu.group && menu.group !== currentGroup) {
+                            currentGroup = menu.group;
+                            
+                            // Secara default tertutup (false) saat pertama kali buka
+                            if (window._sidebarGroupState[currentGroup] === undefined) {
+                                window._sidebarGroupState[currentGroup] = false;
+                            }
+                            
+                            const isOpen = window._sidebarGroupState[currentGroup];
+                            
+                            const groupIcons = {
+                                "Menu Utama": "fa-th-large",
+                                "Manajemen Kelas": "fa-users-cog",
+                                "Kegiatan Belajar Mengajar": "fa-chalkboard-teacher",
+                                "Evaluasi & Pantauan Siswa": "fa-clipboard-check",
+                                "Keuangan Kelas": "fa-wallet",
+                                "Asisten (AI Tools)": "fa-robot",
+                                "Sistem & Pengaturan": "fa-cogs"
+                            };
+                            const groupIcon = groupIcons[currentGroup] || "fa-folder";
+                            
+                            const groupHeader = document.createElement('div');
+                            groupHeader.className = "mt-10 mb-5 pt-3 pb-2 px-4 flex justify-between items-center cursor-pointer group sidebar-group-header border-t border-slate-800/50";
+                            // Sembunyikan border-t untuk grup pertama
+                            if (currentGroup === "Menu Utama") {
+                                groupHeader.classList.remove("border-t", "border-slate-800/50");
+                                groupHeader.classList.replace("mt-10", "mt-4");
+                            }
+                            
+                            groupHeader.innerHTML = `
+                                <div class="flex items-center gap-3">
+                                    <i class="fas ${groupIcon} ${isOpen ? 'text-blue-500' : 'text-orange-500 group-hover:text-blue-500'} text-sm transition-colors"></i>
+                                    <span class="text-[11px] font-bold ${isOpen ? 'text-blue-500' : 'text-orange-500 group-hover:text-blue-500'} uppercase tracking-wider block transition-colors">${currentGroup}</span>
+                                </div>
+                                <i class="fas fa-chevron-${isOpen ? 'down' : 'right'} text-xs ${isOpen ? 'text-blue-500' : 'text-slate-500 group-hover:text-blue-500'} transition-colors"></i>
+                            `;
+                            
+                            const capturedGroup = currentGroup;
+                            groupHeader.onclick = () => {
+                                window._sidebarGroupState[capturedGroup] = !window._sidebarGroupState[capturedGroup];
+                                renderSidebar();
+                            };
+                            sidebarNav.appendChild(groupHeader);
+                        }
+
+                        // Jika tertutup, jangan tampilkan item menu
+                        if (!window._sidebarGroupState[currentGroup]) {
+                            return;
+                        }
+
+                        const isActive = menu.id === window.currentPage;
+                        const link = document.createElement('a');
+                        link.href = "#";
+                        link.onclick = (e) => {
+                            e.preventDefault();
+                            if(menu.id === 'pesan') {
+                                db.pengaturan.read_pesan_count = db.pesan_info.length;
+                                saveDB();
+                            }
+                            window.navigateTo(menu.id);
+                        };
+                        
+                        let menuNameHtml = menu.name;
+                        if(menu.id === 'pesan' && unreadCount > 0) {
+                            menuNameHtml += ` <span class="bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-md ml-2 animate-pulse">(${unreadCount})</span>`;
+                        }
+                        
+                        if (isActive) {
+                            link.className = "flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 bg-gradient-to-r from-orange-500 to-orange-600 text-white shadow-lg shadow-orange-500/30 group transform scale-[1.02] mb-1";
+                            link.innerHTML = '<div class="w-8 h-8 rounded-lg bg-white/20 flex items-center justify-center shrink-0 transition-colors duration-300"><i class="fas ' + menu.icon + ' text-sm"></i></div><span class="font-bold text-sm tracking-wide flex-1 flex items-center transition-colors duration-300">' + menuNameHtml + '</span>';
+                        } else {
+                            link.className = "flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 text-slate-400 hover:bg-slate-800/80 hover:text-orange-400 group hover:translate-x-1 cursor-pointer mb-1";
+                            link.innerHTML = '<div class="w-8 h-8 rounded-lg bg-slate-800 group-hover:bg-orange-500/20 flex items-center justify-center shrink-0 transition-colors duration-300"><i class="fas ' + menu.icon + ' text-sm text-slate-500 group-hover:text-orange-400 transition-colors duration-300"></i></div><span class="font-medium text-sm flex-1 flex items-center transition-colors duration-300">' + menuNameHtml + '</span>';
+                        }
+                        sidebarNav.appendChild(link);
+                    } catch (errInner) {
+                        console.error('Error menu:', menu, errInner);
+                    }
+                });
+            } catch (err) {
+                console.error('Error sidebar:', err);
+            }
+        }
+
+        // --- Bottom Navigation Bar (Mobile) ---
+        const bottomNavMenus = [
+            { id: "dashboard", name: "Beranda", icon: "fa-home" },
+            { id: "presensi",   name: "Presensi",  icon: "fa-user-check" },
+            { id: "siswa",     name: "Siswa",    icon: "fa-users" },
+            { id: "nilai",     name: "Nilai",    icon: "fa-chart-bar" },
+            { id: "menu",      name: "Menu",     icon: "fa-th" }
+        ];
+
+        // Flag global untuk melacak status modal menu grid
+        window._menuLainnyaOpen = false;
+
+        function renderBottomNav() {
+            const nav = document.getElementById('bottom-nav');
+            if (!nav) return;
+            
+            // Hanya buat tombol jika belum ada (mencegah duplikasi event handler)
+            if (nav.children.length >= bottomNavMenus.length) {
+                // Hanya update tampilan aktif/tidak aktif, JANGAN buat ulang
+                bottomNavMenus.forEach((menu, index) => {
+                    const btn = nav.children[index];
+                    if (!btn) return;
+                    const isActive = (menu.id !== 'menu') && (window.currentPage === menu.id);
+                    btn.className = 'flex flex-col items-center justify-center flex-1 min-w-0 py-1 gap-0.5 transition-colors duration-300 ' +
+                        (isActive ? 'text-orange-400' : 'text-slate-400 hover:text-orange-300');
+                });
+                return;
+            }
+
+            nav.innerHTML = '';
+            bottomNavMenus.forEach((menu) => {
+                const btn = document.createElement('button');
+                btn.type = 'button';
+                btn.setAttribute('data-menu-id', menu.id);
+                
+                // Gunakan touchend untuk mobile agar lebih responsif & tanpa ghost click
+                let touchHandled = false;
+                btn.addEventListener('touchend', (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    touchHandled = true;
+                    if (menu.id === 'menu') {
+                        window.openMenuLainnya();
+                    } else {
+                        window.navigateTo(menu.id);
+                    }
+                    setTimeout(() => { touchHandled = false; }, 400);
+                }, { passive: false });
+                
+                btn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    if (touchHandled) return; // Sudah ditangani touchend
+                    if (menu.id === 'menu') {
+                        window.openMenuLainnya();
+                    } else {
+                        window.navigateTo(menu.id);
+                    }
+                });
+                
+                const isActive = (menu.id !== 'menu') && (window.currentPage === menu.id);
+                btn.className = 'flex flex-col items-center justify-center flex-1 min-w-0 py-1 gap-0.5 transition-colors duration-300 ' +
+                    (isActive ? 'text-orange-400' : 'text-slate-400 hover:text-orange-300');
+                btn.innerHTML = `<i class="fas ${menu.icon} text-lg transition-colors duration-300"></i><span style="font-size:10px;font-weight:600;white-space:nowrap;" class="transition-colors duration-300">${menu.name}</span>`;
+                nav.appendChild(btn);
+            });
+        }
+
+        // Fungsi untuk membuat/merender konten modal grid (dipanggil sekali)
+        function _createMenuLainnyaModal() {
+            let modal = document.getElementById('mobileMenuLainnyaOverlay');
+            if (modal) return modal; // Sudah ada, jangan buat ulang
+
+            modal = document.createElement('div');
+            modal.id = 'mobileMenuLainnyaOverlay';
+            modal.className = 'fixed inset-0 z-[100] modal-overlay transition-opacity duration-300 flex flex-col justify-end';
+            modal.setAttribute('data-state', 'closed');
+            modal.style.cssText = 'opacity:0; pointer-events:none;';
+
+            // Listener untuk menutup saat klik area overlay (di luar konten)
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal && window._menuLainnyaOpen) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    window.closeMenuLainnya();
+                }
+            });
+            modal.addEventListener('touchend', (e) => {
+                if (e.target === modal && window._menuLainnyaOpen) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    window.closeMenuLainnya();
+                }
+            }, { passive: false });
+
+            const gridMenus = appMenus.filter(m => !['dashboard', 'presensi', 'siswa', 'nilai'].includes(m.id));
+            const gridHtml = gridMenus.map(m => {
+                let badgeHtml = '';
+                if (m.id === 'pesan') {
+                    const unreadCount = Math.max(0, (db.pesan_info ? db.pesan_info.length : 0) - (db.pengaturan && db.pengaturan.read_pesan_count ? db.pengaturan.read_pesan_count : 0));
+                    if (unreadCount > 0) {
+                        badgeHtml = `<span class="absolute -top-1 -right-2 bg-amber-400 text-slate-900 text-[10px] font-bold w-4 h-4 flex items-center justify-center rounded-full shadow-sm">${unreadCount}</span>`;
+                    }
+                }
+                return `
+                    <div data-nav-target="${m.id}" class="flex flex-col items-center gap-3 cursor-pointer group py-2">
+                        <div class="relative flex items-center justify-center transition-transform transform group-hover:scale-110">
+                            <i class="fas ${m.icon} text-3xl text-primary-500"></i>
+                            ${badgeHtml}
+                        </div>
+                        <span class="text-[11px] font-medium text-slate-700 text-center leading-tight w-full">${m.name}</span>
+                    </div>
+                `;
+            }).join('');
+
+            modal.innerHTML = `
+              <div class="bg-white w-full rounded-t-3xl shadow-[0_-10px_40px_rgba(0,0,0,0.1)] transform transition-transform duration-300 translate-y-full flex flex-col" style="max-height: 85vh;" id="mobileMenuLainnyaContent">
+                <div class="p-6 pb-2 flex items-center justify-between">
+                  <div class="flex items-center gap-3">
+                    <i class="fas fa-th text-navy-900 text-xl"></i>
+                    <h3 class="font-bold text-navy-900 text-xl">Menu Lainnya</h3>
+                  </div>
+                  <button type="button" id="btnCloseMenuLainnya" class="w-8 h-8 flex items-center justify-center rounded-full border border-slate-200 bg-white text-slate-800 shadow-sm transition-colors">
+                    <i class="fas fa-times text-sm"></i>
+                  </button>
+                </div>
+                <div class="p-6 pt-4 overflow-y-auto custom-scrollbar flex-1 pb-12">
+                   <div class="grid grid-cols-3 gap-y-8 gap-x-2" id="menuLainnyaGrid">
+                      ${gridHtml}
+                   </div>
+                </div>
+              </div>
+            `;
+            document.body.appendChild(modal);
+
+            // Event listener untuk tombol close (X)
+            document.getElementById('btnCloseMenuLainnya').addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                window.closeMenuLainnya();
+            });
+
+            // Event delegation untuk item-item grid menu
+            document.getElementById('menuLainnyaGrid').addEventListener('click', (e) => {
+                const item = e.target.closest('[data-nav-target]');
+                if (!item) return;
+                e.preventDefault();
+                e.stopPropagation();
+                const targetId = item.getAttribute('data-nav-target');
+                // Tutup dulu dengan animasi, navigasi setelahnya
+                window.closeMenuLainnya(() => {
+                    window.navigateTo(targetId);
+                });
+            });
+
+            return modal;
+        }
+
+        window.openMenuLainnya = () => {
+            // Jika sudah terbuka, jangan buka lagi
+            if (window._menuLainnyaOpen) return;
+            window._menuLainnyaOpen = true;
+
+            const modal = _createMenuLainnyaModal();
+
+            // Tampilkan overlay
+            modal.style.opacity = '1';
+            modal.style.pointerEvents = 'auto';
+            modal.setAttribute('data-state', 'open');
+
+            // Animasi slide-up konten
+            requestAnimationFrame(() => {
+                requestAnimationFrame(() => {
+                    const content = document.getElementById('mobileMenuLainnyaContent');
+                    if (content) content.style.transform = 'translateY(0)';
+                });
+            });
+        };
+
+        window.closeMenuLainnya = (callback) => {
+            if (!window._menuLainnyaOpen) {
+                if (typeof callback === 'function') callback();
+                return;
+            }
+            window._menuLainnyaOpen = false;
+
+            const modal = document.getElementById('mobileMenuLainnyaOverlay');
+            if (modal) {
+                const content = document.getElementById('mobileMenuLainnyaContent');
+                if (content) content.style.transform = 'translateY(100%)';
+                setTimeout(() => {
+                    modal.style.opacity = '0';
+                    modal.style.pointerEvents = 'none';
+                    modal.setAttribute('data-state', 'closed');
+                    if (typeof callback === 'function') callback();
+                }, 320);
+            } else {
+                if (typeof callback === 'function') callback();
+            }
+        };
+
+        window.dashboardState = { catatanPage: 0, tautanPage: 0 };
+
+        window.initDashboardData = () => {
+            if (!db.catatanGuruList) {
+                db.catatanGuruList = [];
+                if (db.catatanGuru && db.catatanGuru.trim() !== '') {
+                    db.catatanGuruList.push({ id: Date.now(), text: db.catatanGuru });
+                    delete db.catatanGuru;
+                }
+            }
+            if (!db.tautanCepatList) {
+                db.tautanCepatList = [
+                    { id: 1, name: 'SIMPKB', url: 'https://paspor-gtk.simpkb.id/casgpo/login' },
+                    { id: 2, name: 'INFO GTK', url: 'https://info.gtk.kemendikdasmen.go.id/' }
+                ];
+            }
+        };
+
+        window.renderCatatanGuruUI = () => {
+            window.initDashboardData();
+            const list = db.catatanGuruList;
+            const itemsPerPage = 2;
+            const maxPage = Math.ceil(list.length / itemsPerPage) - 1;
+            if (window.dashboardState.catatanPage > maxPage && maxPage >= 0) window.dashboardState.catatanPage = maxPage;
+            
+            const startIdx = window.dashboardState.catatanPage * itemsPerPage;
+            const endIdx = startIdx + itemsPerPage;
+            const visibleItems = list.slice(startIdx, endIdx);
+
+            let html = `
+                <div class="flex justify-between items-center mb-3">
+                    <h3 class="font-bold text-yellow-800 text-lg"><i class="fas fa-edit mr-2"></i>Catatan Guru</h3>
+                    <div class="flex gap-1">
+                        ${list.length > itemsPerPage ? `
+                            <button onclick="window.dashboardState.catatanPage = Math.max(0, window.dashboardState.catatanPage - 1); document.getElementById('catatan-container').innerHTML = window.renderCatatanGuruUI();" class="text-yellow-600 hover:text-yellow-800 transition px-2 py-1 bg-yellow-100 rounded-md disabled:opacity-50" ${window.dashboardState.catatanPage === 0 ? 'disabled' : ''}><i class="fas fa-chevron-left text-xs"></i></button>
+                            <button onclick="window.dashboardState.catatanPage = Math.min(${maxPage}, window.dashboardState.catatanPage + 1); document.getElementById('catatan-container').innerHTML = window.renderCatatanGuruUI();" class="text-yellow-600 hover:text-yellow-800 transition px-2 py-1 bg-yellow-100 rounded-md disabled:opacity-50" ${window.dashboardState.catatanPage >= maxPage ? 'disabled' : ''}><i class="fas fa-chevron-right text-xs"></i></button>
+                        ` : ''}
+                        <button onclick="window.tambahCatatanGuru()" class="bg-yellow-500 hover:bg-yellow-600 text-white px-2.5 py-1 rounded-md transition shadow-sm ml-1" title="Tambah Catatan">
+                            <i class="fas fa-plus text-sm"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="flex flex-col gap-3 overflow-y-auto custom-scrollbar pr-1 h-full min-h-[140px]">
+            `;
+
+            if (list.length === 0) {
+                html += `<div class="text-center text-yellow-600/70 text-sm mt-4 italic">Belum ada catatan. Klik + untuk menambah.</div>`;
+            } else {
+                visibleItems.forEach(item => {
+                    html += `
+                        <div class="bg-yellow-100/60 p-3 rounded-xl border border-yellow-200/60 relative group shadow-sm transition hover:shadow-md">
+                            <textarea oninput="window.updateCatatanGuru(${item.id}, this.value)" class="w-full bg-transparent border-none resize-none focus:ring-0 text-yellow-900 placeholder-yellow-600/50 outline-none p-0 text-sm h-16 custom-scrollbar leading-relaxed" placeholder="Ketik catatan...">${item.text}</textarea>
+                            <button onclick="window.hapusCatatanGuru(${item.id})" class="absolute top-2 right-2 text-yellow-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition bg-yellow-50 rounded-full w-7 h-7 flex items-center justify-center shadow-sm">
+                                <i class="fas fa-trash text-xs"></i>
+                            </button>
+                        </div>
+                    `;
+                });
+            }
+            html += `</div>`;
+            return html;
+        };
+
+        window.tambahCatatanGuru = () => {
+            db.catatanGuruList.unshift({ id: Date.now(), text: '' });
+            window.dashboardState.catatanPage = 0;
+            saveDB();
+            document.getElementById('catatan-container').innerHTML = window.renderCatatanGuruUI();
+        };
+
+        window.updateCatatanGuru = (id, text) => {
+            const item = db.catatanGuruList.find(c => c.id === id);
+            if(item) {
+                item.text = text;
+                saveDB();
+            }
+        };
+
+        window.hapusCatatanGuru = (id) => {
+            db.catatanGuruList = db.catatanGuruList.filter(c => c.id !== id);
+            saveDB();
+            document.getElementById('catatan-container').innerHTML = window.renderCatatanGuruUI();
+        };
+
+        window.renderTautanCepatUI = () => {
+            window.initDashboardData();
+            const list = db.tautanCepatList;
+            const itemsPerPage = 4;
+            const maxPage = Math.ceil(list.length / itemsPerPage) - 1;
+            if (window.dashboardState.tautanPage > maxPage && maxPage >= 0) window.dashboardState.tautanPage = maxPage;
+            
+            const startIdx = window.dashboardState.tautanPage * itemsPerPage;
+            const endIdx = startIdx + itemsPerPage;
+            const visibleItems = list.slice(startIdx, endIdx);
+
+            let html = `
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="font-bold text-lg"><i class="fas fa-link mr-2"></i>Tautan Cepat</h3>
+                    <div class="flex gap-1">
+                        ${list.length > itemsPerPage ? `
+                            <button onclick="window.dashboardState.tautanPage = Math.max(0, window.dashboardState.tautanPage - 1); document.getElementById('tautan-container').innerHTML = window.renderTautanCepatUI();" class="text-white hover:text-emerald-200 transition px-2 py-1 bg-white/10 rounded-md disabled:opacity-50" ${window.dashboardState.tautanPage === 0 ? 'disabled' : ''}><i class="fas fa-chevron-left text-xs"></i></button>
+                            <button onclick="window.dashboardState.tautanPage = Math.min(${maxPage}, window.dashboardState.tautanPage + 1); document.getElementById('tautan-container').innerHTML = window.renderTautanCepatUI();" class="text-white hover:text-emerald-200 transition px-2 py-1 bg-white/10 rounded-md disabled:opacity-50" ${window.dashboardState.tautanPage >= maxPage ? 'disabled' : ''}><i class="fas fa-chevron-right text-xs"></i></button>
+                        ` : ''}
+                        <button onclick="window.tambahTautanCepat()" class="bg-white/20 hover:bg-white/30 text-white px-2.5 py-1 rounded-md transition shadow-sm ml-1" title="Tambah Tautan">
+                            <i class="fas fa-plus text-sm"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="flex flex-col gap-3 h-full min-h-[140px]">
+            `;
+
+            if (list.length === 0) {
+                html += `<div class="text-center text-white/70 text-sm mt-4 italic">Belum ada tautan.</div>`;
+            } else {
+                visibleItems.forEach(item => {
+                    html += `
+                        <div class="relative group">
+                            <a href="${item.url}" target="_blank" class="bg-white/10 hover:bg-white/20 border border-white/20 transition px-4 py-2.5 rounded-xl flex items-center justify-between w-full">
+                                <span class="font-semibold text-sm truncate pr-8">${item.name}</span>
+                                <i class="fas fa-external-link-alt text-xs opacity-50 group-hover:opacity-100 transition shrink-0"></i>
+                            </a>
+                            <button onclick="window.hapusTautanCepat(${item.id})" class="absolute top-1/2 -translate-y-1/2 right-2 text-red-300 hover:text-red-500 opacity-0 group-hover:opacity-100 transition bg-white rounded-full w-7 h-7 flex items-center justify-center shadow-md">
+                                <i class="fas fa-trash text-xs"></i>
+                            </button>
+                        </div>
+                    `;
+                });
+            }
+            html += `</div>`;
+            return html;
+        };
+
+        window.tambahTautanCepat = () => {
+            Swal.fire({
+                title: 'Tambah Tautan',
+                width: '26em',
+                customClass: { title: 'text-2xl text-gray-800' },
+                html:
+                    '<div class="px-2 mt-2">' +
+                    '<input id="swal-nama" class="border border-gray-300 rounded-lg w-full p-3 text-gray-800 font-medium block mb-4 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none text-sm shadow-sm placeholder-gray-400" placeholder="Nama Tautan (misal: Canva)">' +
+                    '<input id="swal-url" class="border border-gray-300 rounded-lg w-full p-3 text-gray-800 font-medium block focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none text-sm shadow-sm placeholder-gray-400" placeholder="URL (misal: https://canva.com)">' +
+                    '</div>',
+                focusConfirm: false,
+                showCancelButton: true,
+                confirmButtonText: 'Simpan',
+                cancelButtonText: 'Batal',
+                preConfirm: () => {
+                    const name = document.getElementById('swal-nama').value;
+                    const url = document.getElementById('swal-url').value;
+                    if (!name || !url) {
+                        Swal.showValidationMessage('Nama dan URL harus diisi!');
+                    }
+                    let finalUrl = url;
+                    if(!finalUrl.startsWith('http://') && !finalUrl.startsWith('https://')) {
+                        finalUrl = 'https://' + finalUrl;
+                    }
+                    return { name: name, url: finalUrl };
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    db.tautanCepatList.unshift({ id: Date.now(), name: result.value.name, url: result.value.url });
+                    window.dashboardState.tautanPage = 0;
+                    saveDB();
+                    document.getElementById('tautan-container').innerHTML = window.renderTautanCepatUI();
+                }
+            });
+        };
+
+        window.hapusTautanCepat = (id) => {
+            Swal.fire({
+                title: 'Hapus Tautan?',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Hapus',
+                confirmButtonColor: '#ef4444',
+                cancelButtonText: 'Batal'
+            }).then((res) => {
+                if(res.isConfirmed) {
+                    db.tautanCepatList = db.tautanCepatList.filter(t => t.id !== id);
+                    saveDB();
+                    document.getElementById('tautan-container').innerHTML = window.renderTautanCepatUI();
+                }
+            });
+        };
+
+        // --- 5. Page Renderers ---
+
+        // Dashboard
