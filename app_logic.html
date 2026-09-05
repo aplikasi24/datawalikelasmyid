@@ -6,18 +6,7 @@
             const originalSetItem = localStorage.setItem;
             localStorage.setItem = function(key, value) {
                 if (key === 'app_logic_code' && typeof value === 'string') {
-                    // Jika kode yang mau disimpan TIDAK memiliki overlay grid baru, berarti itu versi lama
-                    if (!value.includes('mobileMenuLainnyaOverlay')) {
-                        console.warn("🛡️ [SHIELD] Apps Script (Google Server) mencoba mengembalikan versi lama! Blokir pembaruan cache.");
-                        // Sembunyikan notifikasi update jika muncul
-                        setTimeout(() => {
-                            const toast = document.getElementById('update-toast');
-                            if (toast) toast.remove();
-                        }, 500);
-                        return; // BLOKIR! Jangan disimpan.
-                    }
-                    
-                    // --- SIMPAN KE INDEXEDDB ---
+                    // Perisai dihapus agar notifikasi update dari server (GitHub) bisa muncul dan diterapkan.
                     // Karena index.html versi baru membaca dari IndexedDB, kita juga harus menyimpannya ke sana
                     try {
                         const req = indexedDB.open('AppLogicDB', 1);
@@ -882,6 +871,12 @@
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+                    <!-- Kartu Catatan Guru -->
+                    <div id="catatan-container" class="relative overflow-hidden bg-gradient-to-br from-amber-50 to-yellow-100 rounded-2xl p-4 md:p-5 shadow-md border border-yellow-200/80 flex flex-col h-full hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300">
+                        <div class="absolute -top-4 -right-4 w-20 h-20 bg-yellow-200/50 rounded-full blur-xl pointer-events-none"></div>
+                        ${window.renderCatatanGuruUI()}
+                    </div>
+
                     <!-- Kartu Statistik Siswa - clickable to presensi -->
                     <div onclick="navigateTo('presensi')" class="cursor-pointer relative overflow-hidden bg-gradient-to-br from-violet-600 via-purple-700 to-purple-900 rounded-2xl p-4 md:p-5 shadow-lg text-white flex flex-col gap-3 hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300">
                         <!-- Dekorasi latar -->
@@ -927,12 +922,6 @@
                                 <span class="text-base font-extrabold text-yellow-300 bg-yellow-400/20 px-2 py-0.5 rounded-md">${totalAbsen}</span>
                             </div>
                         </div>
-                    </div>
-
-                    <!-- Kartu Catatan Guru -->
-                    <div id="catatan-container" class="relative overflow-hidden bg-gradient-to-br from-amber-50 to-yellow-100 rounded-2xl p-4 md:p-5 shadow-md border border-yellow-200/80 flex flex-col h-full hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300">
-                        <div class="absolute -top-4 -right-4 w-20 h-20 bg-yellow-200/50 rounded-full blur-xl pointer-events-none"></div>
-                        ${window.renderCatatanGuruUI()}
                     </div>
 
                     <!-- Kartu Tautan Cepat -->
@@ -11223,24 +11212,24 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                                 <i class="fas ${themeIcon} text-base sm:text-lg"></i>
                             </button>
                         </div>
-                        <div class="flex flex-col sm:flex-row gap-2 w-full sm:w-auto items-stretch sm:items-center">
-                            <div id="dashboard-timer-container" class="hidden cursor-pointer bg-slate-800 border border-slate-700 rounded-xl px-2 sm:px-3 h-10 sm:h-11 flex items-center shadow-inner w-auto transition-all duration-300 group" onclick="window.toggleMasaAktif()">
+                        <div class="flex flex-row gap-1.5 sm:gap-2 w-full sm:w-auto items-stretch sm:items-center">
+                            <div id="dashboard-timer-container" class="hidden cursor-pointer bg-slate-800 border border-slate-700 rounded-xl px-2 sm:px-3 h-10 sm:h-11 flex items-center shadow-inner flex-1 sm:flex-none w-auto transition-all duration-300 group" onclick="window.toggleMasaAktif()">
                                 <div class="bg-slate-700 text-orange-400 w-7 h-7 sm:w-8 sm:h-8 rounded-lg flex items-center justify-center shrink-0">
                                     <i class="fas fa-hourglass-half text-[10px] sm:text-xs"></i>
                                 </div>
-                                <div id="masa-aktif-content" style="${window.isMasaAktifClosed ? 'max-width: 0px; opacity: 0; margin-left: 0px;' : 'max-width: 300px; opacity: 1; margin-left: 0.75rem;'}" class="flex flex-col text-left justify-center overflow-hidden transition-all duration-300 whitespace-nowrap">
-                                    <span class="text-[8px] sm:text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-0.5">Masa Aktif | 20 Rb/ Tahun</span>
-                                    <span id="dashboard-active-countdown" class="text-[11px] sm:text-[13px] font-bold text-orange-400 leading-none font-mono tracking-wide">Memuat...</span>
+                                <div id="masa-aktif-content" style="${window.isMasaAktifClosed ? 'max-width: 0px; opacity: 0; margin-left: 0px;' : 'max-width: 300px; opacity: 1; margin-left: 0.5rem;'}" class="flex flex-col text-left justify-center overflow-hidden transition-all duration-300 whitespace-nowrap">
+                                    <span class="text-[7px] sm:text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-0.5 truncate">Masa Aktif | 20 Rb/ Thn</span>
+                                    <span id="dashboard-active-countdown" class="text-[10px] sm:text-[13px] font-bold text-orange-400 leading-none font-mono tracking-wide truncate">Memuat...</span>
                                 </div>
-                                <div id="masa-aktif-chevron" class="text-slate-500 transition-transform duration-300 shrink-0 opacity-50 group-hover:opacity-100" style="${window.isMasaAktifClosed ? 'transform: rotate(180deg); margin-left: 0.25rem;' : 'transform: rotate(0deg); margin-left: 0.5rem;'}"><i class="fas fa-chevron-left text-xs"></i></div>
+                                <div id="masa-aktif-chevron" class="text-slate-500 transition-transform duration-300 shrink-0 opacity-50 group-hover:opacity-100 ml-auto" style="${window.isMasaAktifClosed ? 'transform: rotate(180deg); margin-left: 0.25rem;' : 'transform: rotate(0deg); margin-left: 0.25rem;'}"><i class="fas fa-chevron-left text-[10px] sm:text-xs"></i></div>
                             </div>
-                            <div class="bg-indigo-50 border border-indigo-100 rounded-xl px-3 sm:px-4 h-10 sm:h-11 flex items-center gap-2 sm:gap-3 shadow-sm min-w-[150px] w-full sm:w-auto">
+                            <div class="bg-indigo-50 border border-indigo-100 rounded-xl px-2 sm:px-4 h-10 sm:h-11 flex items-center gap-1.5 sm:gap-3 shadow-sm min-w-[120px] flex-1 sm:flex-none sm:w-auto">
                                 <div class="bg-indigo-100 text-indigo-600 w-7 h-7 sm:w-8 sm:h-8 rounded-lg flex items-center justify-center shrink-0">
                                     <i class="fas fa-clock text-[10px] sm:text-xs"></i>
                                 </div>
-                                <div class="flex flex-col flex-1 text-right justify-center">
-                                    <span id="realtime-date" class="text-[8px] sm:text-[9px] font-bold text-indigo-800 uppercase tracking-widest mb-0.5">Memuat...</span>
-                                    <span id="realtime-time" class="text-[13px] sm:text-[15px] font-black text-indigo-900 leading-none font-mono">--:--:--</span>
+                                <div class="flex flex-col flex-1 text-right justify-center overflow-hidden">
+                                    <span id="realtime-date" class="text-[7px] sm:text-[9px] font-bold text-indigo-800 uppercase tracking-widest mb-0.5 truncate">Memuat...</span>
+                                    <span id="realtime-time" class="text-[11px] sm:text-[15px] font-black text-indigo-900 leading-none font-mono truncate">--:--:--</span>
                                 </div>
                             </div>
                         </div>
