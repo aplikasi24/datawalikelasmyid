@@ -387,7 +387,7 @@
         window.renderTautanCepatUI = () => {
             window.initDashboardData();
             const list = db.tautanCepatList;
-            const itemsPerPage = 8;
+            const itemsPerPage = 4;
             const maxPage = Math.ceil(list.length / itemsPerPage) - 1;
             if (window.dashboardState.tautanPage > maxPage && maxPage >= 0) window.dashboardState.tautanPage = maxPage;
             
@@ -396,33 +396,33 @@
             const visibleItems = list.slice(startIdx, endIdx);
 
             let html = `
-                <div class="flex justify-between items-center mb-3">
-                    <h3 class="font-bold text-base"><i class="fas fa-link mr-2"></i>Tautan Cepat</h3>
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="font-bold text-lg"><i class="fas fa-link mr-2"></i>Tautan Cepat</h3>
                     <div class="flex gap-1">
                         ${list.length > itemsPerPage ? `
-                            <button onclick="window.dashboardState.tautanPage = Math.max(0, window.dashboardState.tautanPage - 1); document.getElementById('tautan-container').innerHTML = window.renderTautanCepatUI();" class="text-white hover:text-emerald-200 transition px-2 py-1 bg-white/10 rounded-md disabled:opacity-50" ${window.dashboardState.tautanPage === 0 ? 'disabled' : ''}><i class="fas fa-chevron-left text-[10px]"></i></button>
-                            <button onclick="window.dashboardState.tautanPage = Math.min(${maxPage}, window.dashboardState.tautanPage + 1); document.getElementById('tautan-container').innerHTML = window.renderTautanCepatUI();" class="text-white hover:text-emerald-200 transition px-2 py-1 bg-white/10 rounded-md disabled:opacity-50" ${window.dashboardState.tautanPage >= maxPage ? 'disabled' : ''}><i class="fas fa-chevron-right text-[10px]"></i></button>
+                            <button onclick="window.dashboardState.tautanPage = Math.max(0, window.dashboardState.tautanPage - 1); document.getElementById('tautan-container').innerHTML = window.renderTautanCepatUI();" class="text-white hover:text-emerald-200 transition px-2 py-1 bg-white/10 rounded-md disabled:opacity-50" ${window.dashboardState.tautanPage === 0 ? 'disabled' : ''}><i class="fas fa-chevron-left text-xs"></i></button>
+                            <button onclick="window.dashboardState.tautanPage = Math.min(${maxPage}, window.dashboardState.tautanPage + 1); document.getElementById('tautan-container').innerHTML = window.renderTautanCepatUI();" class="text-white hover:text-emerald-200 transition px-2 py-1 bg-white/10 rounded-md disabled:opacity-50" ${window.dashboardState.tautanPage >= maxPage ? 'disabled' : ''}><i class="fas fa-chevron-right text-xs"></i></button>
                         ` : ''}
-                        <button onclick="window.tambahTautanCepat()" class="bg-white/20 hover:bg-white/30 text-white px-2 py-1 rounded-md transition shadow-sm ml-1" title="Tambah Tautan">
-                            <i class="fas fa-plus text-xs"></i>
+                        <button onclick="window.tambahTautanCepat()" class="bg-white/20 hover:bg-white/30 text-white px-2.5 py-1 rounded-md transition shadow-sm ml-1" title="Tambah Tautan">
+                            <i class="fas fa-plus text-sm"></i>
                         </button>
                     </div>
                 </div>
-                <div class="grid grid-cols-2 gap-2 h-full content-start min-h-[90px]">
+                <div class="flex flex-col gap-3 h-full min-h-[140px]">
             `;
 
             if (list.length === 0) {
-                html += `<div class="col-span-2 text-center text-white/70 text-xs mt-2 italic">Belum ada tautan.</div>`;
+                html += `<div class="text-center text-white/70 text-sm mt-4 italic">Belum ada tautan.</div>`;
             } else {
                 visibleItems.forEach(item => {
                     html += `
-                        <div class="relative group h-max">
-                            <a href="${item.url}" target="_blank" class="bg-white/10 hover:bg-white/20 border border-white/20 transition px-2.5 py-1.5 rounded-lg flex items-center justify-between w-full h-full">
-                                <span class="font-semibold text-[10px] md:text-xs truncate pr-5">${item.name}</span>
-                                <i class="fas fa-external-link-alt text-[9px] opacity-50 group-hover:opacity-100 transition shrink-0"></i>
+                        <div class="relative group">
+                            <a href="${item.url}" target="_blank" class="bg-white/10 hover:bg-white/20 border border-white/20 transition px-4 py-2.5 rounded-xl flex items-center justify-between w-full">
+                                <span class="font-semibold text-sm truncate pr-8">${item.name}</span>
+                                <i class="fas fa-external-link-alt text-xs opacity-50 group-hover:opacity-100 transition shrink-0"></i>
                             </a>
-                            <button onclick="window.hapusTautanCepat(${item.id})" class="absolute top-1/2 -translate-y-1/2 right-1.5 text-red-300 hover:text-red-500 opacity-0 group-hover:opacity-100 transition bg-white rounded-full w-5 h-5 flex items-center justify-center shadow-md">
-                                <i class="fas fa-trash text-[9px]"></i>
+                            <button onclick="window.hapusTautanCepat(${item.id})" class="absolute top-1/2 -translate-y-1/2 right-2 text-red-300 hover:text-red-500 opacity-0 group-hover:opacity-100 transition bg-white rounded-full w-7 h-7 flex items-center justify-center shadow-md">
+                                <i class="fas fa-trash text-xs"></i>
                             </button>
                         </div>
                     `;
