@@ -12706,7 +12706,7 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
         window.koreksiState = window.koreksiState || {
             semester: 'Ganjil',
             jenis_ujian: 'STS 1',
-            mapel: 'Pendidikan Agama',
+            mapel: (db.mapel && db.mapel.length > 0) ? db.mapel[0].nama : 'Pendidikan Agama',
             max_pg: 70,
             max_esai: 30,
             current_student_idx: 0,
@@ -12757,6 +12757,11 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                     "Ilmu Pengetahuan Alam dan Sosial (IPAS)", "Seni dan Budaya", 
                     "PJOK", "Bahasa Inggris", "Muatan Lokal"
                 ];
+            }
+            
+            // Pastikan mapel yang dipilih ada di daftar, jika tidak reset ke yang pertama
+            if (!listMapel.includes(window.koreksiState.mapel)) {
+                window.koreksiState.mapel = listMapel[0];
             }
             
             let mapelOptions = listMapel.map(m => `<option value="${m}" class="text-black" ${window.koreksiState.mapel === m ? 'selected' : ''}>${m}</option>`).join('');
