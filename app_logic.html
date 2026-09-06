@@ -1009,6 +1009,39 @@
                 </div>
                 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8 print-hide">
+                    <div class="relative overflow-hidden bg-white rounded-2xl p-6 shadow-md border border-gray-100 flex flex-col items-center hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300 group">
+                        <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-400 to-indigo-500 rounded-t-2xl"></div>
+                        <div class="w-full flex items-center justify-between mb-5">
+                            <div>
+                                <p class="text-xs text-gray-400 uppercase font-semibold tracking-wider">Statistik Koreksi</p>
+                                <h4 class="font-bold text-gray-800 text-base mt-0.5">Rata-Rata Koreksi Ujian per Mapel</h4>
+                            </div>
+                            <div class="bg-indigo-50 text-indigo-500 p-2.5 rounded-xl border border-indigo-100 group-hover:bg-indigo-100 transition">
+                                <i class="fas fa-chart-line text-base"></i>
+                            </div>
+                        </div>
+                        <div class="w-full h-[320px] relative">
+                            <canvas id="chartKoreksiUjian"></canvas>
+                        </div>
+                    </div>
+                    <div class="relative overflow-hidden bg-white rounded-2xl p-6 shadow-md border border-gray-100 flex flex-col items-center hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300 group">
+                        <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-pink-400 to-rose-500 rounded-t-2xl"></div>
+                        <div class="w-full flex items-center justify-between mb-5">
+                            <div>
+                                <p class="text-xs text-gray-400 uppercase font-semibold tracking-wider">Statistik Buku Nilai</p>
+                                <h4 class="font-bold text-gray-800 text-base mt-0.5">Rata-Rata Nilai Siswa (TP, LM, STS/SAS)</h4>
+                            </div>
+                            <div class="bg-pink-50 text-pink-500 p-2.5 rounded-xl border border-pink-100 group-hover:bg-pink-100 transition">
+                                <i class="fas fa-chart-line text-base"></i>
+                            </div>
+                        </div>
+                        <div class="w-full h-[320px] relative">
+                            <canvas id="chartNilaiSiswa"></canvas>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8 print-hide">
                     <div class="bg-gradient-to-br from-blue-600 to-blue-800 rounded-2xl p-6 shadow-md border border-blue-700 flex flex-col text-white justify-between">
                         <div>
                             <h3 class="font-bold text-lg">Mode Aktif</h3>
@@ -1313,6 +1346,131 @@
                                 window.bukaModalDaftarSiswa(titles[index], lists[index]);
                             }
                         }
+                    }
+                });
+            }
+
+            // --- 4. CHART KOREKSI UJIAN (STS 1, SAS 1, STS 2, SAT PER MAPEL) ---
+            const ctxKoreksi = document.getElementById('chartKoreksiUjian');
+            if (ctxKoreksi && db.mapel && db.mapel.length > 0) {
+                const mapelNames = db.mapel.map(m => m.nama);
+                const jenisUjian = ['STS 1', 'SAS 1', 'STS 2', 'SAT'];
+                const colors = ['#3b82f6', '#10b981', '#f59e0b', '#8b5cf6'];
+                
+                const datasetsKoreksi = jenisUjian.map((jen, idx) => {
+                    const data = mapelNames.map(mNama => {
+                        const jenSafe = jen.replace(/[^a-zA-Z0-9]/g, '_');
+                        const mSafe = mNama.replace(/[^a-zA-Z0-9]/g, '_');
+                        const key = jenSafe + '_' + mSafe;
+                        
+                        const mData = db.koreksi_ujian ? db.koreksi_ujian[key] : null;
+                        let total = 0, count = 0;
+                        if (mData && mData.nilai) {
+                            const maxPg = mData.config?.max_pg ?? 70;
+                            const maxEsai = mData.config?.max_esai ?? 30;
+                            const maxTotal = maxPg + maxEsai;
+                            Object.values(mData.nilai).forEach(n => {
+                                if (n.pg !== '' || n.esai !== '') {
+                                    let p = parseFloat(n.pg) || 0;
+                                    let e = parseFloat(n.esai) || 0;
+                                    total += (maxTotal > 0 ? ((p + e) / maxTotal) * 100 : 0);
+                                    count++;
+                                }
+                            });
+                        }
+                        return count > 0 ? (total / count) : null;
+                    });
+                    
+                    return {
+                        label: jen,
+                        data: data,
+                        borderColor: colors[idx],
+                        backgroundColor: colors[idx],
+                        tension: 0.3,
+                        spanGaps: true
+                    };
+                });
+                
+                new Chart(ctxKoreksi, {
+                    type: 'line',
+                    data: { labels: mapelNames, datasets: datasetsKoreksi },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { position: 'bottom' } },
+                        scales: { y: { min: 0, max: 100 } }
+                    }
+                });
+            }
+
+            // --- 5. CHART NILAI SISWA (RATA-RATA FORMATIF, LM, STS+SAS) ---
+            const ctxNilai = document.getElementById('chartNilaiSiswa');
+            if (ctxNilai && db.mapel && db.mapel.length > 0) {
+                const mapelNames = db.mapel.map(m => m.nama);
+                const semesterKeys = [1, 2]; // Ambil data dari kedua semester
+                
+                let dataTP = [], dataLM = [], dataSTSSAS = [];
+                
+                db.mapel.forEach(m => {
+                    let totalTP = 0, countTP = 0;
+                    let totalLM = 0, countLM = 0;
+                    let totalSTSSAS = 0, countSTSSAS = 0;
+                    
+                    const p = db.pengaturan_nilai && db.pengaturan_nilai[m.id] ? db.pengaturan_nilai[m.id] : { jumlah_tp: 5, jumlah_lm: 5 };
+                    
+                    semesterKeys.forEach(smt => {
+                        let dataKey = smt === 1 ? String(m.id) : String(m.id) + "_smt" + smt;
+                        if (db.nilai && db.nilai[dataKey]) {
+                            Object.values(db.nilai[dataKey]).forEach(n => {
+                                // TP (Formatif)
+                                let sumTP = 0, validTP = 0;
+                                for(let i=1; i<=p.jumlah_tp; i++) {
+                                    if(n[`tp${i}`] !== undefined && n[`tp${i}`] !== '') {
+                                        sumTP += parseFloat(n[`tp${i}`]);
+                                        validTP++;
+                                    }
+                                }
+                                if(validTP > 0) { totalTP += (sumTP/validTP); countTP++; }
+                                
+                                // LM (Lingkup Materi)
+                                let sumLM = 0, validLM = 0;
+                                for(let i=1; i<=p.jumlah_lm; i++) {
+                                    if(n[`lm${i}`] !== undefined && n[`lm${i}`] !== '') {
+                                        sumLM += parseFloat(n[`lm${i}`]);
+                                        validLM++;
+                                    }
+                                }
+                                if(validLM > 0) { totalLM += (sumLM/validLM); countLM++; }
+                                
+                                // STS & SAS
+                                let sumSAS = 0, validSAS = 0;
+                                if(n['sts'] !== undefined && n['sts'] !== '') { sumSAS += parseFloat(n['sts']); validSAS++; }
+                                if(n['sas'] !== undefined && n['sas'] !== '') { sumSAS += parseFloat(n['sas']); validSAS++; }
+                                if(validSAS > 0) { totalSTSSAS += (sumSAS/validSAS); countSTSSAS++; }
+                            });
+                        }
+                    });
+                    
+                    dataTP.push(countTP > 0 ? (totalTP / countTP) : null);
+                    dataLM.push(countLM > 0 ? (totalLM / countLM) : null);
+                    dataSTSSAS.push(countSTSSAS > 0 ? (totalSTSSAS / countSTSSAS) : null);
+                });
+                
+                new Chart(ctxNilai, {
+                    type: 'line',
+                    data: {
+                        labels: mapelNames,
+                        datasets: [
+                            { label: 'Rata-Rata Formatif (TP)', data: dataTP, borderColor: '#ec4899', backgroundColor: '#ec4899', tension: 0.3, spanGaps: true },
+                            { label: 'Rata-Rata LM', data: dataLM, borderColor: '#14b8a6', backgroundColor: '#14b8a6', tension: 0.3, spanGaps: true },
+                            { label: 'Rata-Rata STS & SAS', data: dataSTSSAS, borderColor: '#6366f1', backgroundColor: '#6366f1', tension: 0.3, spanGaps: true }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { position: 'bottom' } },
+                        scales: { y: { min: 0, max: 100 } }
                     }
                 });
             }
