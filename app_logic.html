@@ -1350,10 +1350,29 @@
                 });
             }
 
+            // Helper memperpendek nama mapel khusus grafik
+            const shortenMapelName = (name) => {
+                const map = {
+                    "Pendidikan Agama dan Budi Pekerti": "PABP",
+                    "Pendidikan Pancasila": "P. Pancasila",
+                    "Bahasa Indonesia": "B. Indonesia",
+                    "Matematika": "MTK",
+                    "Ilmu Pengetahuan Alam dan Sosial (IPAS)": "IPAS",
+                    "Seni dan Budaya (Seni Rupa)": "Seni Budaya",
+                    "Seni dan Budaya": "Seni Budaya",
+                    "Pendidikan Jasmani, Olahraga, dan Kesehatan (PJOK)": "PJOK",
+                    "PJOK": "PJOK",
+                    "Bahasa Jawa": "B. Jawa",
+                    "Bahasa Inggris": "B. Inggris"
+                };
+                return map[name] || name;
+            };
+
             // --- 4. CHART KOREKSI UJIAN (STS 1, SAS 1, STS 2, SAT PER MAPEL) ---
             const ctxKoreksi = document.getElementById('chartKoreksiUjian');
             if (ctxKoreksi && db.mapel && db.mapel.length > 0) {
                 const mapelNames = db.mapel.map(m => m.nama);
+                const shortMapelNames = mapelNames.map(shortenMapelName);
                 const jenisUjian = ['STS 1', 'SAS 1', 'STS 2', 'SAT'];
                 const colors = ['#3b82f6', '#10b981', '#f59e0b', '#8b5cf6'];
                 
@@ -1393,7 +1412,7 @@
                 
                 new Chart(ctxKoreksi, {
                     type: 'line',
-                    data: { labels: mapelNames, datasets: datasetsKoreksi },
+                    data: { labels: shortMapelNames, datasets: datasetsKoreksi },
                     options: {
                         responsive: true,
                         maintainAspectRatio: false,
@@ -1407,6 +1426,7 @@
             const ctxNilai = document.getElementById('chartNilaiSiswa');
             if (ctxNilai && db.mapel && db.mapel.length > 0) {
                 const mapelNames = db.mapel.map(m => m.nama);
+                const shortMapelNames = mapelNames.map(shortenMapelName);
                 const semesterKeys = [1, 2]; // Ambil data dari kedua semester
                 
                 let dataTP = [], dataLM = [], dataSTSSAS = [];
@@ -1459,7 +1479,7 @@
                 new Chart(ctxNilai, {
                     type: 'line',
                     data: {
-                        labels: mapelNames,
+                        labels: shortMapelNames,
                         datasets: [
                             { label: 'Rata-Rata Formatif (TP)', data: dataTP, borderColor: '#ec4899', backgroundColor: '#ec4899', tension: 0.3, spanGaps: true },
                             { label: 'Rata-Rata LM', data: dataLM, borderColor: '#14b8a6', backgroundColor: '#14b8a6', tension: 0.3, spanGaps: true },
