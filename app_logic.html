@@ -13369,6 +13369,9 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
             if (!db.students || db.students.length === 0) {
                 return `<div class="p-8 text-center text-gray-500">Silakan tambahkan data siswa terlebih dahulu di menu Data Siswa.</div>`;
             }
+            if (!window.koreksiState.rekap_jenis) {
+                window.koreksiState.rekap_jenis = 'STS 1';
+            }
 
             let html = `
             <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-4">
