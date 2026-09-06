@@ -13033,7 +13033,6 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                     </div>
                     <div class="flex flex-wrap gap-2 w-full xl:w-auto">
                         ${window.koreksiState.view === 'input' ? `
-                            <div class="flex flex-col sm:flex-row gap-3 mt-4">
                             <select id="koreksi_jenis" onchange="window.koreksiStateChange('jenis_ujian', this.value)" class="bg-white/10 backdrop-blur border border-white/20 text-white text-sm font-semibold rounded-xl px-3 py-2 outline-none focus:border-cyan-400 transition">
                                 <option value="STS 1" class="text-black" ${window.koreksiState.jenis_ujian === 'STS 1' ? 'selected' : ''}>STS 1</option>
                                 <option value="SAS 1" class="text-black" ${window.koreksiState.jenis_ujian === 'SAS 1' ? 'selected' : ''}>SAS 1</option>
@@ -13047,13 +13046,11 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                                 <option value="Ganjil" class="text-black" ${window.koreksiState.semester === 'Ganjil' ? 'selected' : ''}>Ganjil</option>
                                 <option value="Genap" class="text-black" ${window.koreksiState.semester === 'Genap' ? 'selected' : ''}>Genap</option>
                             </select>
-                                ${mapelOptions}
-                            </select>
-                            <button onclick="window.koreksiState.view='rekap'; window.navigateTo('koreksi_ujian', true)" class="bg-indigo-500 hover:bg-indigo-600 border border-indigo-400 text-white text-sm font-bold rounded-xl px-4 py-2 transition shadow flex items-center gap-2">
+                            <button onclick="window.koreksiState.view='rekap'; try{localStorage.setItem('mwk_koreksiState', JSON.stringify(window.koreksiState));}catch(e){} window.navigateTo('koreksi_ujian', true)" class="bg-indigo-500 hover:bg-indigo-600 border border-indigo-400 text-white text-sm font-bold rounded-xl px-4 py-2 transition shadow flex items-center gap-2">
                                 <i class="fas fa-clipboard-list"></i> Rekap Nilai
                             </button>
                         ` : `
-                            <button onclick="window.koreksiState.view='input'; window.navigateTo('koreksi_ujian', true)" class="bg-emerald-500 hover:bg-emerald-600 border border-emerald-400 text-white text-sm font-bold rounded-xl px-4 py-2 transition shadow flex items-center gap-2">
+                            <button onclick="window.koreksiState.view='input'; try{localStorage.setItem('mwk_koreksiState', JSON.stringify(window.koreksiState));}catch(e){} window.navigateTo('koreksi_ujian', true)" class="bg-emerald-500 hover:bg-emerald-600 border border-emerald-400 text-white text-sm font-bold rounded-xl px-4 py-2 transition shadow flex items-center gap-2">
                                 <i class="fas fa-arrow-left"></i> Kembali ke Input
                             </button>
                         `}
