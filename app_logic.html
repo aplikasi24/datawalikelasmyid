@@ -12722,7 +12722,7 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
             if (savedStr) savedKoreksiState = JSON.parse(savedStr);
         } catch(e) {}
 
-        window.koreksiState = Object.assign({
+        window.koreksiState = window.koreksiState || savedKoreksiState || {
             semester: 'Ganjil',
             jenis_ujian: 'STS 1',
             mapel: '',
@@ -12731,7 +12731,7 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
             current_student_idx: 0,
             view: 'input',
             rekap_jenis: 'STS 1'
-        }, window.koreksiState || {}, savedKoreksiState || {});
+        };
 
         window.koreksiUpdateSemester = () => {
             if (['STS 1', 'SAS 1'].includes(window.koreksiState.jenis_ujian)) {
@@ -12844,11 +12844,11 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                     <hr class="border-slate-100 my-5">
                     
                     <!-- Layout Split Screen (2 Bagian) -->
-                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start w-full">
-                        <div id="koreksi_cepat_area" class="bg-slate-50 border border-slate-200 rounded-2xl p-4 shadow-inner min-w-0 overflow-hidden">
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
+                        <div id="koreksi_cepat_area" class="bg-slate-50 border border-slate-200 rounded-2xl p-4 shadow-inner">
                             ${window.renderKoreksiCepat(key)}
                         </div>
-                        <div id="koreksi_tabel_area" class="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm min-w-0 overflow-hidden">
+                        <div id="koreksi_tabel_area" class="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm">
                             ${window.renderKoreksiTabel(key)}
                         </div>
                     </div>
@@ -12959,24 +12959,8 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
         };
 
         window.koreksiCalcPreview = () => {
-            const pgEl = document.getElementById('koreksi_pg');
-            const esaiEl = document.getElementById('koreksi_esai');
-            
-            if (!pgEl || !esaiEl) return;
-            
-            let pgInput = pgEl.value;
-            let esaiInput = esaiEl.value;
-            const maxPg = window.koreksiState.max_pg;
-            const maxEsai = window.koreksiState.max_esai;
-
-            if (pgInput !== '' && parseFloat(pgInput) > maxPg) {
-                pgEl.value = maxPg;
-                pgInput = maxPg.toString();
-            }
-            if (esaiInput !== '' && parseFloat(esaiInput) > maxEsai) {
-                esaiEl.value = maxEsai;
-                esaiInput = maxEsai.toString();
-            }
+            const pgInput = document.getElementById('koreksi_pg').value;
+            const esaiInput = document.getElementById('koreksi_esai').value;
             
             const key = window.initKoreksiDB();
             const students = db.students || [];
@@ -13183,12 +13167,12 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                 <table class="w-full text-left text-[11px] text-slate-700 whitespace-nowrap">
                     <thead class="bg-slate-50 border-b border-slate-200 text-slate-600 font-bold sticky top-0 z-10">
                         <tr>
-                            <th class="px-2 py-3 w-8 min-w-[32px] text-center border-r border-slate-200">No</th>
-                            <th class="px-3 py-3 min-w-[120px] border-r border-slate-200">Nama Siswa</th>
-                            <th class="px-2 py-3 text-center w-20 min-w-[60px] border-r border-slate-200" title="Maksimal ${maxPg}">PG</th>
-                            <th class="px-2 py-3 text-center w-20 min-w-[60px] border-r border-slate-200" title="Maksimal ${maxEsai}">Esai</th>
-                            <th class="px-2 py-3 text-center w-24 min-w-[80px] border-r border-slate-200">Akhir</th>
-                            <th class="px-2 py-3 text-center w-12 min-w-[48px]">Simpan</th>
+                            <th class="px-2 py-3 w-8 text-center border-r border-slate-200">No</th>
+                            <th class="px-3 py-3 border-r border-slate-200">Nama Siswa</th>
+                            <th class="px-2 py-3 text-center w-20 border-r border-slate-200" title="Maksimal ${maxPg}">PG</th>
+                            <th class="px-2 py-3 text-center w-20 border-r border-slate-200" title="Maksimal ${maxEsai}">Esai</th>
+                            <th class="px-2 py-3 text-center w-24 border-r border-slate-200">Akhir</th>
+                            <th class="px-2 py-3 text-center w-12">Simpan</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-slate-100 bg-white">
@@ -13219,7 +13203,7 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                     html += `
                     <tr id="tr_koreksi_${s.id}" class="${isCurrent ? 'bg-indigo-50/50' : 'hover:bg-slate-50'} transition-colors">
                         <td class="px-2 py-2 text-center text-slate-400 font-medium border-r border-slate-50">${idx + 1}</td>
-                        <td class="px-3 py-2 font-semibold text-slate-800 border-r border-slate-50 truncate max-w-[150px] cursor-pointer hover:text-indigo-600 transition-colors" title="${s.name}" onclick="window.koreksiSyncSidebarFocus(${idx})">
+                        <td class="px-3 py-2 font-semibold text-slate-800 border-r border-slate-50 truncate max-w-[150px]" title="${s.name}">
                             ${s.name}
                         </td>
                         <td class="px-2 py-2 border-r border-slate-50">
@@ -13271,25 +13255,10 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
         };
 
         window.koreksiTabelRowCalc = (studentId) => {
-            const pgEl = document.getElementById('tbl_pg_' + studentId);
-            const esaiEl = document.getElementById('tbl_esai_' + studentId);
-            
-            if (!pgEl || !esaiEl) return;
-            
-            let pgInput = pgEl.value;
-            let esaiInput = esaiEl.value;
+            const pgInput = document.getElementById('tbl_pg_' + studentId).value;
+            const esaiInput = document.getElementById('tbl_esai_' + studentId).value;
             const maxPg = window.koreksiState.max_pg;
             const maxEsai = window.koreksiState.max_esai;
-            
-            if (pgInput !== '' && parseFloat(pgInput) > maxPg) {
-                pgEl.value = maxPg;
-                pgInput = maxPg.toString();
-            }
-            if (esaiInput !== '' && parseFloat(esaiInput) > maxEsai) {
-                esaiEl.value = maxEsai;
-                esaiInput = maxEsai.toString();
-            }
-            
             const maxTotal = maxPg + maxEsai;
             
             if(pgInput === '' && esaiInput === '') {
@@ -13505,7 +13474,6 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                         <option value="STS 2" ${window.koreksiState.rekap_jenis === 'STS 2' ? 'selected' : ''}>STS 2</option>
                         <option value="SAT" ${window.koreksiState.rekap_jenis === 'SAT' ? 'selected' : ''}>SAT</option>
                         <option value="Semester 2 (Genap)" ${window.koreksiState.rekap_jenis === 'Semester 2 (Genap)' ? 'selected' : ''}>Semester 2 (Genap)</option>
-                        <option value="SEMUA" ${window.koreksiState.rekap_jenis === 'SEMUA' ? 'selected' : ''}>SEMUA (Rata-rata Semua Ujian)</option>
                     </select>
                     <div class="flex rounded-xl overflow-hidden border border-slate-300 text-xs font-bold">
                         <button onclick="window.koreksiState.rekap_mode='bulat'; window.navigateTo('koreksi_ujian', true)"
@@ -13544,11 +13512,6 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                 keysToFetch = [ { sem: 'Ganjil', jen: 'STS 1' }, { sem: 'Ganjil', jen: 'SAS 1' } ];
             } else if (rType === 'Semester 2 (Genap)') {
                 keysToFetch = [ { sem: 'Genap', jen: 'STS 2' }, { sem: 'Genap', jen: 'SAT' } ];
-            } else if (rType === 'SEMUA') {
-                keysToFetch = [ 
-                    { sem: 'Ganjil', jen: 'STS 1' }, { sem: 'Ganjil', jen: 'SAS 1' }, 
-                    { sem: 'Genap', jen: 'STS 2' }, { sem: 'Genap', jen: 'SAT' } 
-                ];
             } else {
                 let sem = ['STS 1', 'SAS 1'].includes(rType) ? 'Ganjil' : 'Genap';
                 keysToFetch = [ { sem: sem, jen: rType } ];
@@ -13583,8 +13546,8 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                     });
 
                     if (validCount > 0) {
-                        // Rata-rata RAW hanya dihitung dari ujian yang nilainya ADA (validCount)
-                        let avgRaw = totalRaw / validCount;
+                        // Rata-rata RAW antar ujian (misal rata-rata STS1+SAS1), lalu simpan sebagai float
+                        let avgRaw = totalRaw / keysToFetch.length;
                         sd.nilaiRaw[m.nama] = avgRaw;          // float
                         sd.total  += avgRaw;
                         sd.count  += 1;
