@@ -13554,19 +13554,15 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
             let legerData = students.map(s => ({ id: s.id, name: s.name, nilaiRaw: {}, total: 0, count: 0, average: 0, rank: 0 }));
 
             const rType = window.koreksiState.rekap_jenis;
-            let keysToFetch = [];
+            let jenisList = []; // Daftar jenis_ujian yang akan diambil
             if (rType === 'SEMUA') {
-                keysToFetch = [
-                    { sem: 'Ganjil', jen: 'STS 1' }, { sem: 'Ganjil', jen: 'SAS 1' },
-                    { sem: 'Genap', jen: 'STS 2' }, { sem: 'Genap', jen: 'SAT' }
-                ];
+                jenisList = ['STS 1', 'SAS 1', 'STS 2', 'SAT'];
             } else if (rType === 'Semester 1 (Ganjil)') {
-                keysToFetch = [ { sem: 'Ganjil', jen: 'STS 1' }, { sem: 'Ganjil', jen: 'SAS 1' } ];
+                jenisList = ['STS 1', 'SAS 1'];
             } else if (rType === 'Semester 2 (Genap)') {
-                keysToFetch = [ { sem: 'Genap', jen: 'STS 2' }, { sem: 'Genap', jen: 'SAT' } ];
+                jenisList = ['STS 2', 'SAT'];
             } else {
-                let sem = ['STS 1', 'SAS 1'].includes(rType) ? 'Ganjil' : 'Genap';
-                keysToFetch = [ { sem: sem, jen: rType } ];
+                jenisList = [rType];
             }
 
             // Ambil semua mapel — simpan nilai RAW (float, bukan dibulatkan dulu)
@@ -13575,11 +13571,11 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                     let totalRaw = 0;
                     let validCount = 0;
 
-                    keysToFetch.forEach(k => {
-                        const semSafe = k.sem.replace(/[^a-zA-Z0-9]/g, '_');
-                        const jenSafe = k.jen.replace(/[^a-zA-Z0-9]/g, '_');
+                    jenisList.forEach(jen => {
+                        // Gunakan format key baru: JenisUjian_Mapel (TANPA semester — sesuai initKoreksiDB)
+                        const jenSafe = jen.replace(/[^a-zA-Z0-9]/g, '_');
                         const mSafe   = m.nama.replace(/[^a-zA-Z0-9]/g, '_');
-                        const key = semSafe + '_' + jenSafe + '_' + mSafe;
+                        const key = jenSafe + '_' + mSafe;
                         const mData = db.koreksi_ujian ? db.koreksi_ujian[key] : null;
 
                         if (mData && mData.nilai && mData.nilai[sd.id]) {
@@ -13597,9 +13593,11 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                         }
                     });
 
+
                     if (validCount > 0) {
                         // Rata-rata RAW antar ujian (misal rata-rata STS1+SAS1), lalu simpan sebagai float
-                        let avgRaw = totalRaw / keysToFetch.length;
+                        // Dibagi validCount (bukan jenisList.length) agar mapel yang belum ada ujiannya tidak merusak rata-rata
+                        let avgRaw = totalRaw / validCount;
                         sd.nilaiRaw[m.nama] = avgRaw;          // float
                         sd.total  += avgRaw;
                         sd.count  += 1;
