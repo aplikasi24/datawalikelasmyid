@@ -13436,12 +13436,13 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
             if (!db.students || db.students.length === 0) {
                 return `<div class="p-8 text-center text-gray-500">Silakan tambahkan data siswa terlebih dahulu di menu Data Siswa.</div>`;
             }
-            if (!window.koreksiState.rekap_jenis) {
-                window.koreksiState.rekap_jenis = 'STS 1';
-            }
+            if (!window.koreksiState.rekap_jenis) window.koreksiState.rekap_jenis = 'STS 1';
+            if (!window.koreksiState.rekap_mode) window.koreksiState.rekap_mode = 'bulat'; // 'bulat' | 'murni'
+
+            const isMurni = window.koreksiState.rekap_mode === 'murni';
 
             let html = `
-            <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-4">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-3 mb-4">
                 <div>
                     <h2 class="text-xl font-extrabold text-navy-800"><i class="fas fa-clipboard-list text-emerald-500 mr-2"></i>Rekap Nilai Ujian (Leger)</h2>
                     <p class="text-sm text-slate-500">Tabel rekapitulasi seluruh nilai mata pelajaran beserta peringkat.</p>
@@ -13455,6 +13456,16 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                         <option value="SAT" ${window.koreksiState.rekap_jenis === 'SAT' ? 'selected' : ''}>SAT</option>
                         <option value="Semester 2 (Genap)" ${window.koreksiState.rekap_jenis === 'Semester 2 (Genap)' ? 'selected' : ''}>Semester 2 (Genap)</option>
                     </select>
+                    <div class="flex rounded-xl overflow-hidden border border-slate-300 text-xs font-bold">
+                        <button onclick="window.koreksiState.rekap_mode='bulat'; window.navigateTo('koreksi_ujian', true)"
+                            class="px-3 py-2 transition ${!isMurni ? 'bg-indigo-600 text-white' : 'bg-slate-50 text-slate-600 hover:bg-slate-100'}">
+                            <i class="fas fa-circle mr-1"></i>Pembulatan
+                        </button>
+                        <button onclick="window.koreksiState.rekap_mode='murni'; window.navigateTo('koreksi_ujian', true)"
+                            class="px-3 py-2 transition ${isMurni ? 'bg-indigo-600 text-white' : 'bg-slate-50 text-slate-600 hover:bg-slate-100'}">
+                            <i class="fas fa-decimal mr-1"></i>Nilai Murni
+                        </button>
+                    </div>
                     <button onclick="window.rekapExportPDF()" class="flex-1 md:flex-none bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-xl text-sm font-bold transition shadow flex justify-center items-center gap-2">
                         <i class="fas fa-file-pdf"></i> PDF
                     </button>
@@ -13469,18 +13480,12 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
             const students = db.students || [];
             let mapelList = db.mapel || [];
             if (mapelList.length === 0) {
-                const defaultMapel = [
-                    "Pendidikan Agama", "Pendidikan Pancasila", "Bahasa Indonesia", "Matematika", 
-                    "Ilmu Pengetahuan Alam dan Sosial (IPAS)", "Seni dan Budaya", 
-                    "PJOK", "Bahasa Inggris", "Muatan Lokal"
-                ];
+                const defaultMapel = ["Pendidikan Agama", "Pendidikan Pancasila", "Bahasa Indonesia", "Matematika", "Ilmu Pengetahuan Alam dan Sosial (IPAS)", "Seni dan Budaya", "PJOK", "Bahasa Inggris", "Muatan Lokal"];
                 mapelList = defaultMapel.map(name => ({ id: name, nama: name }));
             }
-            
-            // Siapkan struktur untuk menghitung total dan rata-rata
-            let legerData = students.map(s => {
-                return { id: s.id, name: s.name, nilai: {}, total: 0, count: 0, average: 0, rank: 0 };
-            });
+
+            // Siapkan struktur legerData — simpan nilai mentah (raw float) agar bisa toggle
+            let legerData = students.map(s => ({ id: s.id, name: s.name, nilaiRaw: {}, total: 0, count: 0, average: 0, rank: 0 }));
 
             const rType = window.koreksiState.rekap_jenis;
             let keysToFetch = [];
@@ -13493,86 +13498,114 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                 keysToFetch = [ { sem: sem, jen: rType } ];
             }
 
-            // Ambil semua mapel dan kalkulasi nilainya
+            // Ambil semua mapel — simpan nilai RAW (float, bukan dibulatkan dulu)
             mapelList.forEach(m => {
                 legerData.forEach(sd => {
-                    let totalFinal = 0;
+                    let totalRaw = 0;
                     let validCount = 0;
-                    
+
                     keysToFetch.forEach(k => {
-                        const semSafe  = k.sem.replace(/[^a-zA-Z0-9]/g, '_');
-                        const jenSafe  = k.jen.replace(/[^a-zA-Z0-9]/g, '_');
-                        const mSafe = m.nama.replace(/[^a-zA-Z0-9]/g, '_');
+                        const semSafe = k.sem.replace(/[^a-zA-Z0-9]/g, '_');
+                        const jenSafe = k.jen.replace(/[^a-zA-Z0-9]/g, '_');
+                        const mSafe   = m.nama.replace(/[^a-zA-Z0-9]/g, '_');
                         const key = semSafe + '_' + jenSafe + '_' + mSafe;
                         const mData = db.koreksi_ujian ? db.koreksi_ujian[key] : null;
-                        
+
                         if (mData && mData.nilai && mData.nilai[sd.id]) {
                             const n = mData.nilai[sd.id];
-                            const maxPg = mData.config?.max_pg ?? 70;
+                            const maxPg   = mData.config?.max_pg   ?? 70;
                             const maxEsai = mData.config?.max_esai ?? 30;
                             const maxTotal = maxPg + maxEsai;
-                            if(n.pg !== '' || n.esai !== '') {
-                                let p = parseFloat(n.pg) || 0;
+                            if (n.pg !== '' || n.esai !== '') {
+                                let p = parseFloat(n.pg)   || 0;
                                 let e = parseFloat(n.esai) || 0;
-                                let final = Math.round(((p+e)/maxTotal)*100);
-                                totalFinal += final;
+                                let finalRaw = maxTotal > 0 ? ((p + e) / maxTotal) * 100 : 0;
+                                totalRaw += finalRaw;
                                 validCount++;
                             }
                         }
                     });
-                    
+
                     if (validCount > 0) {
-                        let averageFinal = Math.round(totalFinal / keysToFetch.length);
-                        sd.nilai[m.nama] = averageFinal;
-                        sd.total += averageFinal;
-                        sd.count += 1;
+                        // Rata-rata RAW antar ujian (misal rata-rata STS1+SAS1), lalu simpan sebagai float
+                        let avgRaw = totalRaw / keysToFetch.length;
+                        sd.nilaiRaw[m.nama] = avgRaw;          // float
+                        sd.total  += avgRaw;
+                        sd.count  += 1;
                     } else {
-                        sd.nilai[m.nama] = '-';
+                        sd.nilaiRaw[m.nama] = null;             // null = belum diisi
                     }
                 });
             });
 
-            // Hitung Rata-rata dan Peringkat
+            // Hitung rata-rata siswa (float, 2 desimal)
             legerData.forEach(sd => {
-                if(sd.count > 0) {
-                    sd.average = Math.round((sd.total / sd.count) * 100) / 100;
+                if (sd.count > 0) {
+                    sd.average = sd.total / sd.count;
                 }
             });
 
-            // Peringkat
-            const sortedByAverage = [...legerData].sort((a,b) => b.average - a.average);
-            let currentRank = 1;
-            sortedByAverage.forEach((sd, index) => {
-                if (index > 0 && sd.average === sortedByAverage[index-1].average) {
-                    sd.rank = sortedByAverage[index-1].rank;
-                } else {
-                    sd.rank = currentRank;
-                }
-                currentRank++;
-                
-                // update back to legerData array
+            // Peringkat berdasarkan average
+            const sorted = [...legerData].sort((a, b) => b.average - a.average);
+            sorted.forEach((sd, index) => {
+                sd.rank = (index > 0 && sd.average === sorted[index-1].average) ? sorted[index-1].rank : index + 1;
                 const orig = legerData.find(o => o.id === sd.id);
-                if(orig) orig.rank = sd.rank;
+                if (orig) orig.rank = sd.rank;
             });
 
+            // Helper tampil nilai sesuai mode
+            const fmt = (raw) => {
+                if (raw === null) return '-';
+                return isMurni ? raw.toFixed(2).replace('.', ',') : Math.round(raw);
+            };
+            const fmtAvg = (raw) => {
+                if (!raw) return '-';
+                return isMurni ? raw.toFixed(2).replace('.', ',') : raw.toFixed(2).replace('.', ',');
+            };
+
+            // Hitung rata-rata PER MAPEL (untuk baris terakhir)
+            let mapelAvg = {};
+            mapelList.forEach(m => {
+                let sum = 0, cnt = 0;
+                legerData.forEach(sd => {
+                    if (sd.nilaiRaw[m.nama] !== null) { sum += sd.nilaiRaw[m.nama]; cnt++; }
+                });
+                mapelAvg[m.nama] = cnt > 0 ? sum / cnt : null;
+            });
+
+            // Baris data siswa
             let trs = legerData.map((sd, i) => {
                 let tds = mapelList.map(m => {
-                    let val = sd.nilai[m.nama];
+                    let val = fmt(sd.nilaiRaw[m.nama]);
                     let colorCls = val !== '-' ? 'text-navy-900 font-medium' : 'text-slate-300';
-                    return `<td class="px-2 py-2 border border-gray-200 text-center text-sm ${colorCls}">${val}</td>`;
+                    return `<td class="px-2 py-2 border border-gray-200 text-center text-[11px] ${colorCls}">${val}</td>`;
                 }).join('');
-                
+
+                let avgDisplay = fmtAvg(sd.average);
+                let totalDisplay = isMurni ? sd.total.toFixed(2).replace('.', ',') : Math.round(sd.total);
+
                 return `
                     <tr class="hover:bg-slate-50 transition-colors">
                         <td class="px-3 py-2 border border-gray-200 text-center text-sm">${i+1}</td>
-                        <td class="px-3 py-2 border border-gray-200 text-sm font-medium text-slate-700 whitespace-nowrap">${sd.name}</td>
+                        <td class="px-3 py-2 border border-gray-200 text-sm font-medium text-slate-700 whitespace-nowrap sticky left-0 bg-white">${sd.name}</td>
                         ${tds}
-                        <td class="px-2 py-2 border border-gray-200 text-center text-sm font-bold bg-blue-50 text-blue-700">${sd.total}</td>
-                        <td class="px-2 py-2 border border-gray-200 text-center text-sm font-bold bg-emerald-50 text-emerald-700">${sd.average}</td>
+                        <td class="px-2 py-2 border border-gray-200 text-center text-sm font-bold bg-blue-50 text-blue-700">${totalDisplay}</td>
+                        <td class="px-2 py-2 border border-gray-200 text-center text-sm font-bold bg-emerald-50 text-emerald-700">${avgDisplay}</td>
                         <td class="px-2 py-2 border border-gray-200 text-center text-sm font-black bg-amber-50 text-amber-700">${sd.rank}</td>
                     </tr>
                 `;
             }).join('');
+
+            // Baris rata-rata per mapel (terbawah)
+            let avgTds = mapelList.map(m => {
+                let val = mapelAvg[m.nama] !== null ? (isMurni ? mapelAvg[m.nama].toFixed(2).replace('.', ',') : Math.round(mapelAvg[m.nama])) : '-';
+                return `<td class="px-2 py-1.5 border border-gray-300 text-center text-[11px] font-bold text-indigo-700 bg-indigo-50">${val}</td>`;
+            }).join('');
+
+            // Rata-rata keseluruhan kelas
+            let classAvgSum = legerData.filter(sd => sd.count > 0).reduce((s, sd) => s + sd.average, 0);
+            let classAvgCount = legerData.filter(sd => sd.count > 0).length;
+            let classAvgDisp = classAvgCount > 0 ? (classAvgSum / classAvgCount).toFixed(2).replace('.', ',') : '-';
 
             html += `
             <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden mb-8">
@@ -13584,7 +13617,7 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                                 <th class="px-3 py-3 border-b border-gray-200 font-bold sticky left-0 bg-slate-100/90 backdrop-blur z-10" rowspan="2">Nama Siswa</th>
                                 <th class="px-2 py-2 border-b border-gray-200 text-center font-bold" colspan="${mapelList.length}">Nilai Mata Pelajaran</th>
                                 <th class="px-2 py-3 border-b border-gray-200 text-center font-bold min-w-[60px] bg-blue-100/50" rowspan="2">Total</th>
-                                <th class="px-2 py-3 border-b border-gray-200 text-center font-bold min-w-[60px] bg-emerald-100/50" rowspan="2">Rata2</th>
+                                <th class="px-2 py-3 border-b border-gray-200 text-center font-bold min-w-[70px] bg-emerald-100/50" rowspan="2">Rata-Rata</th>
                                 <th class="px-2 py-3 border-b border-gray-200 text-center font-bold min-w-[60px] bg-amber-100/50" rowspan="2">Rank</th>
                             </tr>
                             <tr class="text-xs text-slate-500 bg-slate-100/50">
@@ -13594,6 +13627,15 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                         <tbody>
                             ${trs}
                         </tbody>
+                        <tfoot>
+                            <tr class="bg-indigo-50/80">
+                                <td colspan="2" class="px-3 py-2 border border-gray-300 text-xs font-extrabold text-indigo-700 text-center sticky left-0 bg-indigo-50">
+                                    <i class="fas fa-calculator mr-1"></i>Rata-Rata Mapel
+                                </td>
+                                ${avgTds}
+                                <td class="px-2 py-1.5 border border-gray-300 text-center text-[11px] font-bold text-indigo-700 bg-indigo-50" colspan="3">${classAvgDisp}</td>
+                            </tr>
+                        </tfoot>
                     </table>
                 </div>
             </div>
@@ -13601,6 +13643,7 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
 
             return html;
         };
+
 
         window.rekapExportPDF = () => {
              const table = document.getElementById('table_rekap_ujian');
