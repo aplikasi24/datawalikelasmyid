@@ -12724,9 +12724,11 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
 
         window.initKoreksiDB = () => {
             if (!db.koreksi_ujian) db.koreksi_ujian = {};
-            // Key format: Semester_Jenis_Mapel
+            // Key format: Semester_JenisUjian_Mapel (semua bagian di-sanitize)
+            const semSafe  = window.koreksiState.semester.replace(/[^a-zA-Z0-9]/g, '_');
+            const jenSafe  = window.koreksiState.jenis_ujian.replace(/[^a-zA-Z0-9]/g, '_');
             const mapelSafe = window.koreksiState.mapel.replace(/[^a-zA-Z0-9]/g, '_');
-            const key = window.koreksiState.semester + '_' + window.koreksiState.jenis_ujian + '_' + mapelSafe;
+            const key = semSafe + '_' + jenSafe + '_' + mapelSafe;
             if (!db.koreksi_ujian[key]) {
                 db.koreksi_ujian[key] = { config: {}, nilai: {} };
             }
@@ -13493,8 +13495,10 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                     let validCount = 0;
                     
                     keysToFetch.forEach(k => {
+                        const semSafe  = k.sem.replace(/[^a-zA-Z0-9]/g, '_');
+                        const jenSafe  = k.jen.replace(/[^a-zA-Z0-9]/g, '_');
                         const mSafe = m.nama.replace(/[^a-zA-Z0-9]/g, '_');
-                        const key = k.sem + '_' + k.jen + '_' + mSafe;
+                        const key = semSafe + '_' + jenSafe + '_' + mSafe;
                         const mData = db.koreksi_ujian ? db.koreksi_ujian[key] : null;
                         
                         if (mData && mData.nilai && mData.nilai[sd.id]) {
