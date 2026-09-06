@@ -13020,14 +13020,60 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
             }
             saveDB();
             
-            // Animasi kecil di notifikasi
-            Swal.fire({
-                toast: true, position: 'top-end', showConfirmButton: false, timer: 700,
-                icon: 'success', title: 'Tersimpan', text: student.name,
-                customClass: { popup: 'rounded-xl shadow-lg border border-slate-100 text-sm' }
-            });
+            if (window.koreksiState.current_student_idx >= students.length - 1) {
+                if(typeof Swal !== 'undefined') {
+                    Swal.fire({
+                        toast: true, position: 'top-end', showConfirmButton: false, timer: 3000, icon: 'success',
+                        title: 'Koreksi Selesai!',
+                        text: 'Semua siswa telah dinilai.',
+                        customClass: { popup: 'rounded-xl shadow-md border border-slate-100 text-sm font-semibold' }
+                    });
+                }
+                window.navigateTo('koreksi_ujian', true);
+            } else {
+                const nextIdx = window.koreksiState.current_student_idx + 1;
+                const nextStudentName = students[nextIdx].name;
+                
+                if(typeof Swal !== 'undefined') {
+                    Swal.fire({
+                        toast: true, position: 'top-end', showConfirmButton: false, timer: 1500, icon: 'success',
+                        title: 'Tersimpan! Lanjut ke ' + nextStudentName,
+                        customClass: { popup: 'rounded-xl shadow-md border border-slate-100 text-sm font-semibold' }
+                    });
+                }
+                
+                window.koreksiState.current_student_idx++;
+                window.navigateTo('koreksi_ujian', true);
+            }
+        };
+
+        window.koreksiTabelSaveRow = (studentId) => {
+            const students = db.students || [];
+            const student = students.find(s => s.id === studentId);
+            if (!student) return;
             
-            // Hapus highlight dari row tabel
+            const key = window.initKoreksiDB();
+            const pgInput = document.getElementById('tbl_pg_' + studentId).value;
+            const esaiInput = document.getElementById('tbl_esai_' + studentId).value;
+            
+            if (pgInput === '' && esaiInput === '') {
+                delete db.koreksi_ujian[key].nilai[student.id];
+            } else {
+                db.koreksi_ujian[key].nilai[student.id] = { 
+                    pg: pgInput !== '' ? parseFloat(pgInput) : '', 
+                    esai: esaiInput !== '' ? parseFloat(esaiInput) : ''
+                };
+            }
+            saveDB();
+            
+            if(typeof Swal !== 'undefined') {
+                Swal.fire({
+                    toast: true, position: 'top-end', showConfirmButton: false, timer: 700,
+                    icon: 'success', title: 'Tersimpan', text: student.name,
+                    customClass: { popup: 'rounded-xl shadow-lg border border-slate-100 text-sm' }
+                });
+            }
+            
             const tr = document.getElementById('tr_koreksi_' + student.id);
             if (tr) {
                 tr.classList.remove('bg-indigo-50/50');
@@ -13035,13 +13081,27 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                 setTimeout(() => tr.classList.remove('bg-emerald-50'), 1000);
             }
             
-            // Perbarui sidebar jika student yang di-save adalah student yang sedang aktif
-            if (student.id === (db.students[window.koreksiState.current_student_idx] || {}).id) {
+            const sIdx = students.findIndex(s => s.id === studentId);
+            if (sIdx >= 0 && sIdx < students.length - 1) {
+                window.koreksiState.current_student_idx = sIdx + 1;
+                const nextId = students[sIdx + 1].id;
+                
+                const nextInput = document.getElementById('tbl_pg_' + nextId);
+                if (nextInput) {
+                    nextInput.focus();
+                    setTimeout(() => nextInput.select(), 50);
+                }
+                
+                const leftPanel = document.getElementById('koreksi_cepat_area');
+                if(leftPanel) leftPanel.innerHTML = window.renderKoreksiCepat(window.initKoreksiDB());
+                
+                document.querySelectorAll('[id^="tr_koreksi_"]').forEach(el => el.classList.remove('bg-indigo-50/50'));
+                const trNext = document.getElementById('tr_koreksi_' + nextId);
+                if(trNext) trNext.classList.add('bg-indigo-50/50');
+            } else if (sIdx === students.length - 1) {
                 const leftPanel = document.getElementById('koreksi_cepat_area');
                 if(leftPanel) leftPanel.innerHTML = window.renderKoreksiCepat(window.initKoreksiDB());
             }
-            
-            window.koreksiNext();
         };
 
         window.koreksiNext = () => {
