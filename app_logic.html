@@ -13358,8 +13358,8 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                 ? 'from-emerald-500 to-teal-700' 
                 : 'from-blue-600 to-indigo-800';
 
-            let html = \`
-            <div class="bg-gradient-to-r \${headerColor} rounded-2xl p-6 mb-6 text-white shadow-md relative overflow-hidden transition-colors duration-500">
+            let html = `
+            <div class="bg-gradient-to-r ${headerColor} rounded-2xl p-6 mb-6 text-white shadow-md relative overflow-hidden transition-colors duration-500">
                 <div class="absolute top-0 right-0 opacity-10 transform translate-x-1/4 -translate-y-1/4">
                     <i class="fas fa-clipboard-list text-9xl"></i>
                 </div>
@@ -13374,13 +13374,13 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                     </div>
                     <div class="flex flex-col sm:flex-row items-center gap-2">
                         <select onchange="window.rekapState.jenis_ujian=this.value; window.rekapUpdateSemester(); window.navigateTo('rekap_ujian')" class="bg-white/10 backdrop-blur border border-white/20 text-white text-sm font-semibold rounded-xl px-3 py-2 outline-none focus:border-white/50 transition">
-                            <option value="STS 1" class="text-slate-800" \${window.rekapState.jenis_ujian === 'STS 1' ? 'selected' : ''}>STS 1 (Ganjil)</option>
-                            <option value="SAS 1" class="text-slate-800" \${window.rekapState.jenis_ujian === 'SAS 1' ? 'selected' : ''}>SAS 1 (Ganjil)</option>
-                            <option value="STS 2" class="text-slate-800" \${window.rekapState.jenis_ujian === 'STS 2' ? 'selected' : ''}>STS 2 (Genap)</option>
-                            <option value="SAT" class="text-slate-800" \${window.rekapState.jenis_ujian === 'SAT' ? 'selected' : ''}>SAT (Genap)</option>
+                            <option value="STS 1" class="text-slate-800" ${window.rekapState.jenis_ujian === 'STS 1' ? 'selected' : ''}>STS 1 (Ganjil)</option>
+                            <option value="SAS 1" class="text-slate-800" ${window.rekapState.jenis_ujian === 'SAS 1' ? 'selected' : ''}>SAS 1 (Ganjil)</option>
+                            <option value="STS 2" class="text-slate-800" ${window.rekapState.jenis_ujian === 'STS 2' ? 'selected' : ''}>STS 2 (Genap)</option>
+                            <option value="SAT" class="text-slate-800" ${window.rekapState.jenis_ujian === 'SAT' ? 'selected' : ''}>SAT (Genap)</option>
                         </select>
                         <select disabled class="bg-black/20 backdrop-blur border border-transparent text-white/90 text-sm font-semibold rounded-xl px-3 py-2 outline-none appearance-none w-28 text-center cursor-not-allowed">
-                            <option>\${window.rekapState.semester}</option>
+                            <option>${window.rekapState.semester}</option>
                         </select>
                     </div>
                 </div>
@@ -13402,7 +13402,7 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                     <i class="fas fa-file-excel"></i> Excel
                 </button>
             </div>
-            \`;
+            `;
 
             // Hitung data Leger
             const students = db.students || [];
@@ -13469,22 +13469,22 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                 let tds = mapelList.map(m => {
                     let val = sd.nilai[m.nama];
                     let colorCls = val !== '-' ? 'text-navy-900 font-medium' : 'text-slate-300';
-                    return \`<td class="px-2 py-2 border border-gray-200 text-center text-sm \${colorCls}">\${val}</td>\`;
+                    return `<td class="px-2 py-2 border border-gray-200 text-center text-sm ${colorCls}">${val}</td>`;
                 }).join('');
                 
-                return \`
+                return `
                     <tr class="hover:bg-slate-50 transition-colors">
-                        <td class="px-3 py-2 border border-gray-200 text-center text-sm">\${i+1}</td>
-                        <td class="px-3 py-2 border border-gray-200 text-sm font-medium text-slate-700 whitespace-nowrap">\${sd.name}</td>
-                        \${tds}
-                        <td class="px-2 py-2 border border-gray-200 text-center text-sm font-bold bg-blue-50 text-blue-700">\${sd.total}</td>
-                        <td class="px-2 py-2 border border-gray-200 text-center text-sm font-bold bg-emerald-50 text-emerald-700">\${sd.average}</td>
-                        <td class="px-2 py-2 border border-gray-200 text-center text-sm font-black bg-amber-50 text-amber-700">\${sd.rank}</td>
+                        <td class="px-3 py-2 border border-gray-200 text-center text-sm">${i+1}</td>
+                        <td class="px-3 py-2 border border-gray-200 text-sm font-medium text-slate-700 whitespace-nowrap">${sd.name}</td>
+                        ${tds}
+                        <td class="px-2 py-2 border border-gray-200 text-center text-sm font-bold bg-blue-50 text-blue-700">${sd.total}</td>
+                        <td class="px-2 py-2 border border-gray-200 text-center text-sm font-bold bg-emerald-50 text-emerald-700">${sd.average}</td>
+                        <td class="px-2 py-2 border border-gray-200 text-center text-sm font-black bg-amber-50 text-amber-700">${sd.rank}</td>
                     </tr>
-                \`;
+                `;
             }).join('');
 
-            html += \`
+            html += `
             <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden mb-8">
                 <div class="overflow-x-auto custom-scrollbar pb-2">
                     <table class="w-full text-left border-collapse" id="table_rekap_ujian">
@@ -13492,22 +13492,22 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                             <tr class="text-xs text-slate-500 uppercase bg-slate-100/50">
                                 <th class="px-3 py-3 border-b border-gray-200 text-center font-bold w-12" rowspan="2">No</th>
                                 <th class="px-3 py-3 border-b border-gray-200 font-bold sticky left-0 bg-slate-100/90 backdrop-blur z-10" rowspan="2">Nama Siswa</th>
-                                <th class="px-2 py-2 border-b border-gray-200 text-center font-bold" colspan="\${mapelList.length}">Nilai Mata Pelajaran</th>
+                                <th class="px-2 py-2 border-b border-gray-200 text-center font-bold" colspan="${mapelList.length}">Nilai Mata Pelajaran</th>
                                 <th class="px-2 py-3 border-b border-gray-200 text-center font-bold min-w-[60px] bg-blue-100/50" rowspan="2">Total</th>
                                 <th class="px-2 py-3 border-b border-gray-200 text-center font-bold min-w-[60px] bg-emerald-100/50" rowspan="2">Rata2</th>
                                 <th class="px-2 py-3 border-b border-gray-200 text-center font-bold min-w-[60px] bg-amber-100/50" rowspan="2">Rank</th>
                             </tr>
                             <tr class="text-xs text-slate-500 bg-slate-100/50">
-                                \${mapelList.map(m => \`<th class="px-2 py-2 border-b border-gray-200 text-center font-bold text-[10px] min-w-[60px] max-w-[80px] break-words align-bottom">\${m.nama}</th>\`).join('')}
+                                ${mapelList.map(m => `<th class="px-2 py-2 border-b border-gray-200 text-center font-bold text-[10px] min-w-[60px] max-w-[80px] break-words align-bottom">${m.nama}</th>`).join('')}
                             </tr>
                         </thead>
                         <tbody>
-                            \${trs}
+                            ${trs}
                         </tbody>
                     </table>
                 </div>
             </div>
-            \`;
+            `;
 
             return html;
         };
@@ -13516,14 +13516,14 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
              const table = document.getElementById('table_rekap_ujian');
              if(!table) return;
 
-             let html = \`
+             let html = `
              <div style="font-family: Arial, sans-serif; padding: 10px;">
                  <h2 style="text-align: center; margin-bottom: 5px;">REKAPITULASI NILAI UJIAN (LEGER)</h2>
                  <h4 style="text-align: center; margin-top: 0; font-weight: normal; color: #555;">
-                     Semester: \${window.rekapState.semester} | Jenis: \${window.rekapState.jenis_ujian}
+                     Semester: ${window.rekapState.semester} | Jenis: ${window.rekapState.jenis_ujian}
                  </h4>
                  <div style="font-size: 9px; margin-top: 20px;">
-                     \${table.outerHTML.replace(/sticky/g, '').replace(/class="[^"]*"/g, (match) => { return match; })}
+                     ${table.outerHTML.replace(/sticky/g, '').replace(/class="[^"]*"/g, (match) => { return match; })}
                  </div>
                  <style>
                      table { width: 100%; border-collapse: collapse; }
@@ -13532,11 +13532,11 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                      td:nth-child(2), th:nth-child(2) { text-align: left; }
                  </style>
              </div>
-             \`;
+             `;
 
              const container = document.createElement('div');
              container.innerHTML = html;
-             const filename = \`Rekap_Ujian_\${window.rekapState.semester}_\${window.rekapState.jenis_ujian}.pdf\`.replace(/\\s+/g, '_');
+             const filename = `Rekap_Ujian_${window.rekapState.semester}_${window.rekapState.jenis_ujian}.pdf`.replace(/\s+/g, '_');
              
              if(typeof html2pdf !== 'undefined') {
                  html2pdf().set({
@@ -13555,21 +13555,21 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
              const table = document.getElementById('table_rekap_ujian');
              if(!table) return;
 
-             let html = \`<html xmlns:x="urn:schemas-microsoft-com:office:excel">
+             let html = `<html xmlns:x="urn:schemas-microsoft-com:office:excel">
              <head><meta charset="utf-8"></head><body>
              <table border="1">
                  <tr><th colspan="10" style="font-size: 14pt;">REKAPITULASI NILAI UJIAN (LEGER)</th></tr>
-                 <tr><td colspan="10">Semester: \${window.rekapState.semester}</td></tr>
-                 <tr><td colspan="10">Jenis Ujian: \${window.rekapState.jenis_ujian}</td></tr>
+                 <tr><td colspan="10">Semester: ${window.rekapState.semester}</td></tr>
+                 <tr><td colspan="10">Jenis Ujian: ${window.rekapState.jenis_ujian}</td></tr>
                  <tr></tr>
-                 \${table.innerHTML.replace(/class="[^"]*"/g, '')}
-             </table></body></html>\`;
+                 ${table.innerHTML.replace(/class="[^"]*"/g, '')}
+             </table></body></html>`;
 
-             const blob = new Blob(['\\ufeff', html], { type: 'application/vnd.ms-excel' });
+             const blob = new Blob(['\ufeff', html], { type: 'application/vnd.ms-excel' });
              const url = URL.createObjectURL(blob);
              const a = document.createElement('a');
              a.href = url;
-             a.download = \`Rekap_Ujian_\${window.rekapState.semester}_\${window.rekapState.jenis_ujian}.xls\`.replace(/\\s+/g, '_');
+             a.download = `Rekap_Ujian_${window.rekapState.semester}_${window.rekapState.jenis_ujian}.xls`.replace(/\s+/g, '_');
              document.body.appendChild(a);
              a.click();
              document.body.removeChild(a);
