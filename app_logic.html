@@ -12692,11 +12692,19 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
 
         window.koreksiState = window.koreksiState || {
             semester: 'Ganjil',
-            jenis_ujian: 'STS',
+            jenis_ujian: 'STS 1',
             mapel: 'Pendidikan Agama',
             max_pg: 70,
             max_esai: 30,
             current_student_idx: 0
+        };
+
+        window.koreksiUpdateSemester = () => {
+            if (['STS 1', 'SAS 1'].includes(window.koreksiState.jenis_ujian)) {
+                window.koreksiState.semester = 'Ganjil';
+            } else if (['STS 2', 'SAT'].includes(window.koreksiState.jenis_ujian)) {
+                window.koreksiState.semester = 'Genap';
+            }
         };
 
         window.initKoreksiDB = () => {
@@ -12744,13 +12752,15 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                         <p class="text-blue-100 text-sm">Masukkan nilai perolehan ujian siswa dengan cepat.</p>
                     </div>
                     <div class="flex flex-wrap gap-2 w-full xl:w-auto">
-                        <select id="koreksi_semester" onchange="window.koreksiState.semester=this.value; window.navigateTo('koreksi_ujian')" class="bg-white/10 backdrop-blur border border-white/20 text-white text-sm font-semibold rounded-xl px-3 py-2 outline-none focus:border-cyan-400 transition">
+                        <select id="koreksi_jenis" onchange="window.koreksiState.jenis_ujian=this.value; window.koreksiUpdateSemester(); window.navigateTo('koreksi_ujian')" class="bg-white/10 backdrop-blur border border-white/20 text-white text-sm font-semibold rounded-xl px-3 py-2 outline-none focus:border-cyan-400 transition">
+                            <option value="STS 1" class="text-black" ${window.koreksiState.jenis_ujian === 'STS 1' ? 'selected' : ''}>STS 1</option>
+                            <option value="SAS 1" class="text-black" ${window.koreksiState.jenis_ujian === 'SAS 1' ? 'selected' : ''}>SAS 1</option>
+                            <option value="STS 2" class="text-black" ${window.koreksiState.jenis_ujian === 'STS 2' ? 'selected' : ''}>STS 2</option>
+                            <option value="SAT" class="text-black" ${window.koreksiState.jenis_ujian === 'SAT' ? 'selected' : ''}>SAT</option>
+                        </select>
+                        <select id="koreksi_semester" disabled class="bg-white/5 backdrop-blur border border-white/20 text-white/70 text-sm font-semibold rounded-xl px-3 py-2 outline-none transition cursor-not-allowed opacity-80" title="Otomatis mengikuti Jenis Ujian">
                             <option value="Ganjil" class="text-black" ${window.koreksiState.semester === 'Ganjil' ? 'selected' : ''}>Ganjil</option>
                             <option value="Genap" class="text-black" ${window.koreksiState.semester === 'Genap' ? 'selected' : ''}>Genap</option>
-                        </select>
-                        <select id="koreksi_jenis" onchange="window.koreksiState.jenis_ujian=this.value; window.navigateTo('koreksi_ujian')" class="bg-white/10 backdrop-blur border border-white/20 text-white text-sm font-semibold rounded-xl px-3 py-2 outline-none focus:border-cyan-400 transition">
-                            <option value="STS" class="text-black" ${window.koreksiState.jenis_ujian === 'STS' ? 'selected' : ''}>STS</option>
-                            <option value="SAS/SAT" class="text-black" ${window.koreksiState.jenis_ujian === 'SAS/SAT' ? 'selected' : ''}>SAS / SAT</option>
                         </select>
                         <select id="koreksi_mapel" onchange="window.koreksiState.mapel=this.value; window.navigateTo('koreksi_ujian')" class="bg-white/10 backdrop-blur border border-white/20 text-white text-sm font-semibold rounded-xl px-3 py-2 outline-none focus:border-cyan-400 transition max-w-[200px] truncate">
                             ${mapelOptions}
@@ -12848,7 +12858,7 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                         <div class="absolute top-0 left-0 w-1 h-full bg-cyan-400 opacity-50 group-focus-within:opacity-100 transition-opacity"></div>
                         <label class="block text-xs font-bold text-slate-500 mb-2 uppercase tracking-wider text-center">PG</label>
                         <div class="flex flex-col items-center justify-center bg-slate-50 rounded-lg p-2 border border-slate-100">
-                            <input type="number" id="koreksi_pg" value="${n.pg}" placeholder="0" oninput="window.koreksiCalcPreview()" onkeydown="if(event.key==='Enter') document.getElementById('koreksi_esai').focus()" class="w-full text-2xl font-black text-navy-800 border-b-2 border-slate-300 focus:border-cyan-500 outline-none text-center bg-transparent transition-colors mb-1">
+                            <input type="number" id="koreksi_pg" value="${n.pg}" placeholder="0" oninput="window.koreksiCalcPreview()" onkeydown="if(event.key==='Enter' || event.key==='ArrowRight') { event.preventDefault(); document.getElementById('koreksi_esai').focus(); }" oncontextmenu="event.preventDefault(); document.getElementById('koreksi_esai').focus();" class="w-full text-2xl font-black text-navy-800 border-b-2 border-slate-300 focus:border-cyan-500 outline-none text-center bg-transparent transition-colors mb-1">
                             <span class="text-[10px] font-bold text-slate-400">Max ${maxPg}</span>
                         </div>
                     </div>
@@ -12858,7 +12868,7 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                         <div class="absolute top-0 left-0 w-1 h-full bg-indigo-400 opacity-50 group-focus-within:opacity-100 transition-opacity"></div>
                         <label class="block text-xs font-bold text-slate-500 mb-2 uppercase tracking-wider text-center">Esai</label>
                         <div class="flex flex-col items-center justify-center bg-slate-50 rounded-lg p-2 border border-slate-100">
-                            <input type="number" id="koreksi_esai" value="${n.esai}" placeholder="0" oninput="window.koreksiCalcPreview()" onkeydown="if(event.key==='Enter') window.koreksiSaveAndNext()" class="w-full text-2xl font-black text-navy-800 border-b-2 border-slate-300 focus:border-indigo-500 outline-none text-center bg-transparent transition-colors mb-1">
+                            <input type="number" id="koreksi_esai" value="${n.esai}" placeholder="0" oninput="window.koreksiCalcPreview()" onkeydown="if(event.key==='Enter') window.koreksiSaveAndNext(); else if (event.key==='ArrowLeft') { event.preventDefault(); document.getElementById('koreksi_pg').focus(); }" oncontextmenu="event.preventDefault(); document.getElementById('koreksi_pg').focus();" class="w-full text-2xl font-black text-navy-800 border-b-2 border-slate-300 focus:border-indigo-500 outline-none text-center bg-transparent transition-colors mb-1">
                             <span class="text-[10px] font-bold text-slate-400">Max ${maxEsai}</span>
                         </div>
                     </div>
@@ -13021,7 +13031,7 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                 </div>
             </div>
             
-            <div class="overflow-y-auto overflow-x-auto custom-scrollbar rounded-xl border border-slate-200 max-h-[500px]">
+            <div class="overflow-y-visible overflow-x-auto custom-scrollbar rounded-xl border border-slate-200">
                 <table class="w-full text-left text-[11px] text-slate-700 whitespace-nowrap">
                     <thead class="bg-slate-50 border-b border-slate-200 text-slate-600 font-bold sticky top-0 z-10">
                         <tr>
