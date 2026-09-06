@@ -12748,11 +12748,14 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                 ? 'from-blue-600 to-blue-800' 
                 : 'from-emerald-600 to-emerald-800';
             
-            const listMapel = [
-                "Pendidikan Agama", "Pendidikan Pancasila", "Bahasa Indonesia", "Matematika", 
-                "Ilmu Pengetahuan Alam dan Sosial (IPAS)", "Seni dan Budaya", 
-                "PJOK", "Bahasa Inggris", "Muatan Lokal"
-            ];
+            let listMapel = (db.mapel || []).map(m => m.nama);
+            if (listMapel.length === 0) {
+                listMapel = [
+                    "Pendidikan Agama", "Pendidikan Pancasila", "Bahasa Indonesia", "Matematika", 
+                    "Ilmu Pengetahuan Alam dan Sosial (IPAS)", "Seni dan Budaya", 
+                    "PJOK", "Bahasa Inggris", "Muatan Lokal"
+                ];
+            }
             
             let mapelOptions = listMapel.map(m => `<option value="${m}" class="text-black" ${window.koreksiState.mapel === m ? 'selected' : ''}>${m}</option>`).join('');
 
@@ -13037,6 +13040,8 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                 const leftPanel = document.getElementById('koreksi_cepat_area');
                 if(leftPanel) leftPanel.innerHTML = window.renderKoreksiCepat(window.initKoreksiDB());
             }
+            
+            window.koreksiNext();
         };
 
         window.koreksiNext = () => {
@@ -13392,7 +13397,15 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
 
             // Hitung data Leger
             const students = db.students || [];
-            const mapelList = db.mapel || [];
+            let mapelList = db.mapel || [];
+            if (mapelList.length === 0) {
+                const defaultMapel = [
+                    "Pendidikan Agama", "Pendidikan Pancasila", "Bahasa Indonesia", "Matematika", 
+                    "Ilmu Pengetahuan Alam dan Sosial (IPAS)", "Seni dan Budaya", 
+                    "PJOK", "Bahasa Inggris", "Muatan Lokal"
+                ];
+                mapelList = defaultMapel.map(name => ({ id: name, nama: name }));
+            }
             
             // Siapkan struktur untuk menghitung total dan rata-rata
             let legerData = students.map(s => {
