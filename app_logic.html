@@ -12758,6 +12758,8 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
 
         window.initKoreksiDB = () => {
             if (!db.koreksi_ujian) db.koreksi_ujian = {};
+            if (window.koreksiUpdateSemester) window.koreksiUpdateSemester(); // Pastikan semester selalu sync dengan jenis ujian
+            
             // Key format: Semester_JenisUjian_Mapel (semua bagian di-sanitize)
             const semSafe  = window.koreksiState.semester.replace(/[^a-zA-Z0-9]/g, '_');
             const jenSafe  = window.koreksiState.jenis_ujian.replace(/[^a-zA-Z0-9]/g, '_');
@@ -13059,6 +13061,7 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                     esai: esaiInput !== '' ? parseFloat(esaiInput) : ''
                 };
             }
+            try { localStorage.setItem('mwk_koreksiState', JSON.stringify(window.koreksiState)); } catch(e){}
             saveDB();
             
             if (window.koreksiState.current_student_idx >= students.length - 1) {
@@ -13105,21 +13108,22 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                     esai: esaiInput !== '' ? parseFloat(esaiInput) : ''
                 };
             }
+            try { localStorage.setItem('mwk_koreksiState', JSON.stringify(window.koreksiState)); } catch(e){}
             saveDB();
             
-            if(typeof Swal !== 'undefined') {
-                Swal.fire({
-                    toast: true, position: 'top-end', showConfirmButton: false, timer: 700,
-                    icon: 'success', title: 'Tersimpan', text: student.name,
-                    customClass: { popup: 'rounded-xl shadow-lg border border-slate-100 text-sm' }
-                });
+            const btn = document.getElementById('btn_save_' + student.id);
+            if(btn) {
+                btn.classList.add('bg-emerald-500', 'text-white', 'scale-110');
+                btn.classList.remove('bg-slate-100', 'text-slate-400');
+                setTimeout(() => {
+                    btn.classList.remove('bg-emerald-500', 'text-white', 'scale-110');
+                    btn.classList.add('bg-slate-100', 'text-slate-400');
+                }, 800);
             }
             
             const tr = document.getElementById('tr_koreksi_' + student.id);
             if (tr) {
                 tr.classList.remove('bg-indigo-50/50');
-                tr.classList.add('bg-emerald-50');
-                setTimeout(() => tr.classList.remove('bg-emerald-50'), 1000);
             }
             
             const sIdx = students.findIndex(s => s.id === studentId);
@@ -13307,32 +13311,6 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
             }
         };
 
-        window.koreksiTabelSaveRow = (studentId) => {
-            const pgInput = document.getElementById('tbl_pg_' + studentId).value;
-            const esaiInput = document.getElementById('tbl_esai_' + studentId).value;
-            
-            const key = window.initKoreksiDB();
-            if(pgInput === '' && esaiInput === '') {
-                delete db.koreksi_ujian[key].nilai[studentId];
-            } else {
-                db.koreksi_ujian[key].nilai[studentId] = { 
-                    pg: parseFloat(pgInput) || 0, 
-                    esai: parseFloat(esaiInput) || 0 
-                };
-            }
-            saveDB();
-            
-            const btn = document.getElementById('btn_save_' + studentId);
-            if(btn) {
-                btn.classList.add('bg-emerald-500', 'text-white', 'scale-110');
-                btn.classList.remove('bg-slate-100', 'text-slate-400');
-                setTimeout(() => {
-                    btn.classList.remove('bg-emerald-500', 'text-white', 'scale-110');
-                    btn.classList.add('bg-slate-100', 'text-slate-400');
-                }, 800);
-            }
-        };
-
         window.koreksiTabelSaveAll = () => {
             const students = db.students || [];
             const key = window.initKoreksiDB();
@@ -13345,13 +13323,13 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                         delete db.koreksi_ujian[key].nilai[s.id];
                     } else {
                         db.koreksi_ujian[key].nilai[s.id] = { 
-                            pg: parseFloat(pgInput.value) || 0, 
-                            esai: parseFloat(esaiInput.value) || 0 
+                            pg: pgInput.value !== '' ? parseFloat(pgInput.value) : '', 
+                            esai: esaiInput.value !== '' ? parseFloat(esaiInput.value) : '' 
                         };
                     }
                 }
             });
-            
+            try { localStorage.setItem('mwk_koreksiState', JSON.stringify(window.koreksiState)); } catch(e){}
             saveDB();
             Swal.fire({
                 icon: 'success',
