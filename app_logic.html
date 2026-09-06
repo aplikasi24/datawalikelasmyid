@@ -12747,6 +12747,14 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
             view: 'input',
             rekap_jenis: 'STS 1'
         };
+        // Pastikan semester selalu sinkron dengan jenis_ujian saat halaman diload/refresh
+        if (window.koreksiState.jenis_ujian) {
+            if (['STS 1', 'SAS 1'].includes(window.koreksiState.jenis_ujian)) {
+                window.koreksiState.semester = 'Ganjil';
+            } else if (['STS 2', 'SAT'].includes(window.koreksiState.jenis_ujian)) {
+                window.koreksiState.semester = 'Genap';
+            }
+        }
 
         window.koreksiUpdateSemester = () => {
             if (['STS 1', 'SAS 1'].includes(window.koreksiState.jenis_ujian)) {
@@ -12814,7 +12822,7 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                     </div>
                     <div class="flex flex-wrap gap-2 w-full xl:w-auto">
                         ${window.koreksiState.view === 'input' ? `
-                            <select id="koreksi_jenis" onchange="window.koreksiState.jenis_ujian=this.value; window.koreksiUpdateSemester(); window.navigateTo('koreksi_ujian', true)" class="bg-white/10 backdrop-blur border border-white/20 text-white text-sm font-semibold rounded-xl px-3 py-2 outline-none focus:border-cyan-400 transition">
+                            <select id="koreksi_jenis" onchange="window.koreksiState.jenis_ujian=this.value; window.koreksiState.current_student_idx=0; window.koreksiUpdateSemester(); window.navigateTo('koreksi_ujian', true)" class="bg-white/10 backdrop-blur border border-white/20 text-white text-sm font-semibold rounded-xl px-3 py-2 outline-none focus:border-cyan-400 transition">
                                 <option value="STS 1" class="text-black" ${window.koreksiState.jenis_ujian === 'STS 1' ? 'selected' : ''}>STS 1</option>
                                 <option value="SAS 1" class="text-black" ${window.koreksiState.jenis_ujian === 'SAS 1' ? 'selected' : ''}>SAS 1</option>
                                 <option value="STS 2" class="text-black" ${window.koreksiState.jenis_ujian === 'STS 2' ? 'selected' : ''}>STS 2</option>
@@ -12920,8 +12928,8 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                 <div class="flex justify-between items-center mb-5 bg-white p-2 rounded-xl border border-slate-100 shadow-sm">
                     <button onclick="window.koreksiPrev()" class="w-8 h-8 sm:w-10 sm:h-10 bg-slate-50 rounded-lg shadow-sm text-cyan-600 border border-slate-100 hover:bg-cyan-500 hover:text-white transition-all flex items-center justify-center"><i class="fas fa-chevron-left"></i></button>
                     <div class="text-center flex-1 mx-2 overflow-hidden">
-                        <div class="text-[9px] sm:text-[10px] font-bold text-cyan-600 mb-0.5 tracking-widest uppercase">SISWA ${window.koreksiState.current_student_idx + 1} DARI ${students.length}</div>
-                        <select onchange="window.koreksiState.current_student_idx = this.selectedIndex; window.navigateTo('koreksi_ujian', true);" class="w-full bg-transparent text-base sm:text-lg font-bold text-navy-800 outline-none text-center cursor-pointer border-b-2 border-dashed border-cyan-200 focus:border-cyan-500 pb-0.5 appearance-none transition-colors truncate">
+                        <div data-koreksi-label class="text-[9px] sm:text-[10px] font-bold text-cyan-600 mb-0.5 tracking-widest uppercase">SISWA ${window.koreksiState.current_student_idx + 1} DARI ${students.length}</div>
+                        <select data-koreksi-select onchange="window.koreksiState.current_student_idx = this.selectedIndex; window.navigateTo('koreksi_ujian', true);" class="w-full bg-transparent text-base sm:text-lg font-bold text-navy-800 outline-none text-center cursor-pointer border-b-2 border-dashed border-cyan-200 focus:border-cyan-500 pb-0.5 appearance-none transition-colors truncate">
                             ${students.map((s, i) => `<option value="${i}" ${i === window.koreksiState.current_student_idx ? 'selected' : ''}>${i + 1}. ${s.name}</option>`).join('')}
                         </select>
                     </div>
@@ -12970,7 +12978,7 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                     pgInput.focus({ preventScroll: true });
                     pgInput.select();
                 }
-            }, 400);
+            }, 0);
             
             return html;
         };
@@ -13075,19 +13083,45 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                 }
                 window.navigateTo('koreksi_ujian', true);
             } else {
-                const nextIdx = window.koreksiState.current_student_idx + 1;
-                const nextStudentName = students[nextIdx].name;
+                window.koreksiState.current_student_idx++;
+                // Update tampilan langsung tanpa re-render penuh (zero delay)
+                const nextStudent = students[window.koreksiState.current_student_idx];
+                const nextKey = window.initKoreksiDB();
+                const nData = db.koreksi_ujian[nextKey];
+                const nVal = (nData && nData.nilai[nextStudent.id]) || { pg: '', esai: '' };
+                const maxPg2 = window.koreksiState.max_pg;
+                const maxEsai2 = window.koreksiState.max_esai;
+                const maxTotal2 = maxPg2 + maxEsai2;
                 
-                if(typeof Swal !== 'undefined') {
-                    Swal.fire({
-                        toast: true, position: 'top-end', showConfirmButton: false, timer: 1500, icon: 'success',
-                        title: 'Tersimpan! Lanjut ke ' + nextStudentName,
-                        customClass: { popup: 'rounded-xl shadow-md border border-slate-100 text-sm font-semibold' }
-                    });
+                // Update label siswa
+                const labelEl = document.querySelector('[data-koreksi-label]');
+                if (labelEl) labelEl.textContent = 'SISWA ' + (window.koreksiState.current_student_idx + 1) + ' DARI ' + students.length;
+                const selectEl = document.querySelector('[data-koreksi-select]');
+                if (selectEl) selectEl.selectedIndex = window.koreksiState.current_student_idx;
+                
+                // Update nilai PG & Esai
+                const pgIn = document.getElementById('koreksi_pg');
+                const esaiIn = document.getElementById('koreksi_esai');
+                if (pgIn) { pgIn.value = nVal.pg !== '' ? nVal.pg : ''; }
+                if (esaiIn) { esaiIn.value = nVal.esai !== '' ? nVal.esai : ''; }
+                
+                // Update preview nilai akhir
+                const prevRound = document.getElementById('koreksi_preview_round');
+                const prevRaw = document.getElementById('koreksi_preview_raw');
+                if (nVal.pg !== '' || nVal.esai !== '') {
+                    const tot = (parseFloat(nVal.pg)||0) + (parseFloat(nVal.esai)||0);
+                    const raw = maxTotal2 > 0 ? (tot / maxTotal2) * 100 : 0;
+                    if (prevRound) { prevRound.textContent = Math.round(raw); prevRound.className = prevRound.className.replace('text-slate-300','text-navy-900'); }
+                    if (prevRaw) { prevRaw.textContent = '(' + raw.toFixed(2) + ')'; prevRaw.className = prevRaw.className.replace('text-slate-300','text-slate-500'); }
+                } else {
+                    if (prevRound) { prevRound.textContent = '-'; prevRound.className = prevRound.className.replace('text-navy-900','text-slate-300'); }
+                    if (prevRaw) { prevRaw.textContent = '-'; prevRaw.className = prevRaw.className.replace('text-slate-500','text-slate-300'); }
                 }
                 
-                window.koreksiState.current_student_idx++;
-                window.navigateTo('koreksi_ujian', true);
+                // Fokus langsung ke input PG tanpa delay
+                if (pgIn) { pgIn.focus({ preventScroll: true }); pgIn.select(); }
+                
+                try { localStorage.setItem('mwk_koreksiState', JSON.stringify(window.koreksiState)); } catch(e){}
             }
         };
 
