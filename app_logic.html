@@ -12959,8 +12959,22 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
         };
 
         window.koreksiCalcPreview = () => {
-            const pgInput = document.getElementById('koreksi_pg').value;
-            const esaiInput = document.getElementById('koreksi_esai').value;
+            const pgEl = document.getElementById('koreksi_pg');
+            const esaiEl = document.getElementById('koreksi_esai');
+            
+            let pgInput = pgEl.value;
+            let esaiInput = esaiEl.value;
+            const maxPg = window.koreksiState.max_pg;
+            const maxEsai = window.koreksiState.max_esai;
+
+            if (pgInput !== '' && parseFloat(pgInput) > maxPg) {
+                pgEl.value = maxPg;
+                pgInput = maxPg.toString();
+            }
+            if (esaiInput !== '' && parseFloat(esaiInput) > maxEsai) {
+                esaiEl.value = maxEsai;
+                esaiInput = maxEsai.toString();
+            }
             
             const key = window.initKoreksiDB();
             const students = db.students || [];
@@ -13255,10 +13269,23 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
         };
 
         window.koreksiTabelRowCalc = (studentId) => {
-            const pgInput = document.getElementById('tbl_pg_' + studentId).value;
-            const esaiInput = document.getElementById('tbl_esai_' + studentId).value;
+            const pgEl = document.getElementById('tbl_pg_' + studentId);
+            const esaiEl = document.getElementById('tbl_esai_' + studentId);
+            
+            let pgInput = pgEl.value;
+            let esaiInput = esaiEl.value;
             const maxPg = window.koreksiState.max_pg;
             const maxEsai = window.koreksiState.max_esai;
+            
+            if (pgInput !== '' && parseFloat(pgInput) > maxPg) {
+                pgEl.value = maxPg;
+                pgInput = maxPg.toString();
+            }
+            if (esaiInput !== '' && parseFloat(esaiInput) > maxEsai) {
+                esaiEl.value = maxEsai;
+                esaiInput = maxEsai.toString();
+            }
+            
             const maxTotal = maxPg + maxEsai;
             
             if(pgInput === '' && esaiInput === '') {
@@ -13474,6 +13501,7 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                         <option value="STS 2" ${window.koreksiState.rekap_jenis === 'STS 2' ? 'selected' : ''}>STS 2</option>
                         <option value="SAT" ${window.koreksiState.rekap_jenis === 'SAT' ? 'selected' : ''}>SAT</option>
                         <option value="Semester 2 (Genap)" ${window.koreksiState.rekap_jenis === 'Semester 2 (Genap)' ? 'selected' : ''}>Semester 2 (Genap)</option>
+                        <option value="SEMUA" ${window.koreksiState.rekap_jenis === 'SEMUA' ? 'selected' : ''}>SEMUA (Rata-rata Semua Ujian)</option>
                     </select>
                     <div class="flex rounded-xl overflow-hidden border border-slate-300 text-xs font-bold">
                         <button onclick="window.koreksiState.rekap_mode='bulat'; window.navigateTo('koreksi_ujian', true)"
@@ -13512,6 +13540,11 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                 keysToFetch = [ { sem: 'Ganjil', jen: 'STS 1' }, { sem: 'Ganjil', jen: 'SAS 1' } ];
             } else if (rType === 'Semester 2 (Genap)') {
                 keysToFetch = [ { sem: 'Genap', jen: 'STS 2' }, { sem: 'Genap', jen: 'SAT' } ];
+            } else if (rType === 'SEMUA') {
+                keysToFetch = [ 
+                    { sem: 'Ganjil', jen: 'STS 1' }, { sem: 'Ganjil', jen: 'SAS 1' }, 
+                    { sem: 'Genap', jen: 'STS 2' }, { sem: 'Genap', jen: 'SAT' } 
+                ];
             } else {
                 let sem = ['STS 1', 'SAS 1'].includes(rType) ? 'Ganjil' : 'Genap';
                 keysToFetch = [ { sem: sem, jen: rType } ];
@@ -13546,8 +13579,8 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                     });
 
                     if (validCount > 0) {
-                        // Rata-rata RAW antar ujian (misal rata-rata STS1+SAS1), lalu simpan sebagai float
-                        let avgRaw = totalRaw / keysToFetch.length;
+                        // Rata-rata RAW hanya dihitung dari ujian yang nilainya ADA (validCount)
+                        let avgRaw = totalRaw / validCount;
                         sd.nilaiRaw[m.nama] = avgRaw;          // float
                         sd.total  += avgRaw;
                         sd.count  += 1;
