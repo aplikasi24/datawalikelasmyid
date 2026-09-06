@@ -12698,6 +12698,9 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                     window.koreksiState.view = 'input';
                 }
                 window.currentPage = pageId;
+                try {
+                    localStorage.setItem('mwk_lastMenu', pageId);
+                } catch(e) {}
                 if (typeof renderSidebar === 'function') renderSidebar();
                 if (typeof renderBottomNav === 'function') renderBottomNav();
                 const content = document.getElementById('app-content');
@@ -12762,9 +12765,9 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
             const key = window.initKoreksiDB();
             const data = db.koreksi_ujian[key];
             
-            // config bisa overide state
-            if (data.config && data.config.max_pg) window.koreksiState.max_pg = data.config.max_pg;
-            if (data.config && data.config.max_esai) window.koreksiState.max_esai = data.config.max_esai;
+            // config bisa overide state, jika tidak ada kembalikan ke default 70 dan 30
+            window.koreksiState.max_pg = (data.config && data.config.max_pg !== undefined) ? data.config.max_pg : 70;
+            window.koreksiState.max_esai = (data.config && data.config.max_esai !== undefined) ? data.config.max_esai : 30;
             
             const maxTotal = window.koreksiState.max_pg + window.koreksiState.max_esai;
             
