@@ -11725,6 +11725,13 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
         };
 
         window.hapusRiwayatPK = (studentId, itemId, rIndex) => {
+            if(typeof Swal !== 'undefined') {
+                Swal.fire({
+                    title: 'Hapus Cicilan?',
+                    text: 'Riwayat pembayaran ini akan dihapus dan total tagihan akan disesuaikan.',
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#ef4444',
                     cancelButtonColor: '#94a3b8',
                     confirmButtonText: 'Ya, Hapus',
                     cancelButtonText: 'Batal'
