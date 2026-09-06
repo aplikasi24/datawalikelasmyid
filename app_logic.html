@@ -12700,6 +12700,7 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                 window.currentPage = pageId;
                 try {
                     localStorage.setItem('mwk_lastMenu', pageId);
+                    localStorage.setItem('mwk_koreksiState', JSON.stringify(window.koreksiState));
                 } catch(e) {}
                 if (typeof renderSidebar === 'function') renderSidebar();
                 if (typeof renderBottomNav === 'function') renderBottomNav();
@@ -12715,7 +12716,13 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
             }
         };
 
-        window.koreksiState = window.koreksiState || {
+        let savedKoreksiState = null;
+        try {
+            const savedStr = localStorage.getItem('mwk_koreksiState');
+            if (savedStr) savedKoreksiState = JSON.parse(savedStr);
+        } catch(e) {}
+
+        window.koreksiState = window.koreksiState || savedKoreksiState || {
             semester: 'Ganjil',
             jenis_ujian: 'STS 1',
             mapel: '',
