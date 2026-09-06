@@ -12745,20 +12745,6 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
         };
 
         window.renderKoreksiUjian = () => {
-            const key = window.initKoreksiDB();
-            const data = db.koreksi_ujian[key];
-            
-            // config bisa overide state
-            if (data.config && data.config.max_pg) window.koreksiState.max_pg = data.config.max_pg;
-            if (data.config && data.config.max_esai) window.koreksiState.max_esai = data.config.max_esai;
-            
-            const maxTotal = window.koreksiState.max_pg + window.koreksiState.max_esai;
-            
-            // Kondisi Background Header (Biru untuk Genap, Hijau untuk Ganjil)
-            const bgHeader = window.koreksiState.semester === 'Genap' 
-                ? 'from-blue-600 to-blue-800' 
-                : 'from-emerald-600 to-emerald-800';
-            
             let listMapel = (db.mapel || []).map(m => m.nama);
             if (listMapel.length === 0) {
                 listMapel = [
@@ -12772,6 +12758,20 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
             if (!listMapel.includes(window.koreksiState.mapel)) {
                 window.koreksiState.mapel = listMapel[0];
             }
+
+            const key = window.initKoreksiDB();
+            const data = db.koreksi_ujian[key];
+            
+            // config bisa overide state
+            if (data.config && data.config.max_pg) window.koreksiState.max_pg = data.config.max_pg;
+            if (data.config && data.config.max_esai) window.koreksiState.max_esai = data.config.max_esai;
+            
+            const maxTotal = window.koreksiState.max_pg + window.koreksiState.max_esai;
+            
+            // Kondisi Background Header (Biru untuk Genap, Hijau untuk Ganjil)
+            const bgHeader = window.koreksiState.semester === 'Genap' 
+                ? 'from-blue-600 to-blue-800' 
+                : 'from-emerald-600 to-emerald-800';
             
             let mapelOptions = listMapel.map(m => `<option value="${m}" class="text-black" ${window.koreksiState.mapel === m ? 'selected' : ''}>${m}</option>`).join('');
 
