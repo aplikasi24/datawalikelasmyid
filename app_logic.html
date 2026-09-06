@@ -12766,18 +12766,37 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
 
         window.initKoreksiDB = () => {
             if (!db.koreksi_ujian) db.koreksi_ujian = {};
-            if (window.koreksiUpdateSemester) window.koreksiUpdateSemester(); // Pastikan semester selalu sync dengan jenis ujian
+            if (window.koreksiUpdateSemester) window.koreksiUpdateSemester();
             
-            // Key format: Semester_JenisUjian_Mapel (semua bagian di-sanitize)
-            const semSafe  = window.koreksiState.semester.replace(/[^a-zA-Z0-9]/g, '_');
+            // Key format: JenisUjian_Mapel (tanpa semester agar tidak pernah desync)
+            // jenis_ujian sudah UNIK: STS 1, SAS 1, STS 2, SAT — tidak perlu semester sebagai prefix
             const jenSafe  = window.koreksiState.jenis_ujian.replace(/[^a-zA-Z0-9]/g, '_');
             const mapelSafe = window.koreksiState.mapel.replace(/[^a-zA-Z0-9]/g, '_');
-            const key = semSafe + '_' + jenSafe + '_' + mapelSafe;
+            const key = jenSafe + '_' + mapelSafe;
+            
+            // Migrasi otomatis: jika data masih tersimpan dengan key format lama (dengan prefix semester)
+            // pindahkan ke key format baru agar tidak hilang
+            const semPrefixes = ['Ganjil_', 'Genap_'];
+            for (const prefix of semPrefixes) {
+                const oldKey = prefix + key;
+                if (db.koreksi_ujian[oldKey]) {
+                    // Gabungkan data lama ke key baru jika belum ada
+                    if (!db.koreksi_ujian[key]) {
+                        db.koreksi_ujian[key] = db.koreksi_ujian[oldKey];
+                    } else {
+                        // Merge nilai (prioritas key baru jika ada konflik)
+                        Object.assign(db.koreksi_ujian[key].nilai, db.koreksi_ujian[oldKey].nilai);
+                    }
+                    delete db.koreksi_ujian[oldKey]; // Hapus key lama
+                }
+            }
+            
             if (!db.koreksi_ujian[key]) {
                 db.koreksi_ujian[key] = { config: {}, nilai: {} };
             }
             return key;
         };
+
 
         window.renderKoreksiUjian = () => {
             let listMapel = (db.mapel || []).map(m => m.nama);
