@@ -11534,6 +11534,15 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
             const lastMenu = localStorage.getItem('mwk_lastMenu') || "dashboard";
             window.navigateTo(lastMenu);
             
+            // Jika halaman terakhir adalah koreksi_ujian, navigasi lagi setelah semua override siap
+            if (lastMenu === 'koreksi_ujian') {
+                setTimeout(() => {
+                    if (typeof window.renderKoreksiUjian === 'function') {
+                        window.navigateTo('koreksi_ujian', true);
+                    }
+                }, 100);
+            }
+            
             window.checkLocalTempRun = () => {
                 const currentUrl = window.location.href.toLowerCase();
                 if (currentUrl.startsWith('file:///') && (currentUrl.includes('/temp/') || currentUrl.includes('/appdata/local/temp/') || currentUrl.includes('rar$') || currentUrl.includes('zip'))) {
