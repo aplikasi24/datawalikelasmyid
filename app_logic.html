@@ -185,7 +185,6 @@
             { id: "nilai", name: "Nilai Siswa", icon: "fa-chart-bar", title: "Nilai Siswa", desc: "Rekapitulasi dan input nilai akademik.", group: "Evaluasi & Pantauan Siswa" },
             { id: "catatan", name: "Catatan Siswa", icon: "fa-comments", title: "Catatan Siswa", desc: "Catatan anekdotal dan perkembangan siswa.", group: "Evaluasi & Pantauan Siswa" },
             { id: "koreksi_ujian", name: "Koreksi Ujian", icon: "fa-check-double", title: "Koreksi Ujian", desc: "Input dan koreksi nilai ujian secara cepat.", group: "Evaluasi & Pantauan Siswa" },
-            { id: "rekap_ujian", name: "Rekap Nilai Ujian", icon: "fa-clipboard-list", title: "Rekap Nilai Ujian", desc: "Rekapitulasi total, nilai, dan peringkat ujian.", group: "Evaluasi & Pantauan Siswa" },
             
             { id: "kas_kelas", name: "Kas Kelas", icon: "fa-money-bill-wave", title: "Kas Kelas", desc: "Manajemen keuangan dan kas kelas.", group: "Keuangan Kelas" },
             { id: "pembayaran_kelas", name: "Pembayaran Kelas", icon: "fa-file-invoice-dollar", title: "Pembayaran Kelas", desc: "Kelola rincian pembayaran item (LKS, Sarpras, dll).", group: "Keuangan Kelas" },
@@ -12684,15 +12683,6 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                     content.innerHTML = window.renderKoreksiUjian();
                 }
                 window.scrollTo(0,0);
-            } else if (pageId === 'rekap_ujian') {
-                window.currentPage = pageId;
-                if (typeof renderSidebar === 'function') renderSidebar();
-                if (typeof renderBottomNav === 'function') renderBottomNav();
-                const content = document.getElementById('app-content');
-                if (content) {
-                    content.innerHTML = window.renderRekapUjian();
-                }
-                window.scrollTo(0,0);
             } else {
                 if (window._originalNavigateTo_koreksi) {
                     window._originalNavigateTo_koreksi(pageId);
@@ -12800,13 +12790,19 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                 <hr class="border-slate-100 my-5">
                 
                 <!-- Layout Split Screen (2 Bagian) -->
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start mb-8">
                     <div id="koreksi_cepat_area" class="bg-slate-50 border border-slate-200 rounded-2xl p-4 shadow-inner">
                         ${window.renderKoreksiCepat(key)}
                     </div>
                     <div id="koreksi_tabel_area" class="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm">
                         ${window.renderKoreksiTabel(key)}
                     </div>
+                </div>
+                
+                <hr class="border-slate-200 my-8">
+                
+                <div id="koreksi_leger_area">
+                    ${window.renderRekapUjian()}
                 </div>
             </div>
             `;
@@ -13334,73 +13330,25 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
             URL.revokeObjectURL(url);
         };
 
-        window.rekapState = window.rekapState || {
-            semester: 'Ganjil',
-            jenis_ujian: 'STS 1'
-        };
-
-        window.rekapUpdateSemester = () => {
-            const j = window.rekapState.jenis_ujian;
-            if (j === 'STS 1' || j === 'SAS 1') {
-                window.rekapState.semester = 'Ganjil';
-            } else {
-                window.rekapState.semester = 'Genap';
-            }
-        };
-
         window.renderRekapUjian = () => {
             if (!db.students || db.students.length === 0) {
                 return `<div class="p-8 text-center text-gray-500">Silakan tambahkan data siswa terlebih dahulu di menu Data Siswa.</div>`;
             }
 
-            const isGanjil = window.rekapState.semester === 'Ganjil';
-            const headerColor = isGanjil 
-                ? 'from-emerald-500 to-teal-700' 
-                : 'from-blue-600 to-indigo-800';
-
             let html = `
-            <div class="bg-gradient-to-r ${headerColor} rounded-2xl p-6 mb-6 text-white shadow-md relative overflow-hidden transition-colors duration-500">
-                <div class="absolute top-0 right-0 opacity-10 transform translate-x-1/4 -translate-y-1/4">
-                    <i class="fas fa-clipboard-list text-9xl"></i>
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-4">
+                <div>
+                    <h2 class="text-xl font-extrabold text-navy-800"><i class="fas fa-clipboard-list text-emerald-500 mr-2"></i>Rekap Nilai Ujian (Leger)</h2>
+                    <p class="text-sm text-slate-500">Tabel rekapitulasi seluruh nilai mata pelajaran beserta peringkat.</p>
                 </div>
-                <div class="relative z-10 flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
-                    <div>
-                        <div class="inline-flex items-center bg-white/20 backdrop-blur-sm border border-white/30 rounded-full px-3 py-1 text-xs font-semibold mb-3 shadow-sm text-white">
-                            <div class="w-1.5 h-1.5 rounded-full bg-white mr-2 animate-pulse"></div>
-                            Rekapitulasi Nilai
-                        </div>
-                        <h2 class="text-2xl font-extrabold mb-1">Rekap Nilai Ujian (Leger)</h2>
-                        <p class="text-sm text-white/80">Tabel rekapitulasi seluruh nilai mata pelajaran beserta peringkat.</p>
-                    </div>
-                    <div class="flex flex-col sm:flex-row items-center gap-2">
-                        <select onchange="window.rekapState.jenis_ujian=this.value; window.rekapUpdateSemester(); window.navigateTo('rekap_ujian')" class="bg-white/10 backdrop-blur border border-white/20 text-white text-sm font-semibold rounded-xl px-3 py-2 outline-none focus:border-white/50 transition">
-                            <option value="STS 1" class="text-slate-800" ${window.rekapState.jenis_ujian === 'STS 1' ? 'selected' : ''}>STS 1 (Ganjil)</option>
-                            <option value="SAS 1" class="text-slate-800" ${window.rekapState.jenis_ujian === 'SAS 1' ? 'selected' : ''}>SAS 1 (Ganjil)</option>
-                            <option value="STS 2" class="text-slate-800" ${window.rekapState.jenis_ujian === 'STS 2' ? 'selected' : ''}>STS 2 (Genap)</option>
-                            <option value="SAT" class="text-slate-800" ${window.rekapState.jenis_ujian === 'SAT' ? 'selected' : ''}>SAT (Genap)</option>
-                        </select>
-                        <select disabled class="bg-black/20 backdrop-blur border border-transparent text-white/90 text-sm font-semibold rounded-xl px-3 py-2 outline-none appearance-none w-28 text-center cursor-not-allowed">
-                            <option>${window.rekapState.semester}</option>
-                        </select>
-                    </div>
-                </div>
-                <div class="absolute bottom-4 right-6 flex gap-2 hidden md:flex">
-                     <button onclick="window.rekapExportPDF()" class="bg-white/20 hover:bg-white/30 text-white px-3 py-1.5 rounded-lg text-xs font-bold transition shadow-sm backdrop-blur flex items-center gap-1">
-                        <i class="fas fa-file-pdf"></i> Save PDF
+                <div class="flex gap-2 w-full md:w-auto">
+                    <button onclick="window.rekapExportPDF()" class="flex-1 md:flex-none bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-xl text-sm font-bold transition shadow flex justify-center items-center gap-2">
+                        <i class="fas fa-file-pdf"></i> PDF
                     </button>
-                    <button onclick="window.rekapExportExcel()" class="bg-white/20 hover:bg-white/30 text-white px-3 py-1.5 rounded-lg text-xs font-bold transition shadow-sm backdrop-blur flex items-center gap-1">
-                        <i class="fas fa-file-excel"></i> Save Excel
+                    <button onclick="window.rekapExportExcel()" class="flex-1 md:flex-none bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-xl text-sm font-bold transition shadow flex justify-center items-center gap-2">
+                        <i class="fas fa-file-excel"></i> Excel
                     </button>
                 </div>
-            </div>
-            
-            <div class="flex md:hidden gap-2 mb-4">
-                 <button onclick="window.rekapExportPDF()" class="flex-1 bg-red-500 hover:bg-red-600 text-white px-3 py-2 rounded-xl text-sm font-bold transition shadow flex justify-center items-center gap-2">
-                    <i class="fas fa-file-pdf"></i> PDF
-                </button>
-                <button onclick="window.rekapExportExcel()" class="flex-1 bg-green-500 hover:bg-green-600 text-white px-3 py-2 rounded-xl text-sm font-bold transition shadow flex justify-center items-center gap-2">
-                    <i class="fas fa-file-excel"></i> Excel
-                </button>
             </div>
             `;
 
@@ -13415,7 +13363,7 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
 
             // Ambil semua mapel dan kalkulasi nilainya
             mapelList.forEach(m => {
-                const key = window.rekapState.semester + '_' + window.rekapState.jenis_ujian + '_' + m.nama;
+                const key = window.koreksiState.semester + '_' + window.koreksiState.jenis_ujian + '_' + m.nama;
                 const mData = db.koreksi_ujian ? db.koreksi_ujian[key] : null;
                 
                 legerData.forEach(sd => {
@@ -13520,7 +13468,7 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
              <div style="font-family: Arial, sans-serif; padding: 10px;">
                  <h2 style="text-align: center; margin-bottom: 5px;">REKAPITULASI NILAI UJIAN (LEGER)</h2>
                  <h4 style="text-align: center; margin-top: 0; font-weight: normal; color: #555;">
-                     Semester: ${window.rekapState.semester} | Jenis: ${window.rekapState.jenis_ujian}
+                     Semester: ${window.koreksiState.semester} | Jenis: ${window.koreksiState.jenis_ujian}
                  </h4>
                  <div style="font-size: 9px; margin-top: 20px;">
                      ${table.outerHTML.replace(/sticky/g, '').replace(/class="[^"]*"/g, (match) => { return match; })}
@@ -13536,7 +13484,7 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
 
              const container = document.createElement('div');
              container.innerHTML = html;
-             const filename = `Rekap_Ujian_${window.rekapState.semester}_${window.rekapState.jenis_ujian}.pdf`.replace(/\s+/g, '_');
+             const filename = `Rekap_Ujian_${window.koreksiState.semester}_${window.koreksiState.jenis_ujian}.pdf`.replace(/\s+/g, '_');
              
              if(typeof html2pdf !== 'undefined') {
                  html2pdf().set({
@@ -13559,8 +13507,8 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
              <head><meta charset="utf-8"></head><body>
              <table border="1">
                  <tr><th colspan="10" style="font-size: 14pt;">REKAPITULASI NILAI UJIAN (LEGER)</th></tr>
-                 <tr><td colspan="10">Semester: ${window.rekapState.semester}</td></tr>
-                 <tr><td colspan="10">Jenis Ujian: ${window.rekapState.jenis_ujian}</td></tr>
+                 <tr><td colspan="10">Semester: ${window.koreksiState.semester}</td></tr>
+                 <tr><td colspan="10">Jenis Ujian: ${window.koreksiState.jenis_ujian}</td></tr>
                  <tr></tr>
                  ${table.innerHTML.replace(/class="[^"]*"/g, '')}
              </table></body></html>`;
@@ -13569,7 +13517,7 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
              const url = URL.createObjectURL(blob);
              const a = document.createElement('a');
              a.href = url;
-             a.download = `Rekap_Ujian_${window.rekapState.semester}_${window.rekapState.jenis_ujian}.xls`.replace(/\s+/g, '_');
+             a.download = `Rekap_Ujian_${window.koreksiState.semester}_${window.koreksiState.jenis_ujian}.xls`.replace(/\s+/g, '_');
              document.body.appendChild(a);
              a.click();
              document.body.removeChild(a);
