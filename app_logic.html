@@ -8424,8 +8424,12 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
             e.target.value = ""; 
         };
 
-        window.currentSemester = window.currentSemester || '1';
-        window.changeSemester = (val) => { window.currentSemester = val; navigateTo('nilai'); };
+        window.currentSemester = window.currentSemester || (function(){ try { return localStorage.getItem('mwk_currentSemester') || '1'; } catch(e){ return '1'; } })();
+        window.changeSemester = (val) => { 
+            window.currentSemester = val; 
+            try { localStorage.setItem('mwk_currentSemester', val); } catch(e){}
+            navigateTo('nilai'); 
+        };
         window.changeKelasNilai = (val) => { window.currentKelasNilai = val; navigateTo('nilai'); };
 
         function renderNilai() {
@@ -12909,6 +12913,16 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
             }
         };
 
+        window.koreksiStateChange = (prop, val) => {
+            window.koreksiState[prop] = val;
+            if (prop === 'jenis_ujian') {
+                window.koreksiState.current_student_idx = 0;
+                window.koreksiUpdateSemester();
+            }
+            try { localStorage.setItem('mwk_koreksiState', JSON.stringify(window.koreksiState)); } catch(e){}
+            window.navigateTo('koreksi_ujian', true);
+        };
+
         let savedKoreksiState = null;
         try {
             const savedStr = localStorage.getItem('mwk_koreksiState');
@@ -13019,17 +13033,20 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                     </div>
                     <div class="flex flex-wrap gap-2 w-full xl:w-auto">
                         ${window.koreksiState.view === 'input' ? `
-                            <select id="koreksi_jenis" onchange="window.koreksiState.jenis_ujian=this.value; window.koreksiState.current_student_idx=0; window.koreksiUpdateSemester(); window.navigateTo('koreksi_ujian', true)" class="bg-white/10 backdrop-blur border border-white/20 text-white text-sm font-semibold rounded-xl px-3 py-2 outline-none focus:border-cyan-400 transition">
+                            <div class="flex flex-col sm:flex-row gap-3 mt-4">
+                            <select id="koreksi_jenis" onchange="window.koreksiStateChange('jenis_ujian', this.value)" class="bg-white/10 backdrop-blur border border-white/20 text-white text-sm font-semibold rounded-xl px-3 py-2 outline-none focus:border-cyan-400 transition">
                                 <option value="STS 1" class="text-black" ${window.koreksiState.jenis_ujian === 'STS 1' ? 'selected' : ''}>STS 1</option>
                                 <option value="SAS 1" class="text-black" ${window.koreksiState.jenis_ujian === 'SAS 1' ? 'selected' : ''}>SAS 1</option>
                                 <option value="STS 2" class="text-black" ${window.koreksiState.jenis_ujian === 'STS 2' ? 'selected' : ''}>STS 2</option>
                                 <option value="SAT" class="text-black" ${window.koreksiState.jenis_ujian === 'SAT' ? 'selected' : ''}>SAT</option>
                             </select>
+                            <select id="koreksi_mapel" onchange="window.koreksiStateChange('mapel', this.value)" class="bg-white/10 backdrop-blur border border-white/20 text-white text-sm font-semibold rounded-xl px-3 py-2 outline-none focus:border-cyan-400 transition max-w-[200px] truncate">
+                                ${mapelOptions}
+                            </select>
                             <select id="koreksi_semester" disabled class="bg-white/5 backdrop-blur border border-white/20 text-white/70 text-sm font-semibold rounded-xl px-3 py-2 outline-none transition cursor-not-allowed opacity-80" title="Otomatis mengikuti Jenis Ujian">
                                 <option value="Ganjil" class="text-black" ${window.koreksiState.semester === 'Ganjil' ? 'selected' : ''}>Ganjil</option>
                                 <option value="Genap" class="text-black" ${window.koreksiState.semester === 'Genap' ? 'selected' : ''}>Genap</option>
                             </select>
-                            <select id="koreksi_mapel" onchange="window.koreksiState.mapel=this.value; window.navigateTo('koreksi_ujian', true)" class="bg-white/10 backdrop-blur border border-white/20 text-white text-sm font-semibold rounded-xl px-3 py-2 outline-none focus:border-cyan-400 transition max-w-[200px] truncate">
                                 ${mapelOptions}
                             </select>
                             <button onclick="window.koreksiState.view='rekap'; window.navigateTo('koreksi_ujian', true)" class="bg-indigo-500 hover:bg-indigo-600 border border-indigo-400 text-white text-sm font-bold rounded-xl px-4 py-2 transition shadow flex items-center gap-2">
@@ -13126,7 +13143,7 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                     <button onclick="window.koreksiPrev()" class="w-8 h-8 sm:w-10 sm:h-10 bg-slate-50 rounded-lg shadow-sm text-cyan-600 border border-slate-100 hover:bg-cyan-500 hover:text-white transition-all flex items-center justify-center"><i class="fas fa-chevron-left"></i></button>
                     <div class="text-center flex-1 mx-2 overflow-hidden">
                         <div data-koreksi-label class="text-[9px] sm:text-[10px] font-bold text-cyan-600 mb-0.5 tracking-widest uppercase">SISWA ${window.koreksiState.current_student_idx + 1} DARI ${students.length}</div>
-                        <select data-koreksi-select onchange="window.koreksiState.current_student_idx = this.selectedIndex; window.navigateTo('koreksi_ujian', true);" class="w-full bg-transparent text-base sm:text-lg font-bold text-navy-800 outline-none text-center cursor-pointer border-b-2 border-dashed border-cyan-200 focus:border-cyan-500 pb-0.5 appearance-none transition-colors truncate">
+                        <select data-koreksi-select onchange="window.koreksiStateChange('current_student_idx', this.selectedIndex)" class="w-full bg-transparent text-base sm:text-lg font-bold text-navy-800 outline-none text-center cursor-pointer border-b-2 border-dashed border-cyan-200 focus:border-cyan-500 pb-0.5 appearance-none transition-colors truncate">
                             ${students.map((s, i) => `<option value="${i}" ${i === window.koreksiState.current_student_idx ? 'selected' : ''}>${i + 1}. ${s.name}</option>`).join('')}
                         </select>
                     </div>
@@ -13691,7 +13708,7 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                     <p class="text-sm text-slate-500">Tabel rekapitulasi seluruh nilai mata pelajaran beserta peringkat.</p>
                 </div>
                 <div class="flex flex-wrap gap-2 w-full md:w-auto items-center">
-                    <select onchange="window.koreksiState.rekap_jenis=this.value; window.navigateTo('koreksi_ujian', true)" class="bg-slate-50 border border-slate-300 text-slate-700 text-sm font-bold rounded-xl px-3 py-2 outline-none focus:border-indigo-400 transition min-w-[160px]">
+                    <select onchange="window.koreksiStateChange('rekap_jenis', this.value)" class="bg-slate-50 border border-slate-300 text-slate-700 text-sm font-bold rounded-xl px-3 py-2 outline-none focus:border-indigo-400 transition min-w-[160px]">
                         <option value="SEMUA" ${window.koreksiState.rekap_jenis === 'SEMUA' ? 'selected' : ''}>SEMUA (Rata-rata)</option>
                         <option value="STS 1" ${window.koreksiState.rekap_jenis === 'STS 1' ? 'selected' : ''}>STS 1</option>
                         <option value="SAS 1" ${window.koreksiState.rekap_jenis === 'SAS 1' ? 'selected' : ''}>SAS 1</option>
