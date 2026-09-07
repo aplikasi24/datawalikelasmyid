@@ -169,7 +169,8 @@
         function saveDB() {
             const jsonStr = JSON.stringify(db);
 
-            // 1. UTAMA — Simpan ke IndexedDB (async, non-blocking, kapasitas besar)
+            // UTAMA — Simpan ke IndexedDB (async, non-blocking, kapasitas besar)
+            // LocalStorage TIDAK lagi digunakan untuk data utama.
             _openMWKMainDB().then(idb => {
                 const tx = idb.transaction(MWK_IDB_STORE, 'readwrite');
                 tx.objectStore(MWK_IDB_STORE).put(jsonStr, DB_KEY);
@@ -178,13 +179,6 @@
             }).catch(err => {
                 console.warn('[MWK] Gagal simpan ke IndexedDB utama:', err);
             });
-
-            // 2. CADANGAN — Simpan ringkas ke LocalStorage (hanya pengaturan lite)
-            //    Ini agar cold-start pertama (sebelum IDB siap) masih bisa berjalan.
-            try { localStorage.setItem(DB_KEY, jsonStr); } catch(err) {
-                // Jika localStorage penuh (QuotaExceeded), hapus & biarkan IDB yang menjadi sumber
-                try { localStorage.removeItem(DB_KEY); } catch(e2) {}
-            }
         }
 
         // --- 3. App Menus Data ---
@@ -11825,15 +11819,25 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
             // MIGRASI OTOMATIS: Jika data baru saja dibaca dari
             // LocalStorage atau CacheDB lama, segera salin ke
             // MWK_MainDB (IndexedDB utama) agar selanjutnya terbaca
-            // dari sana. Ini hanya terjadi sekali saja.
+            // dari sana. Setelah berhasil, hapus dari LocalStorage
+            // agar tidak membuang ruang (1x saja).
             // -------------------------------------------------------
             if (dbJson) {
                 try {
                     const idb = await _openMWKMainDB();
-                    const tx = idb.transaction(MWK_IDB_STORE, 'readwrite');
-                    tx.objectStore(MWK_IDB_STORE).put(dbJson, DB_KEY);
-                    tx.oncomplete = () => { idb.close(); console.log('[MWK] Data berhasil dimigrasi ke IndexedDB utama.'); };
-                    tx.onerror    = () => idb.close();
+                    await new Promise((resolve, reject) => {
+                        const tx = idb.transaction(MWK_IDB_STORE, 'readwrite');
+                        tx.objectStore(MWK_IDB_STORE).put(dbJson, DB_KEY);
+                        tx.oncomplete = () => {
+                            idb.close();
+                            // Setelah data aman di IndexedDB, bersihkan LocalStorage
+                            try { localStorage.removeItem(DB_KEY); } catch(e) {}
+                            try { localStorage.removeItem('manajemenWaliKelasDB'); } catch(e) {}
+                            console.log('[MWK] Migrasi selesai. LocalStorage DB key dihapus.');
+                            resolve();
+                        };
+                        tx.onerror = () => { idb.close(); reject(tx.error); };
+                    });
                 } catch(err) {
                     console.warn('[MWK] Gagal migrasi data ke MWK_MainDB:', err);
                 }
