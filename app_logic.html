@@ -1074,13 +1074,21 @@
                 <div class="mb-4 flex flex-wrap items-center justify-between bg-white p-4 rounded-2xl shadow-sm border border-gray-100 print-hide gap-4">
                     <h3 class="font-bold text-gray-800"><i class="fas fa-user-graduate text-blue-500 mr-2"></i>Filter Grafik Siswa</h3>
                     <div class="flex flex-wrap items-center gap-3">
-                        <div class="flex items-center gap-2 bg-indigo-50 border border-indigo-200 rounded-lg p-1" title="Pilih Mata Pelajaran">
-                            <i class="fas fa-book text-indigo-500 ml-2"></i>
-                            <select id="dashboardSiswaMapelSelect" onchange="window.currentDashboardMapelIndex = parseInt(this.value); const ms = document.getElementById('dashboardMapelSelect'); if(ms) ms.value = this.value; window.updateDashboardMapelCharts();" class="bg-transparent text-indigo-800 text-sm font-bold focus:ring-0 focus:border-0 block p-1.5 outline-none max-w-[150px] truncate cursor-pointer">
-                            </select>
+                        <div class="flex items-center gap-1 border-r-2 pr-3 mr-1 border-gray-100">
+                            <button onclick="window.prevDashboardMapel()" class="p-2 rounded-lg bg-indigo-50 hover:bg-indigo-100 text-indigo-600 transition" title="Mapel Sebelumnya">
+                                <i class="fas fa-chevron-left"></i>
+                            </button>
+                            <div class="flex items-center gap-2 bg-indigo-50 border border-indigo-200 rounded-lg p-1" title="Pilih Mata Pelajaran">
+                                <i class="fas fa-book text-indigo-500 ml-2"></i>
+                                <select id="dashboardSiswaMapelSelect" onchange="window.currentDashboardMapelIndex = parseInt(this.value); const ms = document.getElementById('dashboardMapelSelect'); if(ms) ms.value = this.value; window.updateDashboardMapelCharts();" class="bg-transparent text-indigo-800 text-sm font-bold focus:ring-0 focus:border-0 block p-1.5 outline-none max-w-[150px] truncate cursor-pointer">
+                                </select>
+                            </div>
+                            <button onclick="window.nextDashboardMapel()" class="p-2 rounded-lg bg-indigo-50 hover:bg-indigo-100 text-indigo-600 transition" title="Mapel Selanjutnya">
+                                <i class="fas fa-chevron-right"></i>
+                            </button>
                         </div>
                         
-                        <div class="flex items-center gap-1 border-l-2 pl-3 ml-1 border-gray-100">
+                        <div class="flex items-center gap-1">
                             <button onclick="window.prevDashboardSiswa()" class="p-2 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-600 transition" title="Siswa Sebelumnya">
                                 <i class="fas fa-chevron-left"></i>
                             </button>
@@ -1695,7 +1703,7 @@
                 db.students.forEach((s) => {
                     const opt = document.createElement('option');
                     opt.value = s.id;
-                    opt.text = s.nama;
+                    opt.text = s.name;
                     selectEl.add(opt);
                 });
                 if (!window.currentDashboardSiswaId || !db.students.find(s => s.id == window.currentDashboardSiswaId)) {
