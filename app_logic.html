@@ -1071,6 +1071,53 @@
                     </div>
                 </div>
                 
+                <div class="mb-4 flex flex-wrap items-center justify-between bg-white p-4 rounded-2xl shadow-sm border border-gray-100 print-hide gap-4">
+                    <h3 class="font-bold text-gray-800"><i class="fas fa-user-graduate text-blue-500 mr-2"></i>Filter Grafik Siswa</h3>
+                    <div class="flex items-center gap-2">
+                        <button onclick="window.prevDashboardSiswa()" class="p-2 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-600 transition" title="Siswa Sebelumnya">
+                            <i class="fas fa-chevron-left"></i>
+                        </button>
+                        <select id="dashboardSiswaSelect" onchange="window.currentDashboardSiswaId = this.value; window.updateDashboardSiswaCharts()" class="bg-gray-50 border border-gray-200 text-gray-800 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5 max-w-[200px] truncate">
+                        </select>
+                        <button onclick="window.nextDashboardSiswa()" class="p-2 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-600 transition" title="Siswa Selanjutnya">
+                            <i class="fas fa-chevron-right"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8 print-hide">
+                    <div class="relative overflow-hidden bg-white rounded-2xl p-6 shadow-md border border-gray-100 flex flex-col items-center hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300 group">
+                        <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-orange-400 to-red-500 rounded-t-2xl"></div>
+                        <div class="w-full flex items-center justify-between mb-5">
+                            <div>
+                                <p class="text-xs text-gray-400 uppercase font-semibold tracking-wider">Tren Nilai Siswa</p>
+                                <h4 class="font-bold text-gray-800 text-base mt-0.5">Tren Ujian (STS 1 - SAT)</h4>
+                            </div>
+                            <div class="bg-orange-50 text-orange-500 p-2.5 rounded-xl border border-orange-100 group-hover:bg-orange-100 transition">
+                                <i class="fas fa-chart-line text-base"></i>
+                            </div>
+                        </div>
+                        <div class="w-full h-[320px] relative">
+                            <canvas id="chartTrenNilaiSiswa"></canvas>
+                        </div>
+                    </div>
+                    <div class="relative overflow-hidden bg-white rounded-2xl p-6 shadow-md border border-gray-100 flex flex-col items-center hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300 group">
+                        <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-purple-400 to-fuchsia-500 rounded-t-2xl"></div>
+                        <div class="w-full flex items-center justify-between mb-5">
+                            <div>
+                                <p class="text-xs text-gray-400 uppercase font-semibold tracking-wider">Statistik Siswa</p>
+                                <h4 class="font-bold text-gray-800 text-base mt-0.5">Rata-Rata Nilai Siswa (TP, LM, STS/SAS)</h4>
+                            </div>
+                            <div class="bg-purple-50 text-purple-500 p-2.5 rounded-xl border border-purple-100 group-hover:bg-purple-100 transition">
+                                <i class="fas fa-chart-line text-base"></i>
+                            </div>
+                        </div>
+                        <div class="w-full h-[320px] relative">
+                            <canvas id="chartRataNilaiSiswa"></canvas>
+                        </div>
+                    </div>
+                </div>
+                
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8 print-hide">
                     <div class="bg-gradient-to-br from-blue-600 to-blue-800 rounded-2xl p-6 shadow-md border border-blue-700 flex flex-col text-white justify-between">
                         <div>
@@ -1380,6 +1427,7 @@
                 });
             }
 
+            window.initDashboardSiswaFilter();
             window.updateDashboardMapelCharts();
         };
 
@@ -1591,6 +1639,9 @@
                     }
                 });
             }
+            if (typeof window.updateDashboardSiswaCharts === 'function') {
+                window.updateDashboardSiswaCharts();
+            }
         };
 
         window.nextDashboardMapel = () => {
@@ -1607,6 +1658,187 @@
             const selectEl = document.getElementById('dashboardMapelSelect');
             if (selectEl) selectEl.value = window.currentDashboardMapelIndex;
             window.updateDashboardMapelCharts();
+        };
+
+        // --- CHART SISWA LOGIC ---
+        window.currentDashboardSiswaId = null;
+        window.chartTrenSiswaInst = null;
+        window.chartRataSiswaInst = null;
+
+        window.initDashboardSiswaFilter = () => {
+            const selectEl = document.getElementById('dashboardSiswaSelect');
+            if (!selectEl) return;
+            selectEl.innerHTML = '';
+            
+            if (db.students && db.students.length > 0) {
+                db.students.forEach((s) => {
+                    const opt = document.createElement('option');
+                    opt.value = s.id;
+                    opt.text = s.nama;
+                    selectEl.add(opt);
+                });
+                if (!window.currentDashboardSiswaId || !db.students.find(s => s.id == window.currentDashboardSiswaId)) {
+                    window.currentDashboardSiswaId = db.students[0].id;
+                }
+                selectEl.value = window.currentDashboardSiswaId;
+            }
+        };
+
+        window.nextDashboardSiswa = () => {
+            if (!db.students || db.students.length === 0) return;
+            const selectEl = document.getElementById('dashboardSiswaSelect');
+            const currentIndex = db.students.findIndex(s => s.id == window.currentDashboardSiswaId);
+            if (currentIndex === -1) return;
+            const nextIndex = (currentIndex + 1) % db.students.length;
+            window.currentDashboardSiswaId = db.students[nextIndex].id;
+            if (selectEl) selectEl.value = window.currentDashboardSiswaId;
+            window.updateDashboardSiswaCharts();
+        };
+
+        window.prevDashboardSiswa = () => {
+            if (!db.students || db.students.length === 0) return;
+            const selectEl = document.getElementById('dashboardSiswaSelect');
+            const currentIndex = db.students.findIndex(s => s.id == window.currentDashboardSiswaId);
+            if (currentIndex === -1) return;
+            const prevIndex = (currentIndex - 1 + db.students.length) % db.students.length;
+            window.currentDashboardSiswaId = db.students[prevIndex].id;
+            if (selectEl) selectEl.value = window.currentDashboardSiswaId;
+            window.updateDashboardSiswaCharts();
+        };
+
+        window.updateDashboardSiswaCharts = () => {
+            if (!db.mapel || db.mapel.length === 0 || !db.students || db.students.length === 0) return;
+            
+            const mapelIdx = window.currentDashboardMapelIndex;
+            const m = db.mapel[mapelIdx];
+            if (!m) return;
+            const studentId = window.currentDashboardSiswaId;
+            if (!studentId) return;
+            
+            // Tren Ujian (STS 1, SAS 1, STS 2, SAT)
+            const ctxTren = document.getElementById('chartTrenNilaiSiswa');
+            if (ctxTren) {
+                const dataTren = [null, null, null, null]; // [STS1, SAS1, STS2, SAT]
+                const mIdSmt1 = String(m.id);
+                const mIdSmt2 = String(m.id) + "_smt2";
+                
+                if (db.nilai) {
+                    if (db.nilai[mIdSmt1] && db.nilai[mIdSmt1][studentId]) {
+                        const n1 = db.nilai[mIdSmt1][studentId];
+                        dataTren[0] = (n1.sts !== undefined && n1.sts !== '') ? parseFloat(n1.sts) : null;
+                        dataTren[1] = (n1.sas !== undefined && n1.sas !== '') ? parseFloat(n1.sas) : null;
+                    }
+                    if (db.nilai[mIdSmt2] && db.nilai[mIdSmt2][studentId]) {
+                        const n2 = db.nilai[mIdSmt2][studentId];
+                        dataTren[2] = (n2.sts !== undefined && n2.sts !== '') ? parseFloat(n2.sts) : null;
+                        dataTren[3] = (n2.sas !== undefined && n2.sas !== '') ? parseFloat(n2.sas) : null;
+                    }
+                }
+                
+                if (window.chartTrenSiswaInst) window.chartTrenSiswaInst.destroy();
+                window.chartTrenSiswaInst = new Chart(ctxTren, {
+                    type: 'line',
+                    data: {
+                        labels: ['STS 1', 'SAS 1', 'STS 2', 'SAT'],
+                        datasets: [{
+                            label: 'Nilai Ujian',
+                            data: dataTren,
+                            borderColor: '#f97316',
+                            backgroundColor: '#ffedd5',
+                            borderWidth: 3,
+                            pointBackgroundColor: pointColor(dataTren),
+                            pointBorderColor: '#fff',
+                            pointBorderWidth: 2,
+                            pointRadius: 6,
+                            pointHoverRadius: 8,
+                            tension: 0.4,
+                            fill: true,
+                            spanGaps: true
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { display: false } },
+                        scales: { y: { min: 0, max: 100 } }
+                    }
+                });
+            }
+
+            // Rata-Rata Nilai (TP, LM, STS/SAS)
+            const ctxRata = document.getElementById('chartRataNilaiSiswa');
+            if (ctxRata) {
+                let totalTP = 0, countTP = 0;
+                let totalLM = 0, countLM = 0;
+                let totalSTSSAS = 0, countSTSSAS = 0;
+                
+                const p = db.pengaturan_nilai && db.pengaturan_nilai[m.id] ? db.pengaturan_nilai[m.id] : { jumlah_tp: 5, jumlah_lm: 5 };
+                
+                [1, 2].forEach(smt => {
+                    let dataKey = smt === 1 ? String(m.id) : String(m.id) + "_smt" + smt;
+                    if (db.nilai && db.nilai[dataKey] && db.nilai[dataKey][studentId]) {
+                        const n = db.nilai[dataKey][studentId];
+                        
+                        let sumTP = 0, validTP = 0;
+                        for(let i=1; i<=p.jumlah_tp; i++) {
+                            if(n[`tp${i}`] !== undefined && n[`tp${i}`] !== '') {
+                                sumTP += parseFloat(n[`tp${i}`]);
+                                validTP++;
+                            }
+                        }
+                        if(validTP > 0) { totalTP += (sumTP/validTP); countTP++; }
+                        
+                        let sumLM = 0, validLM = 0;
+                        for(let i=1; i<=p.jumlah_lm; i++) {
+                            if(n[`lm${i}`] !== undefined && n[`lm${i}`] !== '') {
+                                sumLM += parseFloat(n[`lm${i}`]);
+                                validLM++;
+                            }
+                        }
+                        if(validLM > 0) { totalLM += (sumLM/validLM); countLM++; }
+                        
+                        let sumSAS = 0, validSAS = 0;
+                        if(n['sts'] !== undefined && n['sts'] !== '') { sumSAS += parseFloat(n['sts']); validSAS++; }
+                        if(n['sas'] !== undefined && n['sas'] !== '') { sumSAS += parseFloat(n['sas']); validSAS++; }
+                        if(validSAS > 0) { totalSTSSAS += (sumSAS/validSAS); countSTSSAS++; }
+                    }
+                });
+                
+                const dataRata = [
+                    countTP > 0 ? (totalTP / countTP) : null,
+                    countLM > 0 ? (totalLM / countLM) : null,
+                    countSTSSAS > 0 ? (totalSTSSAS / countSTSSAS) : null
+                ];
+                
+                if (window.chartRataSiswaInst) window.chartRataSiswaInst.destroy();
+                window.chartRataSiswaInst = new Chart(ctxRata, {
+                    type: 'line',
+                    data: {
+                        labels: ['Rata-Rata TP', 'Rata-Rata LM', 'Rata-Rata STS/SAS'],
+                        datasets: [{
+                            label: 'Rata-Rata Nilai',
+                            data: dataRata,
+                            borderColor: '#a855f7',
+                            backgroundColor: '#f3e8ff',
+                            borderWidth: 3,
+                            pointBackgroundColor: pointColor(dataRata),
+                            pointBorderColor: '#fff',
+                            pointBorderWidth: 2,
+                            pointRadius: 6,
+                            pointHoverRadius: 8,
+                            tension: 0.4,
+                            fill: true,
+                            spanGaps: true
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { display: false } },
+                        scales: { y: { min: 0, max: 100 } }
+                    }
+                });
+            }
         };
 
         window.hapusSemuaData = async () => {
