@@ -11860,14 +11860,14 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                 <div>
                     ${menuId !== 'struktur' && menuId !== 'jadwal' && menuId !== 'aplikasi_lain' ? `
                     <header class="mb-8 border-b border-gray-200 pb-4 flex flex-col md:flex-row md:items-start justify-between">
-                        <div class="flex justify-between items-start w-full md:w-auto">
-                            <div class="flex-shrink-0 max-w-sm pr-2">
-                                <h1 class="text-3xl font-bold text-gray-800">${menu.title}</h1>
-                                <p class="text-gray-500 mt-1">${menu.desc}</p>
+                        <div class="flex flex-wrap justify-between items-start w-full md:w-auto gap-y-3">
+                            <div class="flex-1 min-w-0 pr-2">
+                                <h1 class="text-2xl sm:text-3xl font-bold text-gray-800 break-words leading-tight">${menu.title}</h1>
+                                <p class="text-gray-500 mt-1 text-sm sm:text-base leading-snug">${menu.desc}</p>
                             </div>
                             ${menuId === 'dashboard' ? `
-                            <div class="flex md:hidden items-center gap-2 shrink-0">
-                                <button id="install-app-btn-mobile" onclick="window.handleInstallApp()" class="hidden bg-orange-500 text-white border border-orange-600 h-9 w-9 rounded-xl shadow-sm hover:bg-orange-600 transition flex items-center justify-center print-hide shrink-0" title="Instal Aplikasi">
+                            <div class="flex md:hidden items-center gap-1.5 shrink-0 self-start ml-auto">
+                                <button id="install-app-btn-mobile" onclick="window.handleInstallApp()" class="hidden bg-orange-500 text-white border border-orange-600 h-9 px-2 rounded-xl shadow-sm hover:bg-orange-600 transition flex items-center justify-center print-hide shrink-0" title="Instal Aplikasi">
                                     <i class="fas fa-download text-xs"></i>
                                 </button>
                                 <button onclick="window.location.reload()" class="bg-white border border-gray-200 h-9 w-9 rounded-xl shadow-sm hover:shadow transition flex items-center justify-center print-hide shrink-0" title="Muat Ulang Halaman">
