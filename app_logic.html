@@ -2277,8 +2277,11 @@
 
         window.updateAIPromptText = () => {
             const formatEl = document.getElementById('ai-prompt-format');
-            if(!formatEl) return;
+            const shapeEl = document.getElementById('ai-prompt-shape');
+            
+            if(!formatEl || !shapeEl) return;
             const format = formatEl.value;
+            const shape = shapeEl.value;
             
             let dataText = "Berikut adalah daftar nama dan jabatan Struktur Organisasi Kelas:\n";
             if (db && db.struktur_organisasi) {
@@ -2287,22 +2290,33 @@
                 });
             }
 
+            // Dapatkan Info Sekolah & Tahun Ajaran
+            const kelas = db?.pengaturan?.kelas || '[Nama Kelas]';
+            const sekolah = db?.pengaturan?.sekolah || '[Nama Sekolah]';
+            const tapel = db?.pengaturan?.tapel || '[Tahun Pelajaran]';
+
             let formatInstruction = "";
             if (format === 'gambar') {
-                formatInstruction = "4. Berikan hasil akhir DALAM BENTUK FILE GAMBAR (JPG/PNG) beresolusi tinggi yang siap diunduh.";
+                formatInstruction = "5. Berikan hasil akhir DALAM BENTUK FILE GAMBAR (JPG/PNG) beresolusi tinggi yang siap diunduh.";
             } else if (format === 'pptx') {
-                formatInstruction = "4. Berikan hasil akhir berupa file PRESENTASI (.PPTX) yang bisa diunduh dan teks/fotonya bisa saya edit kembali di PowerPoint.";
+                formatInstruction = "5. Berikan hasil akhir berupa file PRESENTASI (.PPTX) yang bisa diunduh dan teks/fotonya bisa saya edit kembali di PowerPoint.";
             } else {
-                formatInstruction = "4. Jika kamu membuat kode HTML/CSS, pastikan tampilannya rapi dan responsif. Jika membuat template presentasi, pastikan ada opsi untuk menyimpannya sebagai file gambar atau presentasi (.pptx) yang bisa diedit.";
+                formatInstruction = "5. Jika kamu membuat kode HTML/CSS, pastikan tampilannya rapi dan responsif. Jika membuat template presentasi, pastikan ada opsi untuk menyimpannya sebagai file gambar atau presentasi (.pptx) yang bisa diedit.";
             }
 
             const promptText = `Tolong buatkan desain poster Struktur Organisasi Kelas berdasarkan data berikut:
 
+Informasi Kelas:
+- Kelas: ${kelas}
+- Sekolah: ${sekolah}
+- Tahun Pelajaran: ${tapel}
+
 ${dataText}
 Instruksi Tambahan:
-1. Buatkan bagan/kotak untuk setiap orang sesuai hierarki jabatannya.
-2. Di dalam setiap bagan, SEDIAKAN TEMPAT KOSONG (placeholder) untuk menempelkan pas foto (misalnya bentuk persegi dengan sudut melengkung, oval, atau lingkaran).
-3. Desain harus terlihat profesional, estetik, ceria, dan cocok untuk dicetak sebagai poster dinding kelas.
+1. Cantumkan judul besar "Struktur Organisasi Kelas ${kelas}", beserta nama sekolah "${sekolah}" dan Tahun Pelajaran "${tapel}" di bagian paling atas/kop poster.
+2. Buatkan bagan/kotak untuk setiap orang sesuai hierarki jabatannya.
+3. Di dalam setiap bagan, SEDIAKAN TEMPAT KOSONG (placeholder) untuk menempelkan pas foto dengan bentuk ${shape}.
+4. Desain harus terlihat profesional, estetik, ceria, dan cocok untuk dicetak sebagai poster dinding kelas.
 ${formatInstruction}`;
 
             const textarea = document.getElementById('ai-prompt-textarea');
@@ -2328,15 +2342,25 @@ ${formatInstruction}`;
                             </button>
                         </div>
                         <div class="p-6 overflow-y-auto custom-scrollbar">
-                            <p class="text-sm text-gray-600 mb-4">Pilih format output yang diinginkan, lalu salin teks prompt di bawah ini untuk dikirim ke AI favorit Anda (seperti ChatGPT atau Gemini).</p>
+                            <p class="text-sm text-gray-600 mb-4">Pilih opsi desain yang Anda inginkan, lalu salin teks prompt di bawah ini untuk dikirim ke AI favorit Anda (seperti ChatGPT atau Gemini).</p>
                             
-                            <div class="mb-4">
-                                <label class="block text-xs font-bold text-gray-700 mb-2">Pilih Format Output yang Diinginkan AI:</label>
-                                <select id="ai-prompt-format" onchange="window.updateAIPromptText()" class="w-full border border-gray-300 rounded-xl p-2.5 text-sm focus:ring-2 focus:ring-purple-500 outline-none bg-gray-50">
-                                    <option value="gambar">Format Gambar (.JPG / .PNG)</option>
-                                    <option value="pptx">Format PowerPoint (.PPTX) - Bisa Diedit</option>
-                                    <option value="bebas">Bebas (AI Memilihkan)</option>
-                                </select>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+                                <div>
+                                    <label class="block text-xs font-bold text-gray-700 mb-2">Bentuk Placeholder Foto:</label>
+                                    <select id="ai-prompt-shape" onchange="window.updateAIPromptText()" class="w-full border border-gray-300 rounded-xl p-2.5 text-sm focus:ring-2 focus:ring-purple-500 outline-none bg-gray-50">
+                                        <option value="persegi dengan sudut melengkung (rounded)">Persegi Melengkung</option>
+                                        <option value="oval">Oval</option>
+                                        <option value="lingkaran">Lingkaran</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-bold text-gray-700 mb-2">Pilih Format Output AI:</label>
+                                    <select id="ai-prompt-format" onchange="window.updateAIPromptText()" class="w-full border border-gray-300 rounded-xl p-2.5 text-sm focus:ring-2 focus:ring-purple-500 outline-none bg-gray-50">
+                                        <option value="gambar">Format Gambar (.JPG/.PNG)</option>
+                                        <option value="pptx">Format PowerPoint (.PPTX)</option>
+                                        <option value="bebas">Bebas (AI Memilihkan)</option>
+                                    </select>
+                                </div>
                             </div>
 
                             <div class="relative">
