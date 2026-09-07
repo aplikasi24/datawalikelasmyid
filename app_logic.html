@@ -2265,6 +2265,89 @@
             navigateTo('struktur');
         };
 
+        window.copyToClipboardDirect = (id, btn) => {
+            const el = document.getElementById(id);
+            if(!el) return;
+            el.select();
+            document.execCommand('copy');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-check text-green-500"></i> Tersalin!';
+            setTimeout(() => { btn.innerHTML = originalText; }, 2000);
+        };
+
+        window.generateOrgAIPrompt = () => {
+            if (!db.struktur_organisasi || db.struktur_organisasi.length === 0) {
+                alert('Struktur Organisasi masih kosong. Silakan isi terlebih dahulu.');
+                return;
+            }
+
+            let dataText = "Berikut adalah daftar nama dan jabatan Struktur Organisasi Kelas:\n";
+            db.struktur_organisasi.forEach(item => {
+                dataText += `- Nama: ${item.name}, Jabatan: ${item.position}\n`;
+            });
+
+            const promptText = `Tolong buatkan kode program (HTML/CSS) atau template presentasi untuk poster Struktur Organisasi Kelas berdasarkan data berikut:
+
+${dataText}
+Instruksi Tambahan:
+1. Buatkan bagan/kotak untuk setiap orang sesuai hierarki jabatannya.
+2. Di dalam setiap bagan, SEDIAKAN TEMPAT KOSONG (placeholder) untuk menempelkan pas foto (misalnya bentuk persegi dengan sudut melengkung, oval, atau lingkaran).
+3. Desain harus terlihat profesional, estetik, ceria, dan cocok untuk dicetak sebagai poster dinding kelas.
+4. Jika kamu membuat kode HTML/CSS, pastikan tampilannya rapi dan responsif. Jika membuat template presentasi, pastikan ada opsi untuk menyimpannya sebagai file gambar atau presentasi (.pptx) yang bisa diedit.`;
+
+            const modalId = 'modal-ai-prompt';
+            const modalHtml = `
+                <div id="${modalId}" class="fixed inset-0 bg-black bg-opacity-50 z-[100] flex items-center justify-center p-4 opacity-0 transition-opacity duration-300">
+                    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl transform scale-95 transition-transform duration-300 flex flex-col max-h-[90vh]">
+                        <div class="p-6 border-b border-gray-100 flex justify-between items-center bg-gradient-to-r from-purple-600 to-indigo-600 rounded-t-2xl">
+                            <h3 class="text-xl font-bold text-white"><i class="fas fa-robot mr-2"></i>Prompt AI Pembuat Poster</h3>
+                            <button onclick="window.closeModalDirect('${modalId}')" class="text-white/80 hover:text-white transition-colors bg-white/20 hover:bg-white/30 rounded-full w-8 h-8 flex items-center justify-center">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                        <div class="p-6 overflow-y-auto custom-scrollbar">
+                            <p class="text-sm text-gray-600 mb-4">Salin teks prompt di bawah ini lalu tempel (paste) ke AI favorit Anda (seperti ChatGPT atau Gemini) untuk dibuatkan desain poster struktur organisasi kelas.</p>
+                            <div class="relative">
+                                <textarea id="ai-prompt-textarea" class="w-full h-48 p-4 bg-gray-50 border border-gray-200 rounded-xl text-sm font-mono text-gray-800 focus:ring-2 focus:ring-purple-500 focus:border-purple-500 outline-none resize-none" readonly>${promptText}</textarea>
+                                <button onclick="window.copyToClipboardDirect('ai-prompt-textarea', this)" class="absolute top-3 right-3 bg-white border border-gray-200 text-gray-600 hover:text-purple-600 hover:bg-purple-50 px-3 py-1.5 rounded-lg text-xs font-bold shadow-sm transition-colors flex items-center gap-1 cursor-pointer">
+                                    <i class="fas fa-copy"></i> Salin Prompt
+                                </button>
+                            </div>
+                            
+                            <div class="mt-6">
+                                <p class="text-sm font-bold text-gray-800 mb-3">Buka AI Generator:</p>
+                                <div class="flex gap-3">
+                                    <a href="https://chatgpt.com/" target="_blank" class="flex-1 bg-teal-50 hover:bg-teal-100 border border-teal-200 text-teal-800 px-4 py-3 rounded-xl flex items-center justify-center font-bold text-sm transition-colors shadow-sm">
+                                        <i class="fas fa-comment-dots mr-2 text-teal-600"></i> Buka ChatGPT
+                                    </a>
+                                    <a href="https://gemini.google.com/" target="_blank" class="flex-1 bg-blue-50 hover:bg-blue-100 border border-blue-200 text-blue-800 px-4 py-3 rounded-xl flex items-center justify-center font-bold text-sm transition-colors shadow-sm">
+                                        <i class="fas fa-sparkles mr-2 text-blue-600"></i> Buka Gemini
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            document.body.insertAdjacentHTML('beforeend', modalHtml);
+            
+            const m = document.getElementById(modalId);
+            setTimeout(() => {
+                m.classList.remove('opacity-0');
+                m.children[0].classList.remove('scale-95');
+            }, 10);
+            
+            window.closeModalDirect = (id) => {
+                const el = document.getElementById(id);
+                if(el) {
+                    el.classList.add('opacity-0');
+                    el.children[0].classList.add('scale-95');
+                    setTimeout(() => el.remove(), 300);
+                }
+            };
+        };
+
         window.orgExpandAll = () => {
             db.struktur_organisasi.forEach(emp => window.orgExpandedNodes.add(emp.id));
             navigateTo('struktur');
@@ -3004,6 +3087,7 @@
 
                             <div class="flex flex-wrap items-center gap-2 w-full sm:w-auto justify-center sm:justify-end mt-4 sm:mt-0">
                                 <div class="flex gap-2">
+                                    <button onclick="window.generateOrgAIPrompt()" class="px-3 sm:px-4 py-2 bg-purple-50 text-purple-700 font-bold text-sm rounded-lg hover:bg-purple-100 border border-purple-200 shadow-sm transition-colors flex items-center justify-center" title="Buat Prompt AI Pembuat Poster"><i class="fas fa-robot"></i><span class="hidden sm:inline ml-2">Prompt AI</span></button>
                                     <button onclick="window.downloadStrukturPdf()" class="px-3 sm:px-4 py-2 bg-red-50 text-red-700 font-bold text-sm rounded-lg hover:bg-red-100 border border-red-200 shadow-sm transition-colors flex items-center justify-center" title="Download PDF"><i class="fas fa-file-pdf"></i><span class="hidden sm:inline ml-2">PDF</span></button>
                                     <button onclick="window.downloadStrukturJpg()" class="px-3 sm:px-4 py-2 bg-green-50 text-green-700 font-bold text-sm rounded-lg hover:bg-green-100 border border-green-200 shadow-sm transition-colors flex items-center justify-center" title="Download JPG"><i class="fas fa-image"></i><span class="hidden sm:inline ml-2">JPG</span></button>
                                 </div>
