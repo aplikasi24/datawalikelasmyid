@@ -1797,13 +1797,13 @@
             // Rata-Rata Nilai (TP, LM, STS/SAS)
             const ctxRata = document.getElementById('chartRataNilaiSiswa');
             if (ctxRata) {
-                let totalTP = 0, countTP = 0;
-                let totalLM = 0, countLM = 0;
-                let totalSTSSAS = 0, countSTSSAS = 0;
-                
                 const p = db.pengaturan_nilai && db.pengaturan_nilai[m.id] ? db.pengaturan_nilai[m.id] : { jumlah_tp: 5, jumlah_lm: 5 };
                 
-                [1, 2].forEach(smt => {
+                const getAveragesForSmt = (smt) => {
+                    let totalTP = 0, countTP = 0;
+                    let totalLM = 0, countLM = 0;
+                    let totalSTSSAS = 0, countSTSSAS = 0;
+                    
                     let dataKey = smt === 1 ? String(m.id) : String(m.id) + "_smt" + smt;
                     if (db.nilai && db.nilai[dataKey] && db.nilai[dataKey][studentId]) {
                         const n = db.nilai[dataKey][studentId];
@@ -1831,39 +1831,59 @@
                         if(n['sas'] !== undefined && n['sas'] !== '') { sumSAS += parseFloat(n['sas']); validSAS++; }
                         if(validSAS > 0) { totalSTSSAS += (sumSAS/validSAS); countSTSSAS++; }
                     }
-                });
+                    
+                    return [
+                        countTP > 0 ? (totalTP / countTP) : null,
+                        countLM > 0 ? (totalLM / countLM) : null,
+                        countSTSSAS > 0 ? (totalSTSSAS / countSTSSAS) : null
+                    ];
+                };
                 
-                const dataRata = [
-                    countTP > 0 ? (totalTP / countTP) : null,
-                    countLM > 0 ? (totalLM / countLM) : null,
-                    countSTSSAS > 0 ? (totalSTSSAS / countSTSSAS) : null
-                ];
+                const dataSmt1 = getAveragesForSmt(1);
+                const dataSmt2 = getAveragesForSmt(2);
                 
                 if (window.chartRataSiswaInst) window.chartRataSiswaInst.destroy();
                 window.chartRataSiswaInst = new Chart(ctxRata, {
                     type: 'line',
                     data: {
                         labels: ['Rata-Rata TP', 'Rata-Rata LM', 'Rata-Rata STS/SAS'],
-                        datasets: [{
-                            label: 'Rata-Rata Nilai',
-                            data: dataRata,
-                            borderColor: '#a855f7',
-                            backgroundColor: '#f3e8ff',
-                            borderWidth: 3,
-                            pointBackgroundColor: pointColor(dataRata),
-                            pointBorderColor: '#fff',
-                            pointBorderWidth: 2,
-                            pointRadius: 6,
-                            pointHoverRadius: 8,
-                            tension: 0.4,
-                            fill: true,
-                            spanGaps: true
-                        }]
+                        datasets: [
+                            {
+                                label: 'Semester 1',
+                                data: dataSmt1,
+                                borderColor: '#a855f7',
+                                backgroundColor: 'transparent',
+                                borderWidth: 3,
+                                pointBackgroundColor: pointColor(dataSmt1),
+                                pointBorderColor: '#fff',
+                                pointBorderWidth: 2,
+                                pointRadius: 6,
+                                pointHoverRadius: 8,
+                                tension: 0.4,
+                                fill: false,
+                                spanGaps: true
+                            },
+                            {
+                                label: 'Semester 2',
+                                data: dataSmt2,
+                                borderColor: '#10b981',
+                                backgroundColor: 'transparent',
+                                borderWidth: 3,
+                                pointBackgroundColor: pointColor(dataSmt2),
+                                pointBorderColor: '#fff',
+                                pointBorderWidth: 2,
+                                pointRadius: 6,
+                                pointHoverRadius: 8,
+                                tension: 0.4,
+                                fill: false,
+                                spanGaps: true
+                            }
+                        ]
                     },
                     options: {
                         responsive: true,
                         maintainAspectRatio: false,
-                        plugins: { legend: { display: false } },
+                        plugins: { legend: { display: true, position: 'bottom' } },
                         scales: { y: { min: 0, max: 100 } }
                     }
                 });
