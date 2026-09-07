@@ -1372,6 +1372,26 @@
         window.chartKoreksiInstance = null;
         window.chartNilaiInstance = null;
 
+        // Warna segmen: hijau=naik, merah=turun, orange=tetap
+        const segmentColor = (ctx, dataArr) => {
+            const i = ctx.p0DataIndex;
+            const v0 = dataArr[i];
+            const v1 = dataArr[i + 1];
+            if (v0 === null || v1 === null) return '#9ca3af';
+            const TOLERANCE = 0.01;
+            if (v1 > v0 + TOLERANCE) return '#10b981'; // hijau
+            if (v1 < v0 - TOLERANCE) return '#ef4444'; // merah
+            return '#f59e0b'; // orange
+        };
+
+        const pointColor = (dataArr) => dataArr.map((v, i) => {
+            if (i === 0 || dataArr[i - 1] === null || v === null) return '#6366f1';
+            const TOLERANCE = 0.01;
+            if (v > dataArr[i - 1] + TOLERANCE) return '#10b981';
+            if (v < dataArr[i - 1] - TOLERANCE) return '#ef4444';
+            return '#f59e0b';
+        });
+
         window.updateDashboardMapelCharts = () => {
             const selectEl = document.getElementById('dashboardMapelSelect');
             if (!selectEl) return;
@@ -1431,16 +1451,37 @@
                         datasets: [{
                             label: `Nilai Rata-Rata ${mNama}`,
                             data: dataKoreksi,
-                            borderColor: '#3b82f6',
-                            backgroundColor: '#3b82f6',
+                            borderColor: '#6366f1',
+                            backgroundColor: 'transparent',
+                            pointBackgroundColor: pointColor(dataKoreksi),
+                            pointBorderColor: pointColor(dataKoreksi),
+                            pointRadius: 6,
+                            pointHoverRadius: 8,
                             tension: 0.3,
-                            spanGaps: true
+                            spanGaps: true,
+                            segment: {
+                                borderColor: (ctx) => segmentColor(ctx, dataKoreksi)
+                            }
                         }]
                     },
                     options: {
                         responsive: true,
                         maintainAspectRatio: false,
-                        plugins: { legend: { position: 'bottom' } },
+                        plugins: {
+                            legend: { position: 'bottom' },
+                            tooltip: {
+                                callbacks: {
+                                    afterLabel: (ctx) => {
+                                        const i = ctx.dataIndex;
+                                        const prev = dataKoreksi[i - 1];
+                                        const cur = dataKoreksi[i];
+                                        if (prev === null || cur === null || i === 0) return '';
+                                        const diff = (cur - prev).toFixed(1);
+                                        return diff > 0 ? `▲ Naik ${diff}` : diff < 0 ? `▼ Turun ${Math.abs(diff)}` : `→ Tetap`;
+                                    }
+                                }
+                            }
+                        },
                         scales: { y: { min: 0, max: 100 } }
                     }
                 });
@@ -1499,16 +1540,37 @@
                         datasets: [{
                             label: `Nilai Rata-Rata ${mNama}`,
                             data: dataNilai,
-                            borderColor: '#ec4899',
-                            backgroundColor: '#ec4899',
+                            borderColor: '#6366f1',
+                            backgroundColor: 'transparent',
+                            pointBackgroundColor: pointColor(dataNilai),
+                            pointBorderColor: pointColor(dataNilai),
+                            pointRadius: 6,
+                            pointHoverRadius: 8,
                             tension: 0.3,
-                            spanGaps: true
+                            spanGaps: true,
+                            segment: {
+                                borderColor: (ctx) => segmentColor(ctx, dataNilai)
+                            }
                         }]
                     },
                     options: {
                         responsive: true,
                         maintainAspectRatio: false,
-                        plugins: { legend: { position: 'bottom' } },
+                        plugins: {
+                            legend: { position: 'bottom' },
+                            tooltip: {
+                                callbacks: {
+                                    afterLabel: (ctx) => {
+                                        const i = ctx.dataIndex;
+                                        const prev = dataNilai[i - 1];
+                                        const cur = dataNilai[i];
+                                        if (prev === null || cur === null || i === 0) return '';
+                                        const diff = (cur - prev).toFixed(1);
+                                        return diff > 0 ? `▲ Naik ${diff}` : diff < 0 ? `▼ Turun ${Math.abs(diff)}` : `→ Tetap`;
+                                    }
+                                }
+                            }
+                        },
                         scales: { y: { min: 0, max: 100 } }
                     }
                 });
