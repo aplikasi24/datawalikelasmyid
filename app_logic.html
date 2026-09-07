@@ -223,6 +223,55 @@
         const mainScrollArea = document.getElementById('main-scroll-area');
         window._sidebarGroupState = window._sidebarGroupState || {};
 
+        // --- Explore Menu Panel (Desktop Right Panel) ---
+        function renderExploreMenuPanel() {
+            const grid = document.getElementById('explore-menu-grid');
+            if (!grid) return;
+
+            const unreadCount = db.pesan_info ? Math.max(0, db.pesan_info.length - (db.pengaturan?.read_pesan_count || 0)) : 0;
+
+            grid.innerHTML = appMenus.map(m => {
+                const isActive = window.currentPage === m.id;
+                const badge = (m.id === 'pesan' && unreadCount > 0)
+                    ? `<span class="absolute -top-1 -right-1 bg-red-500 text-white text-[9px] font-bold w-4 h-4 flex items-center justify-center rounded-full shadow-sm">${unreadCount}</span>`
+                    : '';
+                return `
+                    <div onclick="window.navigateTo('${m.id}')"
+                         class="flex flex-col items-center gap-2 py-3 px-2 rounded-xl cursor-pointer transition-all group
+                                ${isActive
+                                    ? 'bg-orange-50 border border-orange-200'
+                                    : 'hover:bg-slate-50 border border-transparent'}"
+                         title="${m.name}">
+                        <div class="relative">
+                            <div class="w-10 h-10 rounded-xl flex items-center justify-center transition-all
+                                        ${isActive
+                                            ? 'bg-gradient-to-br from-orange-400 to-orange-600 shadow-md shadow-orange-300'
+                                            : 'bg-slate-100 group-hover:bg-orange-100'}">
+                                <i class="fas ${m.icon} text-sm transition-colors
+                                           ${isActive ? 'text-white' : 'text-slate-500 group-hover:text-orange-500'}"></i>
+                            </div>
+                            ${badge}
+                        </div>
+                        <span class="text-[10px] font-semibold text-center leading-tight
+                                     ${isActive ? 'text-orange-600' : 'text-slate-600 group-hover:text-orange-500'}">${m.name}</span>
+                    </div>
+                `;
+            }).join('');
+
+            // Group header style
+            grid.className = 'p-3 flex-1 overflow-y-auto custom-scrollbar grid grid-cols-3 gap-1 content-start';
+        }
+
+        // Patch navigateTo to also refresh Explore Panel active state
+        if (!window._exploreNavPatch) {
+            const _origNavTo = window.navigateTo;
+            window.navigateTo = function(menuId, skipHistory) {
+                if (_origNavTo) _origNavTo(menuId, skipHistory);
+                renderExploreMenuPanel();
+            };
+            window._exploreNavPatch = true;
+        }
+
         // --- 4. Sidebar Rendering ---
         function renderSidebar() {
             try {
@@ -330,7 +379,7 @@
             { id: "presensi",   name: "Presensi",  icon: "fa-user-check" },
             { id: "siswa",     name: "Siswa",    icon: "fa-users" },
             { id: "nilai",     name: "Nilai",    icon: "fa-chart-bar" },
-            { id: "menu",      name: "Menu",     icon: "fa-th" }
+            { id: "menu",      name: "Cepat",    icon: "fa-bolt" }
         ];
 
         // Flag global untuk melacak status modal menu grid
@@ -443,8 +492,10 @@
               <div class="bg-white w-full rounded-t-3xl shadow-[0_-10px_40px_rgba(0,0,0,0.1)] transform transition-transform duration-300 translate-y-full flex flex-col" style="max-height: 85vh;" id="mobileMenuLainnyaContent">
                 <div class="p-6 pb-2 flex items-center justify-between">
                   <div class="flex items-center gap-3">
-                    <i class="fas fa-th text-navy-900 text-xl"></i>
-                    <h3 class="font-bold text-navy-900 text-xl">Menu Lainnya</h3>
+                    <div class="w-8 h-8 rounded-xl bg-gradient-to-br from-orange-400 to-orange-600 flex items-center justify-center shadow-md">
+                        <i class="fas fa-bolt text-white text-sm"></i>
+                    </div>
+                    <h3 class="font-bold text-navy-900 text-xl">Menu Cepat</h3>
                   </div>
                   <button type="button" id="btnCloseMenuLainnya" class="w-8 h-8 flex items-center justify-center rounded-full border border-slate-200 bg-white text-slate-800 shadow-sm transition-colors">
                     <i class="fas fa-times text-sm"></i>
@@ -11885,6 +11936,7 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
             window.updateUIIdentitas();
             renderSidebar();
             renderBottomNav();
+            renderExploreMenuPanel();
             const lastMenu = localStorage.getItem('mwk_lastMenu') || "dashboard";
             window.navigateTo(lastMenu);
             
