@@ -1008,20 +1008,6 @@
                     </div>
                 </div>
                 
-                <div class="mb-4 flex flex-wrap items-center justify-between bg-white p-4 rounded-2xl shadow-sm border border-gray-100 print-hide gap-4">
-                    <h3 class="font-bold text-gray-800"><i class="fas fa-filter text-blue-500 mr-2"></i>Filter Grafik Mapel</h3>
-                    <div class="flex items-center gap-2">
-                        <button onclick="window.prevDashboardMapel()" class="p-2 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-600 transition" title="Mapel Sebelumnya">
-                            <i class="fas fa-chevron-left"></i>
-                        </button>
-                        <select id="dashboardMapelSelect" onchange="window.currentDashboardMapelIndex = parseInt(this.value); window.updateDashboardMapelCharts()" class="bg-gray-50 border border-gray-200 text-gray-800 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5 max-w-[200px] truncate">
-                        </select>
-                        <button onclick="window.nextDashboardMapel()" class="p-2 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-600 transition" title="Mapel Selanjutnya">
-                            <i class="fas fa-chevron-right"></i>
-                        </button>
-                    </div>
-                </div>
-
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8 print-hide">
                     <div class="relative overflow-hidden bg-white rounded-2xl p-6 shadow-md border border-gray-100 flex flex-col items-center hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300 group">
                         <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-400 to-indigo-500 rounded-t-2xl"></div>
@@ -1364,79 +1350,69 @@
                 });
             }
 
-            window.updateDashboardMapelCharts();
-        };
+            // Helper memperpendek nama mapel khusus grafik
+            const shortenMapelName = (name) => {
+                const map = {
+                    "Pendidikan Agama dan Budi Pekerti": "PABP",
+                    "Pendidikan Pancasila": "P. Pancasila",
+                    "Bahasa Indonesia": "B. Indonesia",
+                    "Matematika": "MTK",
+                    "Ilmu Pengetahuan Alam dan Sosial (IPAS)": "IPAS",
+                    "Seni dan Budaya (Seni Rupa)": "Seni Budaya",
+                    "Seni dan Budaya": "Seni Budaya",
+                    "Pendidikan Jasmani, Olahraga, dan Kesehatan (PJOK)": "PJOK",
+                    "PJOK": "PJOK",
+                    "Bahasa Jawa": "B. Jawa",
+                    "Bahasa Inggris": "B. Inggris"
+                };
+                return map[name] || name;
+            };
 
-        // --- CHART MAPEL LOGIC ---
-        window.currentDashboardMapelIndex = 0;
-        window.chartKoreksiInstance = null;
-        window.chartNilaiInstance = null;
-
-        window.updateDashboardMapelCharts = () => {
-            const selectEl = document.getElementById('dashboardMapelSelect');
-            if (!selectEl) return;
-            
-            if (db.mapel && db.mapel.length > 0) {
-                if (selectEl.options.length === 0) {
-                    db.mapel.forEach((m, idx) => {
-                        const opt = document.createElement('option');
-                        opt.value = idx;
-                        opt.text = m.nama;
-                        selectEl.add(opt);
-                    });
-                    selectEl.value = window.currentDashboardMapelIndex;
-                }
-            } else {
-                return;
-            }
-
-            const mapelIdx = parseInt(selectEl.value);
-            window.currentDashboardMapelIndex = mapelIdx;
-            const m = db.mapel[mapelIdx];
-            if (!m) return;
-
-            const mNama = m.nama;
-            
+            // --- 4. CHART KOREKSI UJIAN (STS 1, SAS 1, STS 2, SAT PER MAPEL) ---
             const ctxKoreksi = document.getElementById('chartKoreksiUjian');
-            if (ctxKoreksi) {
+            if (ctxKoreksi && db.mapel && db.mapel.length > 0) {
+                const mapelNames = db.mapel.map(m => m.nama);
+                const shortMapelNames = mapelNames.map(shortenMapelName);
                 const jenisUjian = ['STS 1', 'SAS 1', 'STS 2', 'SAT'];
-                const dataKoreksi = jenisUjian.map(jen => {
-                    const jenSafe = jen.replace(/[^a-zA-Z0-9]/g, '_');
-                    const mSafe = mNama.replace(/[^a-zA-Z0-9]/g, '_');
-                    const key = jenSafe + '_' + mSafe;
+                const colors = ['#3b82f6', '#10b981', '#f59e0b', '#8b5cf6'];
+                
+                const datasetsKoreksi = jenisUjian.map((jen, idx) => {
+                    const data = mapelNames.map(mNama => {
+                        const jenSafe = jen.replace(/[^a-zA-Z0-9]/g, '_');
+                        const mSafe = mNama.replace(/[^a-zA-Z0-9]/g, '_');
+                        const key = jenSafe + '_' + mSafe;
+                        
+                        const mData = db.koreksi_ujian ? db.koreksi_ujian[key] : null;
+                        let total = 0, count = 0;
+                        if (mData && mData.nilai) {
+                            const maxPg = mData.config?.max_pg ?? 70;
+                            const maxEsai = mData.config?.max_esai ?? 30;
+                            const maxTotal = maxPg + maxEsai;
+                            Object.values(mData.nilai).forEach(n => {
+                                if (n.pg !== '' || n.esai !== '') {
+                                    let p = parseFloat(n.pg) || 0;
+                                    let e = parseFloat(n.esai) || 0;
+                                    total += (maxTotal > 0 ? ((p + e) / maxTotal) * 100 : 0);
+                                    count++;
+                                }
+                            });
+                        }
+                        return count > 0 ? (total / count) : null;
+                    });
                     
-                    const mData = db.koreksi_ujian ? db.koreksi_ujian[key] : null;
-                    let total = 0, count = 0;
-                    if (mData && mData.nilai) {
-                        const maxPg = mData.config?.max_pg ?? 70;
-                        const maxEsai = mData.config?.max_esai ?? 30;
-                        const maxTotal = maxPg + maxEsai;
-                        Object.values(mData.nilai).forEach(n => {
-                            if (n.pg !== '' || n.esai !== '') {
-                                let p = parseFloat(n.pg) || 0;
-                                let e = parseFloat(n.esai) || 0;
-                                total += (maxTotal > 0 ? ((p + e) / maxTotal) * 100 : 0);
-                                count++;
-                            }
-                        });
-                    }
-                    return count > 0 ? (total / count) : null;
+                    return {
+                        label: jen,
+                        data: data,
+                        borderColor: colors[idx],
+                        backgroundColor: colors[idx],
+                        tension: 0.3,
+                        spanGaps: true
+                    };
                 });
-
-                if (window.chartKoreksiInstance) window.chartKoreksiInstance.destroy();
-                window.chartKoreksiInstance = new Chart(ctxKoreksi, {
+                
+                new Chart(ctxKoreksi, {
                     type: 'line',
-                    data: {
-                        labels: jenisUjian,
-                        datasets: [{
-                            label: `Nilai Rata-Rata ${mNama}`,
-                            data: dataKoreksi,
-                            borderColor: '#3b82f6',
-                            backgroundColor: '#3b82f6',
-                            tension: 0.3,
-                            spanGaps: true
-                        }]
-                    },
+                    data: { labels: shortMapelNames, datasets: datasetsKoreksi },
                     options: {
                         responsive: true,
                         maintainAspectRatio: false,
@@ -1446,64 +1422,69 @@
                 });
             }
 
+            // --- 5. CHART NILAI SISWA (RATA-RATA FORMATIF, LM, STS+SAS) ---
             const ctxNilai = document.getElementById('chartNilaiSiswa');
-            if (ctxNilai) {
-                let totalTP = 0, countTP = 0;
-                let totalLM = 0, countLM = 0;
-                let totalSTSSAS = 0, countSTSSAS = 0;
+            if (ctxNilai && db.mapel && db.mapel.length > 0) {
+                const mapelNames = db.mapel.map(m => m.nama);
+                const shortMapelNames = mapelNames.map(shortenMapelName);
+                const semesterKeys = [1, 2]; // Ambil data dari kedua semester
                 
-                const p = db.pengaturan_nilai && db.pengaturan_nilai[m.id] ? db.pengaturan_nilai[m.id] : { jumlah_tp: 5, jumlah_lm: 5 };
-                const semesterKeys = [1, 2];
+                let dataTP = [], dataLM = [], dataSTSSAS = [];
                 
-                semesterKeys.forEach(smt => {
-                    let dataKey = smt === 1 ? String(m.id) : String(m.id) + "_smt" + smt;
-                    if (db.nilai && db.nilai[dataKey]) {
-                        Object.values(db.nilai[dataKey]).forEach(n => {
-                            let sumTP = 0, validTP = 0;
-                            for(let i=1; i<=p.jumlah_tp; i++) {
-                                if(n[`tp${i}`] !== undefined && n[`tp${i}`] !== '') {
-                                    sumTP += parseFloat(n[`tp${i}`]);
-                                    validTP++;
+                db.mapel.forEach(m => {
+                    let totalTP = 0, countTP = 0;
+                    let totalLM = 0, countLM = 0;
+                    let totalSTSSAS = 0, countSTSSAS = 0;
+                    
+                    const p = db.pengaturan_nilai && db.pengaturan_nilai[m.id] ? db.pengaturan_nilai[m.id] : { jumlah_tp: 5, jumlah_lm: 5 };
+                    
+                    semesterKeys.forEach(smt => {
+                        let dataKey = smt === 1 ? String(m.id) : String(m.id) + "_smt" + smt;
+                        if (db.nilai && db.nilai[dataKey]) {
+                            Object.values(db.nilai[dataKey]).forEach(n => {
+                                // TP (Formatif)
+                                let sumTP = 0, validTP = 0;
+                                for(let i=1; i<=p.jumlah_tp; i++) {
+                                    if(n[`tp${i}`] !== undefined && n[`tp${i}`] !== '') {
+                                        sumTP += parseFloat(n[`tp${i}`]);
+                                        validTP++;
+                                    }
                                 }
-                            }
-                            if(validTP > 0) { totalTP += (sumTP/validTP); countTP++; }
-                            
-                            let sumLM = 0, validLM = 0;
-                            for(let i=1; i<=p.jumlah_lm; i++) {
-                                if(n[`lm${i}`] !== undefined && n[`lm${i}`] !== '') {
-                                    sumLM += parseFloat(n[`lm${i}`]);
-                                    validLM++;
+                                if(validTP > 0) { totalTP += (sumTP/validTP); countTP++; }
+                                
+                                // LM (Lingkup Materi)
+                                let sumLM = 0, validLM = 0;
+                                for(let i=1; i<=p.jumlah_lm; i++) {
+                                    if(n[`lm${i}`] !== undefined && n[`lm${i}`] !== '') {
+                                        sumLM += parseFloat(n[`lm${i}`]);
+                                        validLM++;
+                                    }
                                 }
-                            }
-                            if(validLM > 0) { totalLM += (sumLM/validLM); countLM++; }
-                            
-                            let sumSAS = 0, validSAS = 0;
-                            if(n['sts'] !== undefined && n['sts'] !== '') { sumSAS += parseFloat(n['sts']); validSAS++; }
-                            if(n['sas'] !== undefined && n['sas'] !== '') { sumSAS += parseFloat(n['sas']); validSAS++; }
-                            if(validSAS > 0) { totalSTSSAS += (sumSAS/validSAS); countSTSSAS++; }
-                        });
-                    }
+                                if(validLM > 0) { totalLM += (sumLM/validLM); countLM++; }
+                                
+                                // STS & SAS
+                                let sumSAS = 0, validSAS = 0;
+                                if(n['sts'] !== undefined && n['sts'] !== '') { sumSAS += parseFloat(n['sts']); validSAS++; }
+                                if(n['sas'] !== undefined && n['sas'] !== '') { sumSAS += parseFloat(n['sas']); validSAS++; }
+                                if(validSAS > 0) { totalSTSSAS += (sumSAS/validSAS); countSTSSAS++; }
+                            });
+                        }
+                    });
+                    
+                    dataTP.push(countTP > 0 ? (totalTP / countTP) : null);
+                    dataLM.push(countLM > 0 ? (totalLM / countLM) : null);
+                    dataSTSSAS.push(countSTSSAS > 0 ? (totalSTSSAS / countSTSSAS) : null);
                 });
-
-                const dataNilai = [
-                    countTP > 0 ? (totalTP / countTP) : null,
-                    countLM > 0 ? (totalLM / countLM) : null,
-                    countSTSSAS > 0 ? (totalSTSSAS / countSTSSAS) : null
-                ];
-
-                if (window.chartNilaiInstance) window.chartNilaiInstance.destroy();
-                window.chartNilaiInstance = new Chart(ctxNilai, {
+                
+                new Chart(ctxNilai, {
                     type: 'line',
                     data: {
-                        labels: ['Formatif (TP)', 'Lingkup Materi (LM)', 'STS & SAS'],
-                        datasets: [{
-                            label: `Nilai Rata-Rata ${mNama}`,
-                            data: dataNilai,
-                            borderColor: '#ec4899',
-                            backgroundColor: '#ec4899',
-                            tension: 0.3,
-                            spanGaps: true
-                        }]
+                        labels: shortMapelNames,
+                        datasets: [
+                            { label: 'Rata-Rata Formatif (TP)', data: dataTP, borderColor: '#ec4899', backgroundColor: '#ec4899', tension: 0.3, spanGaps: true },
+                            { label: 'Rata-Rata LM', data: dataLM, borderColor: '#14b8a6', backgroundColor: '#14b8a6', tension: 0.3, spanGaps: true },
+                            { label: 'Rata-Rata STS & SAS', data: dataSTSSAS, borderColor: '#6366f1', backgroundColor: '#6366f1', tension: 0.3, spanGaps: true }
+                        ]
                     },
                     options: {
                         responsive: true,
@@ -1513,23 +1494,6 @@
                     }
                 });
             }
-        };
-
-        window.nextDashboardMapel = () => {
-            if (!db.mapel || db.mapel.length === 0) return;
-            window.currentDashboardMapelIndex = (window.currentDashboardMapelIndex + 1) % db.mapel.length;
-            const selectEl = document.getElementById('dashboardMapelSelect');
-            if (selectEl) selectEl.value = window.currentDashboardMapelIndex;
-            window.updateDashboardMapelCharts();
-        };
-
-        window.prevDashboardMapel = () => {
-            if (!db.mapel || db.mapel.length === 0) return;
-            window.currentDashboardMapelIndex = (window.currentDashboardMapelIndex - 1 + db.mapel.length) % db.mapel.length;
-            const selectEl = document.getElementById('dashboardMapelSelect');
-            if (selectEl) selectEl.value = window.currentDashboardMapelIndex;
-            window.updateDashboardMapelCharts();
-        }
         };
 
         window.hapusSemuaData = async () => {
