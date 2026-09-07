@@ -1583,14 +1583,13 @@
 
             const ctxNilai = document.getElementById('chartNilaiSiswa');
             if (ctxNilai) {
-                let totalTP = 0, countTP = 0;
-                let totalLM = 0, countLM = 0;
-                let totalSTSSAS = 0, countSTSSAS = 0;
-                
                 const p = db.pengaturan_nilai && db.pengaturan_nilai[m.id] ? db.pengaturan_nilai[m.id] : { jumlah_tp: 5, jumlah_lm: 5 };
-                const semesterKeys = [1, 2];
                 
-                semesterKeys.forEach(smt => {
+                const getAveragesForMapelSmt = (smt) => {
+                    let totalTP = 0, countTP = 0;
+                    let totalLM = 0, countLM = 0;
+                    let totalSTSSAS = 0, countSTSSAS = 0;
+                    
                     let dataKey = smt === 1 ? String(m.id) : String(m.id) + "_smt" + smt;
                     if (db.nilai && db.nilai[dataKey]) {
                         Object.values(db.nilai[dataKey]).forEach(n => {
@@ -1618,34 +1617,53 @@
                             if(validSAS > 0) { totalSTSSAS += (sumSAS/validSAS); countSTSSAS++; }
                         });
                     }
-                });
+                    return [
+                        countTP > 0 ? (totalTP / countTP) : null,
+                        countLM > 0 ? (totalLM / countLM) : null,
+                        countSTSSAS > 0 ? (totalSTSSAS / countSTSSAS) : null
+                    ];
+                };
 
-                const dataNilai = [
-                    countTP > 0 ? (totalTP / countTP) : null,
-                    countLM > 0 ? (totalLM / countLM) : null,
-                    countSTSSAS > 0 ? (totalSTSSAS / countSTSSAS) : null
-                ];
+                const dataSmt1 = getAveragesForMapelSmt(1);
+                const dataSmt2 = getAveragesForMapelSmt(2);
 
                 if (window.chartNilaiInstance) window.chartNilaiInstance.destroy();
                 window.chartNilaiInstance = new Chart(ctxNilai, {
                     type: 'line',
                     data: {
                         labels: ['Formatif (TP)', 'Lingkup Materi (LM)', `STS & ${window.currentSemester === '1' ? 'SAS' : 'SAT'}`],
-                        datasets: [{
-                            label: `Nilai Rata-Rata ${mNama}`,
-                            data: dataNilai,
-                            borderColor: '#6366f1',
-                            backgroundColor: 'transparent',
-                            pointBackgroundColor: pointColor(dataNilai),
-                            pointBorderColor: pointColor(dataNilai),
-                            pointRadius: 6,
-                            pointHoverRadius: 8,
-                            tension: 0.3,
-                            spanGaps: true,
-                            segment: {
-                                borderColor: (ctx) => segmentColor(ctx, dataNilai)
+                        datasets: [
+                            {
+                                label: `Semester 1 (Ganjil) - ${mNama}`,
+                                data: dataSmt1,
+                                borderColor: '#6366f1',
+                                backgroundColor: 'transparent',
+                                borderWidth: 3,
+                                pointBackgroundColor: pointColor(dataSmt1),
+                                pointBorderColor: '#fff',
+                                pointBorderWidth: 2,
+                                pointRadius: 6,
+                                pointHoverRadius: 8,
+                                tension: 0.4,
+                                fill: false,
+                                spanGaps: true
+                            },
+                            {
+                                label: `Semester 2 (Genap) - ${mNama}`,
+                                data: dataSmt2,
+                                borderColor: '#ec4899',
+                                backgroundColor: 'transparent',
+                                borderWidth: 3,
+                                pointBackgroundColor: pointColor(dataSmt2),
+                                pointBorderColor: '#fff',
+                                pointBorderWidth: 2,
+                                pointRadius: 6,
+                                pointHoverRadius: 8,
+                                tension: 0.4,
+                                fill: false,
+                                spanGaps: true
                             }
-                        }]
+                        ]
                     },
                     options: {
                         responsive: true,
@@ -1656,8 +1674,9 @@
                                 callbacks: {
                                     afterLabel: (ctx) => {
                                         const i = ctx.dataIndex;
-                                        const prev = dataNilai[i - 1];
-                                        const cur = dataNilai[i];
+                                        const dataArr = ctx.dataset.data;
+                                        const prev = dataArr[i - 1];
+                                        const cur = dataArr[i];
                                         if (prev === null || cur === null || i === 0) return '';
                                         const diff = (cur - prev).toFixed(1);
                                         return diff > 0 ? `▲ Naik ${diff}` : diff < 0 ? `▼ Turun ${Math.abs(diff)}` : `→ Tetap`;
