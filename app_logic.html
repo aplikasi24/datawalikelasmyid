@@ -1060,7 +1060,7 @@
                         <div class="w-full flex items-center justify-between mb-5">
                             <div>
                                 <p class="text-xs text-gray-400 uppercase font-semibold tracking-wider">Statistik Buku Nilai</p>
-                                <h4 class="font-bold text-gray-800 text-base mt-0.5">Rata-Rata Nilai Siswa (TP, LM, STS/SAS)</h4>
+                                <h4 class="font-bold text-gray-800 text-base mt-0.5">Rata-Rata Nilai Siswa (TP, LM, STS/${window.currentSemester === '1' ? 'SAS' : 'SAT'})</h4>
                             </div>
                             <div class="bg-pink-50 text-pink-500 p-2.5 rounded-xl border border-pink-100 group-hover:bg-pink-100 transition">
                                 <i class="fas fa-chart-line text-base"></i>
@@ -1126,7 +1126,7 @@
                         <div class="w-full flex items-center justify-between mb-5">
                             <div>
                                 <p class="text-xs text-gray-400 uppercase font-semibold tracking-wider">Statistik Siswa</p>
-                                <h4 class="font-bold text-gray-800 text-base mt-0.5">Rata-Rata Nilai Siswa (TP, LM, STS/SAS)</h4>
+                                <h4 class="font-bold text-gray-800 text-base mt-0.5">Rata-Rata Nilai Siswa (TP, LM, STS/${window.currentSemester === '1' ? 'SAS' : 'SAT'})</h4>
                             </div>
                             <div class="bg-purple-50 text-purple-500 p-2.5 rounded-xl border border-purple-100 group-hover:bg-purple-100 transition">
                                 <i class="fas fa-chart-line text-base"></i>
@@ -1630,7 +1630,7 @@
                 window.chartNilaiInstance = new Chart(ctxNilai, {
                     type: 'line',
                     data: {
-                        labels: ['Formatif (TP)', 'Lingkup Materi (LM)', 'STS & SAS'],
+                        labels: ['Formatif (TP)', 'Lingkup Materi (LM)', `STS & ${window.currentSemester === '1' ? 'SAS' : 'SAT'}`],
                         datasets: [{
                             label: `Nilai Rata-Rata ${mNama}`,
                             data: dataNilai,
@@ -1847,7 +1847,7 @@
                 window.chartRataSiswaInst = new Chart(ctxRata, {
                     type: 'line',
                     data: {
-                        labels: ['Rata-Rata TP', 'Rata-Rata LM', 'Rata-Rata STS/SAS'],
+                        labels: ['Rata-Rata TP', 'Rata-Rata LM', `Rata-Rata STS/${window.currentSemester === '1' ? 'SAS' : 'SAT'}`],
                         datasets: [
                             {
                                 label: 'Semester 1 (Ganjil)',
@@ -8639,7 +8639,7 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
             for(let i=1; i<=p.jumlah_lm; i++) headers.push(`LM ${i}`);
             headers.push('Rata-rata LM');
             headers.push('STS');
-            headers.push('SAS');
+            headers.push(window.currentSemester === '1' ? 'SAS' : 'SAT');
             headers.push('Rata-rata Sumatif');
             headers.push('Nilai Rapor');
             headers.push('Rank');
@@ -8672,7 +8672,7 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                 row['Rata-rata LM'] = isEmpty ? '' : (countLM > 0 ? parseFloat(avgLM.toFixed(2)) : '');
                 
                 row['STS'] = n['sts'] !== undefined ? n['sts'] : '';
-                row['SAS'] = n['sas'] !== undefined ? n['sas'] : '';
+                row[window.currentSemester === '1' ? 'SAS' : 'SAT'] = n['sas'] !== undefined ? n['sas'] : '';
                 
                 const sts = parseFloat(n['sts']) || 0;
                 const sas = parseFloat(n['sas']) || 0;
@@ -8737,7 +8737,7 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                         
                         if (colName && colName.startsWith('TP')) cell.s.fill.fgColor.rgb = "DBEAFE";
                         if (colName && colName.startsWith('LM')) cell.s.fill.fgColor.rgb = "FFEDD5";
-                        if (colName === 'STS' || colName === 'SAS') cell.s.fill.fgColor.rgb = "F3E8FF";
+                        if (colName === 'STS' || colName === 'SAS' || colName === 'SAT') cell.s.fill.fgColor.rgb = "F3E8FF";
                         if (colName && colName.includes('Rata-rata')) cell.s.fill.fgColor.rgb = "DCFCE7";
                         if (colName === 'Nilai Rapor') { cell.s.fill.fgColor.rgb = "93C5FD"; cell.s.font.color = { rgb: "1E3A8A" }; }
                         if (colName === 'Rank') { cell.s.fill.fgColor.rgb = "FDE047"; cell.s.font.color = { rgb: "854D0E" }; }
@@ -8745,7 +8745,7 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                         // Data Rows
                         if (colName && colName.startsWith('TP')) cell.s.fill = { fgColor: { rgb: "EFF6FF" } };
                         if (colName && colName.startsWith('LM')) cell.s.fill = { fgColor: { rgb: "FFF7ED" } };
-                        if (colName === 'STS' || colName === 'SAS') cell.s.fill = { fgColor: { rgb: "FAF5FF" } };
+                        if (colName === 'STS' || colName === 'SAS' || colName === 'SAT') cell.s.fill = { fgColor: { rgb: "FAF5FF" } };
                         if (colName && colName.includes('Rata-rata')) {
                             cell.s.fill = { fgColor: { rgb: "DCFCE7" } };
                             cell.s.font.bold = true;
@@ -8807,7 +8807,8 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                             if(row[`LM ${i}`] !== undefined && row[`LM ${i}`] !== '') db.nilai[dataKey][siswa.id][`lm${i}`] = row[`LM ${i}`];
                         }
                         if(row['STS'] !== undefined && row['STS'] !== '') db.nilai[dataKey][siswa.id]['sts'] = row['STS'];
-                        if(row['SAS'] !== undefined && row['SAS'] !== '') db.nilai[dataKey][siswa.id]['sas'] = row['SAS'];
+                        const valSAS = row['SAS'] !== undefined ? row['SAS'] : (row['SAT'] !== undefined ? row['SAT'] : undefined);
+                        if(valSAS !== undefined && valSAS !== '') db.nilai[dataKey][siswa.id]['sas'] = valSAS;
                         successCount++;
                     }
                 });
@@ -8976,7 +8977,7 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                             <div>
                                 <label class="block text-xs font-bold text-gray-700 mb-1"><i class="fas fa-calculator mr-2 text-green-500"></i>Rumus Nilai Rapor</label>
                                 <select onchange="window.simpanPengaturanNilai(${window.currentMapelNilai}, 'rumus', this.value)" class="w-full border border-gray-300 rounded-lg p-1.5 focus:ring-2 focus:ring-blue-500 outline-none bg-gray-50 mb-1 text-sm cursor-pointer">
-                                    <option value="rata_rata" ${p.rumus === 'rata_rata' ? 'selected' : ''}>1. Rata-rata: (LM + STS + SAS) / 3</option>
+                                    <option value="rata_rata" ${p.rumus === 'rata_rata' ? 'selected' : ''}>1. Rata-rata: (LM + STS + ${window.currentSemester === '1' ? 'SAS' : 'SAT'}) / 3</option>
                                     <option value="pembobotan" ${p.rumus === 'pembobotan' ? 'selected' : ''}>2. Pembobotan Persentase Khusus</option>
                                 </select>
                             </div>
@@ -8992,7 +8993,7 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                                         <input type="number" value="${p.bobot_sts}" onchange="window.simpanPengaturanNilai(${window.currentMapelNilai}, 'bobot_sts', this.value)" class="w-full border border-gray-300 rounded p-1 text-center text-sm focus:ring-2 focus:ring-blue-500 outline-none bg-gray-50">
                                     </div>
                                     <div>
-                                        <label class="block text-[11px] font-bold text-gray-500 mb-0.5">Bobot SAS (%)</label>
+                                        <label class="block text-[11px] font-bold text-gray-500 mb-0.5">Bobot ${window.currentSemester === '1' ? 'SAS' : 'SAT'} (%)</label>
                                         <input type="number" value="${p.bobot_sas}" onchange="window.simpanPengaturanNilai(${window.currentMapelNilai}, 'bobot_sas', this.value)" class="w-full border border-gray-300 rounded p-1 text-center text-sm focus:ring-2 focus:ring-blue-500 outline-none bg-gray-50">
                                     </div>
                                 </div>
@@ -9033,8 +9034,8 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                                     ${Array.from({length: p.jumlah_lm}, (_, i) => i + 1).map(i => `<th class="py-2 px-1 text-center border border-gray-200 min-w-[50px] bg-orange-100 shadow-[0_2px_0_0_#e5e7eb]" title="Lingkup Materi ${i}">LM ${i}</th>`).join('')}
                                     <th class="py-2 px-1 text-center border border-gray-200 min-w-[60px] bg-green-100 text-green-800 shadow-[0_2px_0_0_#e5e7eb]" title="Rata-rata Lingkup Materi">Rata-rata LM</th>
                                     <th class="py-2 px-1 text-center border border-gray-200 min-w-[50px] bg-purple-100 shadow-[0_2px_0_0_#e5e7eb]" title="Sumatif Tengah Semester">STS</th>
-                                    <th class="py-2 px-1 text-center border border-gray-200 min-w-[50px] bg-purple-100 shadow-[0_2px_0_0_#e5e7eb]" title="Sumatif Akhir Semester">SAS</th>
-                                    <th class="py-2 px-1 text-center border border-gray-200 min-w-[60px] bg-green-100 text-green-800 shadow-[0_2px_0_0_#e5e7eb]" title="Rata-rata STS dan SAS">Rata-rata</th>
+                                    <th class="py-2 px-1 text-center border border-gray-200 min-w-[50px] bg-purple-100 shadow-[0_2px_0_0_#e5e7eb]" title="${window.currentSemester === '1' ? 'Sumatif Akhir Semester' : 'Sumatif Akhir Tahun'}">${window.currentSemester === '1' ? 'SAS' : 'SAT'}</th>
+                                    <th class="py-2 px-1 text-center border border-gray-200 min-w-[60px] bg-green-100 text-green-800 shadow-[0_2px_0_0_#e5e7eb]" title="Rata-rata STS dan ${window.currentSemester === '1' ? 'SAS' : 'SAT'}">Rata-rata</th>
                                 </tr>
                             </thead>
                             <tbody>
