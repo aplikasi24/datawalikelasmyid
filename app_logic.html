@@ -14493,10 +14493,10 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                             <div class="grid grid-cols-4 gap-y-4 gap-x-1">
                                 ${appMenus.map(m => `
                                     <div onclick="window.toggleMenuCepatModal(); window.navigateTo('${m.id}')" class="flex flex-col items-center gap-1.5 cursor-pointer group">
-                                        <div class="w-10 h-10 flex items-center justify-center rounded-2xl bg-transparent group-hover:bg-blue-50 dark:group-hover:bg-slate-800 transition-colors">
-                                            <i class="fas ${m.icon} text-2xl text-blue-500 group-hover:scale-110 transition-transform"></i>
+                                        <div class="w-10 h-10 flex items-center justify-center rounded-2xl bg-transparent group-hover:bg-emerald-50 dark:group-hover:bg-slate-800 transition-colors">
+                                            <i class="fas ${m.icon} text-2xl text-blue-500 group-hover:text-emerald-500 group-hover:scale-110 transition-all"></i>
                                         </div>
-                                        <span class="text-[9px] text-center font-medium text-slate-600 dark:text-slate-400 group-hover:text-blue-600 px-0.5 leading-tight">${m.name}</span>
+                                        <span class="text-[9px] text-center font-medium text-slate-600 dark:text-slate-400 group-hover:text-emerald-500 px-0.5 leading-tight">${m.name}</span>
                                     </div>
                                 `).join('')}
                             </div>
