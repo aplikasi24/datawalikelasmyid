@@ -2283,7 +2283,7 @@
             let dataText = "Berikut adalah daftar nama dan jabatan Struktur Organisasi Kelas:\n";
             if (db && db.struktur_organisasi) {
                 db.struktur_organisasi.forEach(item => {
-                    dataText += `- Nama: ${item.name}, Jabatan: ${item.position}\n`;
+                    dataText += `- Nama: ${item.name}, Jabatan: ${item.title}\n`;
                 });
             }
 
