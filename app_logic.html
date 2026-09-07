@@ -12190,6 +12190,18 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                     }
                     delete db.koreksi_ujian[oldKey];
                 });
+                // Normalisasi: pastikan semua key student ID di dalam nilai adalah String
+                // (JSON restore dari server bisa mengubah tipe key)
+                Object.keys(db.koreksi_ujian).forEach(kKey => {
+                    const entry = db.koreksi_ujian[kKey];
+                    if (entry && entry.nilai && typeof entry.nilai === 'object') {
+                        const normalizedNilai = {};
+                        Object.keys(entry.nilai).forEach(sid => {
+                            normalizedNilai[String(sid)] = entry.nilai[sid];
+                        });
+                        entry.nilai = normalizedNilai;
+                    }
+                });
             }
             if(!db.hari_efektif) db.hari_efektif = ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat'];
             if(!db.attendance) {
@@ -13966,7 +13978,7 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                 html += `<tr><td colspan="6" class="text-center py-10 text-slate-500 italic"><i class="fas fa-inbox text-2xl mb-2 block opacity-50"></i> Belum ada siswa</td></tr>`;
             } else {
                 students.forEach((s, idx) => {
-                    const n = data.nilai[s.id] || { pg: '', esai: '' };
+                    const n = data.nilai[String(s.id)] || { pg: '', esai: '' };
                     let rowEmpty = (n.pg === '' && n.esai === '');
                     
                     let finalScoreRaw = 0;
