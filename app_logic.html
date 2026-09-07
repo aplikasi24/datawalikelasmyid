@@ -142,27 +142,49 @@
 
         let db;
 
+        // ============================================================
+        // INDEXEDDB HELPER — Storage Utama (MWK_MainDB)
+        // LocalStorage hanya sebagai cadangan ringan.
+        // ============================================================
+        const MWK_IDB_NAME    = 'MWK_MainDB';
+        const MWK_IDB_VERSION = 1;
+        const MWK_IDB_STORE   = 'db_data';
+
+        function _openMWKMainDB() {
+            return new Promise((resolve, reject) => {
+                try {
+                    const req = indexedDB.open(MWK_IDB_NAME, MWK_IDB_VERSION);
+                    req.onupgradeneeded = e => {
+                        const idb = e.target.result;
+                        if (!idb.objectStoreNames.contains(MWK_IDB_STORE)) {
+                            idb.createObjectStore(MWK_IDB_STORE);
+                        }
+                    };
+                    req.onsuccess = e => resolve(e.target.result);
+                    req.onerror   = e => reject(e.target.error);
+                } catch(err) { reject(err); }
+            });
+        }
+
         function saveDB() {
             const jsonStr = JSON.stringify(db);
-            
-            // 1. Coba simpan ke LocalStorage (bisa diblokir oleh beberapa browser ketat)
-            try {
-                localStorage.setItem(DB_KEY, jsonStr);
-            } catch(err) {
-                console.warn("LocalStorage tidak diizinkan oleh browser ini:", err);
+
+            // 1. UTAMA — Simpan ke IndexedDB (async, non-blocking, kapasitas besar)
+            _openMWKMainDB().then(idb => {
+                const tx = idb.transaction(MWK_IDB_STORE, 'readwrite');
+                tx.objectStore(MWK_IDB_STORE).put(jsonStr, DB_KEY);
+                tx.oncomplete = () => idb.close();
+                tx.onerror    = () => idb.close();
+            }).catch(err => {
+                console.warn('[MWK] Gagal simpan ke IndexedDB utama:', err);
+            });
+
+            // 2. CADANGAN — Simpan ringkas ke LocalStorage (hanya pengaturan lite)
+            //    Ini agar cold-start pertama (sebelum IDB siap) masih bisa berjalan.
+            try { localStorage.setItem(DB_KEY, jsonStr); } catch(err) {
+                // Jika localStorage penuh (QuotaExceeded), hapus & biarkan IDB yang menjadi sumber
+                try { localStorage.removeItem(DB_KEY); } catch(e2) {}
             }
-            
-            // 2. Simpan otomatis ke IndexedDB sebagai cache cadangan rahasia (mengakali LocalStorage yang dihapus browser)
-            try {
-                const req = indexedDB.open('MWK_CacheDB', 1);
-                req.onupgradeneeded = e => e.target.result.createObjectStore('cache');
-                req.onsuccess = e => {
-                    const idb = e.target.result;
-                    const tx = idb.transaction('cache', 'readwrite');
-                    tx.objectStore('cache').put(jsonStr, DB_KEY + '_json');
-                    tx.oncomplete = () => idb.close();
-                };
-            } catch(err) {}
         }
 
         // --- 3. App Menus Data ---
@@ -11739,21 +11761,46 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                 DB_KEY = 'manajemenWaliKelasDB_' + window.currentUser.email.replace(/[^a-zA-Z0-9]/g, '_');
             }
 
-            let dbJson = localStorage.getItem(DB_KEY);
-            let isLegacyMigrated = false;
-            
-            // Migrasi untuk user lama yang sudah punya data di key default (hanya dilakukan sekali)
+            let dbJson = null;
+
+            // -------------------------------------------------------
+            // LANGKAH 1: Baca dari IndexedDB UTAMA (MWK_MainDB)
+            //            → Sumber data paling andal & kapasitas besar
+            // -------------------------------------------------------
+            try {
+                dbJson = await _openMWKMainDB().then(idb => new Promise((resolve, reject) => {
+                    const tx = idb.transaction(MWK_IDB_STORE, 'readonly');
+                    const req = tx.objectStore(MWK_IDB_STORE).get(DB_KEY);
+                    req.onsuccess = () => { idb.close(); resolve(req.result || null); };
+                    req.onerror   = () => { idb.close(); reject(req.error); };
+                }));
+            } catch(err) {
+                console.warn('[MWK] Gagal baca dari MWK_MainDB, coba fallback:', err);
+                dbJson = null;
+            }
+
+            // -------------------------------------------------------
+            // LANGKAH 2: Fallback ke LocalStorage
+            //            → Bisa berisi data lama atau data kecil
+            // -------------------------------------------------------
+            if (!dbJson) {
+                dbJson = localStorage.getItem(DB_KEY);
+            }
+
+            // -------------------------------------------------------
+            // LANGKAH 3: Migrasi data user lama (key tanpa email suffix)
+            // -------------------------------------------------------
             if (!dbJson && window.currentUser) {
                 const legacyDbJson = localStorage.getItem('manajemenWaliKelasDB');
                 if (legacyDbJson) {
                     dbJson = legacyDbJson;
-                    isLegacyMigrated = true;
-                    // Hapus key lama agar user berikutnya tidak inherit data yang sama
-                    localStorage.removeItem('manajemenWaliKelasDB'); 
+                    localStorage.removeItem('manajemenWaliKelasDB');
                 }
             }
-            
-            // Jika localStorage kosong, coba pulihkan secara diam-diam dari IndexedDB Cache
+
+            // -------------------------------------------------------
+            // LANGKAH 4: Fallback ke MWK_CacheDB lama (cache darurat)
+            // -------------------------------------------------------
             if (!dbJson) {
                 dbJson = await new Promise(resolve => {
                     try {
@@ -11761,25 +11808,34 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                         req.onupgradeneeded = e => e.target.result.createObjectStore('cache');
                         req.onsuccess = e => {
                             const idb = e.target.result;
-                            // Tangani case jika objectStore belum terbuat
-                            if(!idb.objectStoreNames.contains('cache')) {
+                            if (!idb.objectStoreNames.contains('cache')) {
                                 idb.close(); resolve(null); return;
                             }
                             const tx = idb.transaction('cache', 'readonly');
                             const getReq = tx.objectStore('cache').get(DB_KEY + '_json');
-                            getReq.onsuccess = () => { 
-                                idb.close(); resolve(getReq.result || null);
-                            };
-                            getReq.onerror = () => { idb.close(); resolve(null); };
+                            getReq.onsuccess = () => { idb.close(); resolve(getReq.result || null); };
+                            getReq.onerror   = () => { idb.close(); resolve(null); };
                         };
                         req.onerror = () => resolve(null);
                     } catch(err) { resolve(null); }
                 });
-                
+            }
+
+            // -------------------------------------------------------
+            // MIGRASI OTOMATIS: Jika data baru saja dibaca dari
+            // LocalStorage atau CacheDB lama, segera salin ke
+            // MWK_MainDB (IndexedDB utama) agar selanjutnya terbaca
+            // dari sana. Ini hanya terjadi sekali saja.
+            // -------------------------------------------------------
             if (dbJson) {
-                    try {
-                        localStorage.setItem(DB_KEY, dbJson); // Kembalikan data ke localStorage
-                    } catch(err) {}
+                try {
+                    const idb = await _openMWKMainDB();
+                    const tx = idb.transaction(MWK_IDB_STORE, 'readwrite');
+                    tx.objectStore(MWK_IDB_STORE).put(dbJson, DB_KEY);
+                    tx.oncomplete = () => { idb.close(); console.log('[MWK] Data berhasil dimigrasi ke IndexedDB utama.'); };
+                    tx.onerror    = () => idb.close();
+                } catch(err) {
+                    console.warn('[MWK] Gagal migrasi data ke MWK_MainDB:', err);
                 }
             }
 
