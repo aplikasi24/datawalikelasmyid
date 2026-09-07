@@ -1073,15 +1073,26 @@
                 
                 <div class="mb-4 flex flex-wrap items-center justify-between bg-white p-4 rounded-2xl shadow-sm border border-gray-100 print-hide gap-4">
                     <h3 class="font-bold text-gray-800"><i class="fas fa-user-graduate text-blue-500 mr-2"></i>Filter Grafik Siswa</h3>
-                    <div class="flex items-center gap-2">
-                        <button onclick="window.prevDashboardSiswa()" class="p-2 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-600 transition" title="Siswa Sebelumnya">
-                            <i class="fas fa-chevron-left"></i>
-                        </button>
-                        <select id="dashboardSiswaSelect" onchange="window.currentDashboardSiswaId = this.value; window.updateDashboardSiswaCharts()" class="bg-gray-50 border border-gray-200 text-gray-800 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5 max-w-[200px] truncate">
-                        </select>
-                        <button onclick="window.nextDashboardSiswa()" class="p-2 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-600 transition" title="Siswa Selanjutnya">
-                            <i class="fas fa-chevron-right"></i>
-                        </button>
+                    <div class="flex flex-wrap items-center gap-3">
+                        <div class="flex items-center gap-2 bg-indigo-50 border border-indigo-200 rounded-lg p-1" title="Pilih Mata Pelajaran">
+                            <i class="fas fa-book text-indigo-500 ml-2"></i>
+                            <select id="dashboardSiswaMapelSelect" onchange="window.currentDashboardMapelIndex = parseInt(this.value); const ms = document.getElementById('dashboardMapelSelect'); if(ms) ms.value = this.value; window.updateDashboardMapelCharts();" class="bg-transparent text-indigo-800 text-sm font-bold focus:ring-0 focus:border-0 block p-1.5 outline-none max-w-[150px] truncate cursor-pointer">
+                            </select>
+                        </div>
+                        
+                        <div class="flex items-center gap-1 border-l-2 pl-3 ml-1 border-gray-100">
+                            <button onclick="window.prevDashboardSiswa()" class="p-2 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-600 transition" title="Siswa Sebelumnya">
+                                <i class="fas fa-chevron-left"></i>
+                            </button>
+                            <div class="flex items-center bg-gray-50 border border-gray-200 rounded-lg p-1" title="Pilih Siswa">
+                                <i class="fas fa-user text-gray-400 ml-2"></i>
+                                <select id="dashboardSiswaSelect" onchange="window.currentDashboardSiswaId = this.value; window.updateDashboardSiswaCharts()" class="bg-transparent text-gray-800 text-sm font-bold focus:ring-0 focus:border-0 block p-1.5 outline-none max-w-[160px] truncate cursor-pointer">
+                                </select>
+                            </div>
+                            <button onclick="window.nextDashboardSiswa()" class="p-2 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-600 transition" title="Siswa Selanjutnya">
+                                <i class="fas fa-chevron-right"></i>
+                            </button>
+                        </div>
                     </div>
                 </div>
 
@@ -1458,6 +1469,7 @@
 
         window.updateDashboardMapelCharts = () => {
             const selectEl = document.getElementById('dashboardMapelSelect');
+            const selectSiswaMapelEl = document.getElementById('dashboardSiswaMapelSelect');
             if (!selectEl) return;
             
             if (db.mapel && db.mapel.length > 0) {
@@ -1467,8 +1479,15 @@
                         opt.value = idx;
                         opt.text = m.nama;
                         selectEl.add(opt);
+                        if (selectSiswaMapelEl) {
+                            const opt2 = document.createElement('option');
+                            opt2.value = idx;
+                            opt2.text = m.nama;
+                            selectSiswaMapelEl.add(opt2);
+                        }
                     });
                     selectEl.value = window.currentDashboardMapelIndex;
+                    if (selectSiswaMapelEl) selectSiswaMapelEl.value = window.currentDashboardMapelIndex;
                 }
             } else {
                 return;
@@ -1476,6 +1495,8 @@
 
             const mapelIdx = parseInt(selectEl.value);
             window.currentDashboardMapelIndex = mapelIdx;
+            if (selectSiswaMapelEl) selectSiswaMapelEl.value = mapelIdx;
+            
             const m = db.mapel[mapelIdx];
             if (!m) return;
 
