@@ -12170,6 +12170,27 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                     db[k] = newObj;
                 }
             });
+            // Migrasi GLOBAL: pindahkan key koreksi_ujian format lama (prefix Ganjil_/Genap_)
+            // ke format baru (tanpa prefix semester). Dijalankan saat DB load/restore agar
+            // data selalu terbaca di Rekap Tabel Kelas tanpa harus membuka halaman Koreksi Ujian dulu.
+            if (db.koreksi_ujian && typeof db.koreksi_ujian === 'object') {
+                const oldKeys = Object.keys(db.koreksi_ujian).filter(k => k.startsWith('Ganjil_') || k.startsWith('Genap_'));
+                oldKeys.forEach(oldKey => {
+                    const newKey = oldKey.replace(/^(Ganjil_|Genap_)/, '');
+                    if (!db.koreksi_ujian[newKey]) {
+                        db.koreksi_ujian[newKey] = db.koreksi_ujian[oldKey];
+                    } else if (db.koreksi_ujian[oldKey] && db.koreksi_ujian[oldKey].nilai) {
+                        // Merge nilai lama ke key baru (prioritas data yang sudah ada)
+                        if (!db.koreksi_ujian[newKey].nilai) db.koreksi_ujian[newKey].nilai = {};
+                        Object.keys(db.koreksi_ujian[oldKey].nilai).forEach(sid => {
+                            if (!db.koreksi_ujian[newKey].nilai[sid]) {
+                                db.koreksi_ujian[newKey].nilai[sid] = db.koreksi_ujian[oldKey].nilai[sid];
+                            }
+                        });
+                    }
+                    delete db.koreksi_ujian[oldKey];
+                });
+            }
             if(!db.hari_efektif) db.hari_efektif = ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat'];
             if(!db.attendance) {
                 db.attendance = {};
