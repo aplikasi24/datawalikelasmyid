@@ -11790,6 +11790,9 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                             <button id="install-app-btn" onclick="window.handleInstallApp()" class="hidden bg-orange-500 text-white border border-orange-600 h-10 sm:h-11 px-3 sm:px-4 rounded-xl shadow-sm hover:bg-orange-600 transition flex items-center gap-1 sm:gap-2 print-hide whitespace-nowrap" title="Instal Aplikasi">
                                 <i class="fas fa-download"></i> <span class="text-xs sm:text-sm font-bold">Instal App</span>
                             </button>
+                            <button onclick="window.location.reload()" class="bg-white border border-gray-200 w-10 h-10 sm:w-11 sm:h-11 rounded-xl shadow-sm hover:shadow transition flex items-center justify-center print-hide shrink-0" title="Muat Ulang Halaman">
+                                <i class="fas fa-sync-alt text-blue-600"></i>
+                            </button>
                             <button onclick="window.toggleFullScreen()" class="bg-white border border-gray-200 w-10 h-10 sm:w-11 sm:h-11 rounded-xl shadow-sm hover:shadow transition flex items-center justify-center print-hide shrink-0" title="Layar Penuh">
                                 <i class="fas fa-expand text-gray-600"></i>
                             </button>
@@ -11866,6 +11869,9 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                             <div class="flex md:hidden items-center gap-2 shrink-0">
                                 <button id="install-app-btn-mobile" onclick="window.handleInstallApp()" class="hidden bg-orange-500 text-white border border-orange-600 h-9 w-9 rounded-xl shadow-sm hover:bg-orange-600 transition flex items-center justify-center print-hide shrink-0" title="Instal Aplikasi">
                                     <i class="fas fa-download text-xs"></i>
+                                </button>
+                                <button onclick="window.location.reload()" class="bg-white border border-gray-200 h-9 w-9 rounded-xl shadow-sm hover:shadow transition flex items-center justify-center print-hide shrink-0" title="Muat Ulang Halaman">
+                                    <i class="fas fa-sync-alt text-blue-600 text-sm"></i>
                                 </button>
                                 <button onclick="window.toggleFullScreen()" class="bg-white border border-gray-200 h-9 w-9 rounded-xl shadow-sm hover:shadow transition flex items-center justify-center print-hide shrink-0" title="Layar Penuh">
                                     <i class="fas fa-expand text-gray-600 text-sm"></i>
@@ -14493,10 +14499,10 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                             <div class="grid grid-cols-4 gap-y-4 gap-x-1">
                                 ${appMenus.map(m => `
                                     <div onclick="window.toggleMenuCepatModal(); window.navigateTo('${m.id}')" class="flex flex-col items-center gap-1.5 cursor-pointer group">
-                                        <div class="w-10 h-10 flex items-center justify-center rounded-2xl bg-transparent group-hover:bg-emerald-50 dark:group-hover:bg-slate-800 transition-colors">
-                                            <i class="fas ${m.icon} text-2xl text-blue-500 group-hover:text-emerald-500 group-hover:scale-110 transition-all"></i>
+                                        <div class="w-10 h-10 flex items-center justify-center rounded-2xl bg-transparent group-hover:bg-yellow-50 dark:group-hover:bg-slate-800 transition-colors">
+                                            <i class="fas ${m.icon} text-2xl text-blue-500 group-hover:text-yellow-500 group-hover:scale-110 transition-all"></i>
                                         </div>
-                                        <span class="text-[9px] text-center font-medium text-slate-600 dark:text-slate-400 group-hover:text-emerald-500 px-0.5 leading-tight">${m.name}</span>
+                                        <span class="text-[9px] text-center font-medium text-slate-600 dark:text-slate-400 group-hover:text-yellow-600 px-0.5 leading-tight">${m.name}</span>
                                     </div>
                                 `).join('')}
                             </div>
