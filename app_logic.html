@@ -144,7 +144,7 @@
         let db;
 
         // ============================================================
-        // INDEXEDDB HELPER — Storage Utama (MWK_MainDB)
+        // INDEXEDDB HELPER â€” Storage Utama (MWK_MainDB)
         // LocalStorage hanya sebagai cadangan ringan.
         // ============================================================
         const MWK_IDB_NAME    = 'MWK_MainDB';
@@ -170,7 +170,7 @@
         function saveDB() {
             const jsonStr = JSON.stringify(db);
 
-            // UTAMA — Simpan ke IndexedDB (async, non-blocking, kapasitas besar)
+            // UTAMA â€” Simpan ke IndexedDB (async, non-blocking, kapasitas besar)
             // LocalStorage TIDAK lagi digunakan untuk data utama.
             _openMWKMainDB().then(idb => {
                 const tx = idb.transaction(MWK_IDB_STORE, 'readwrite');
@@ -1231,10 +1231,10 @@
                 if(sortedNames.length > 60) {
                     res.push(`... dan ${sortedNames.length - 60} lainnya`);
                     res.push(``);
-                    res.push(`👆 KLIK GRAFIK UNTUK DAFTAR LENGKAP`);
+                    res.push(`ðŸ‘† KLIK GRAFIK UNTUK DAFTAR LENGKAP`);
                 } else if(sortedNames.length > 0) {
                     res.push(``);
-                    res.push(`👆 Klik grafik untuk melihat lebih jelas`);
+                    res.push(`ðŸ‘† Klik grafik untuk melihat lebih jelas`);
                 }
                 return res;
             };
@@ -1571,7 +1571,7 @@
                                         const cur = dataKoreksi[i];
                                         if (prev === null || cur === null || i === 0) return '';
                                         const diff = (cur - prev).toFixed(1);
-                                        return diff > 0 ? `▲ Naik ${diff}` : diff < 0 ? `▼ Turun ${Math.abs(diff)}` : `→ Tetap`;
+                                        return diff > 0 ? `â–² Naik ${diff}` : diff < 0 ? `â–¼ Turun ${Math.abs(diff)}` : `â†’ Tetap`;
                                     }
                                 }
                             }
@@ -1679,7 +1679,7 @@
                                         const cur = dataArr[i];
                                         if (prev === null || cur === null || i === 0) return '';
                                         const diff = (cur - prev).toFixed(1);
-                                        return diff > 0 ? `▲ Naik ${diff}` : diff < 0 ? `▼ Turun ${Math.abs(diff)}` : `→ Tetap`;
+                                        return diff > 0 ? `â–² Naik ${diff}` : diff < 0 ? `â–¼ Turun ${Math.abs(diff)}` : `â†’ Tetap`;
                                     }
                                 }
                             }
@@ -6994,14 +6994,14 @@ Setelah semua baris terisi, tolong berikan kembali kepada saya file Excel terseb
             if(await showConfirm("Hapus tugas ini?")) { db.tugas = db.tugas.filter(m => m.id !== id); saveDB(); navigateTo('tugas'); }
         };
         window.shareTugasWA = (judul, info) => {
-            const defaultMsg = `Assalamualaikum wr. wb.\n\nBapak/Ibu wali murid yang kami hormati, mengingatkan kembali untuk tugas anak-anak kita:\n\n📚 *[tugas]*\n[deadline]\n\nMohon bimbingannya di rumah agar ananda dapat menyelesaikan tugas ini dengan baik. Terima kasih banyak atas perhatian dan kerja samanya. 🙏`;
+            const defaultMsg = `Assalamualaikum wr. wb.\n\nBapak/Ibu wali murid yang kami hormati, mengingatkan kembali untuk tugas anak-anak kita:\n\nðŸ“š *[tugas]*\n[deadline]\n\nMohon bimbingannya di rumah agar ananda dapat menyelesaikan tugas ini dengan baik. Terima kasih banyak atas perhatian dan kerja samanya. ðŸ™`;
             let template = db.pengaturan?.pesan_wa || defaultMsg;
             let pesan = template.replace(/\[tugas\]/gi, judul).replace(/\[deadline\]/gi, info);
             window.open(`https://wa.me/?text=${encodeURIComponent(pesan)}`, '_blank');
         };
 
         window.openModalSettingWA = () => {
-            const defaultMsg = `Assalamualaikum wr. wb.\n\nBapak/Ibu wali murid yang kami hormati, mengingatkan kembali untuk tugas anak-anak kita:\n\n📚 *[tugas]*\n[deadline]\n\nMohon bimbingannya di rumah agar ananda dapat menyelesaikan tugas ini dengan baik. Terima kasih banyak atas perhatian dan kerja samanya. 🙏`;
+            const defaultMsg = `Assalamualaikum wr. wb.\n\nBapak/Ibu wali murid yang kami hormati, mengingatkan kembali untuk tugas anak-anak kita:\n\nðŸ“š *[tugas]*\n[deadline]\n\nMohon bimbingannya di rumah agar ananda dapat menyelesaikan tugas ini dengan baik. Terima kasih banyak atas perhatian dan kerja samanya. ðŸ™`;
             const currentMsg = db.pengaturan?.pesan_wa || defaultMsg;
             
             const modal = document.createElement('div');
@@ -8270,7 +8270,7 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                 return;
             }
             
-            if (!await showConfirm("Kirim seluruh data (Siswa, Nilai, dll) ke server sekolah?")) return;
+            if (!await showConfirm("Kirim seluruh data (Siswa, Nilai, dll) ke server?")) return;
             
             if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner animate-spin mr-2"></i> Sedang Mengirim...'; }
             
@@ -9936,7 +9936,7 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                 <div class="bg-white rounded-3xl shadow-2xl w-full max-w-xs overflow-hidden transform scale-100 transition-all border border-slate-100">
                     <div class="p-6 text-center">
                         <div class="w-20 h-20 bg-emerald-50 rounded-full flex items-center justify-center mx-auto mb-4 shadow-inner">
-                            ${iconHtml || '<span class="text-4xl">🤔</span>'}
+                            ${iconHtml || '<span class="text-4xl">ðŸ¤”</span>'}
                         </div>
                         <h3 class="text-xl font-black text-slate-800 mb-2">Konfirmasi</h3>
                         <p class="text-slate-600 text-sm mb-6 leading-relaxed">${message}</p>
@@ -10644,7 +10644,7 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
         window.bayarSemuaKas = (dateStr) => {
             window.showModernConfirm(
                 "Gas auto-lunasin uang kas sekelas buat tanggal ini?",
-                '<span class="text-5xl">💸</span>',
+                '<span class="text-5xl">ðŸ’¸</span>',
                 () => {
                     const nom = db.kas_kelas.nominal;
                     db.students.forEach(s => {
@@ -10697,7 +10697,7 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
         window.hapusPengeluaranKas = (id) => {
             window.showModernConfirm(
                 "Yakin mau menghapus riwayat pengeluaran kas ini?",
-                '<span class="text-5xl">🗑️</span>',
+                '<span class="text-5xl">ðŸ—‘ï¸</span>',
                 () => {
                     db.kas_kelas.pengeluaran = db.kas_kelas.pengeluaran.filter(p => p.id !== id);
                     saveDB();
@@ -10765,7 +10765,7 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
         window.hapusPemasukanKas = (id) => {
             window.showModernConfirm(
                 "Yakin mau menghapus riwayat pemasukan ini?",
-                '<span class="text-5xl">🗑️</span>',
+                '<span class="text-5xl">ðŸ—‘ï¸</span>',
                 () => {
                     db.kas_kelas.pemasukan_lain = db.kas_kelas.pemasukan_lain.filter(p => p.id !== id);
                     saveDB();
@@ -12215,7 +12215,7 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
 
             // -------------------------------------------------------
             // LANGKAH 1: Baca dari IndexedDB UTAMA (MWK_MainDB)
-            //            → Sumber data paling andal & kapasitas besar
+            //            â†’ Sumber data paling andal & kapasitas besar
             // -------------------------------------------------------
             try {
                 dbJson = await _openMWKMainDB().then(idb => new Promise((resolve, reject) => {
@@ -12231,7 +12231,7 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
 
             // -------------------------------------------------------
             // LANGKAH 2: Fallback ke LocalStorage
-            //            → Bisa berisi data lama atau data kecil
+            //            â†’ Bisa berisi data lama atau data kecil
             // -------------------------------------------------------
             if (!dbJson) {
                 dbJson = localStorage.getItem(DB_KEY);
@@ -12401,7 +12401,7 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                 const currentUrl = window.location.href.toLowerCase();
                 if (currentUrl.startsWith('file:///') && (currentUrl.includes('/temp/') || currentUrl.includes('/appdata/local/temp/') || currentUrl.includes('rar$') || currentUrl.includes('zip'))) {
                     setTimeout(() => {
-                        alert("⚠️ PERINGATAN PENTING! ⚠️\n\nSepertinya Anda menjalankan aplikasi ini LANGSUNG dari dalam file ZIP tanpa mengekstraknya terlebih dahulu.\n\nAkibatnya, Windows membuat folder sementara (Temp) yang baru setiap kali Anda membukanya, sehingga semua data yang Anda simpan akan SELALU HILANG saat Anda menutup browser!\n\nSOLUSI:\n1. Tutup browser ini.\n2. Klik Kanan pada file ZIP yang Anda unduh.\n3. Pilih 'Extract Here' (Ekstrak di sini) atau 'Extract All'.\n4. Buka file index.html dari folder hasil ekstraksi tersebut.\n\nDengan begitu, data Anda akan tersimpan secara permanen.");
+                        alert("âš ï¸ PERINGATAN PENTING! âš ï¸\n\nSepertinya Anda menjalankan aplikasi ini LANGSUNG dari dalam file ZIP tanpa mengekstraknya terlebih dahulu.\n\nAkibatnya, Windows membuat folder sementara (Temp) yang baru setiap kali Anda membukanya, sehingga semua data yang Anda simpan akan SELALU HILANG saat Anda menutup browser!\n\nSOLUSI:\n1. Tutup browser ini.\n2. Klik Kanan pada file ZIP yang Anda unduh.\n3. Pilih 'Extract Here' (Ekstrak di sini) atau 'Extract All'.\n4. Buka file index.html dari folder hasil ekstraksi tersebut.\n\nDengan begitu, data Anda akan tersimpan secara permanen.");
                     }, 1000);
                 }
             };
@@ -13060,7 +13060,7 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                 totalHarus += nominal;
                 totalBayar += terbayar;
                 
-                let status = kurang < 0 ? `LEBIH Rp ${Math.abs(kurang).toLocaleString('id-ID')} ✅` : (kurang === 0 ? 'LUNAS ✅' : (terbayar > 0 ? 'CICIL ⏳' : 'BELUM BAYAR ❌'));
+                let status = kurang < 0 ? `LEBIH Rp ${Math.abs(kurang).toLocaleString('id-ID')} âœ…` : (kurang === 0 ? 'LUNAS âœ…' : (terbayar > 0 ? 'CICIL â³' : 'BELUM BAYAR âŒ'));
                 
                 let riwayat = (pk.riwayat_bayar && pk.riwayat_bayar[studentId] && pk.riwayat_bayar[studentId][item.id]) ? pk.riwayat_bayar[studentId][item.id] : [];
                 if (riwayat.length === 0 && terbayar > 0) {
@@ -13618,7 +13618,7 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
             if (window.koreksiUpdateSemester) window.koreksiUpdateSemester();
             
             // Key format: JenisUjian_Mapel (tanpa semester agar tidak pernah desync)
-            // jenis_ujian sudah UNIK: STS 1, SAS 1, STS 2, SAT — tidak perlu semester sebagai prefix
+            // jenis_ujian sudah UNIK: STS 1, SAS 1, STS 2, SAT â€” tidak perlu semester sebagai prefix
             const jenSafe  = window.koreksiState.jenis_ujian.replace(/[^a-zA-Z0-9]/g, '_');
             const mapelSafe = window.koreksiState.mapel.replace(/[^a-zA-Z0-9]/g, '_');
             const key = jenSafe + '_' + mapelSafe;
@@ -14437,7 +14437,7 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                 mapelList = defaultMapel.map(name => ({ id: name, nama: name }));
             }
 
-            // Siapkan struktur legerData — simpan nilai mentah (raw float) agar bisa toggle
+            // Siapkan struktur legerData â€” simpan nilai mentah (raw float) agar bisa toggle
             let legerData = students.map(s => ({ id: s.id, name: s.name, nilaiRaw: {}, total: 0, count: 0, average: 0, rank: 0 }));
 
             const rType = window.koreksiState.rekap_jenis;
@@ -14452,14 +14452,14 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                 jenisList = [rType];
             }
 
-            // Ambil semua mapel — simpan nilai RAW (float, bukan dibulatkan dulu)
+            // Ambil semua mapel â€” simpan nilai RAW (float, bukan dibulatkan dulu)
             mapelList.forEach(m => {
                 legerData.forEach(sd => {
                     let totalRaw = 0;
                     let validCount = 0;
 
                     jenisList.forEach(jen => {
-                        // Gunakan format key baru: JenisUjian_Mapel (TANPA semester — sesuai initKoreksiDB)
+                        // Gunakan format key baru: JenisUjian_Mapel (TANPA semester â€” sesuai initKoreksiDB)
                         const jenSafe = jen.replace(/[^a-zA-Z0-9]/g, '_');
                         const mSafe   = m.nama.replace(/[^a-zA-Z0-9]/g, '_');
                         const key = jenSafe + '_' + mSafe;
