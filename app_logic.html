@@ -8675,7 +8675,7 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
         };
 
         window.simpanPengaturanNilai = (mapelId, field, value) => {
-            if(!db.pengaturan_nilai[mapelId]) db.pengaturan_nilai[mapelId] = { rumus: 'rata_rata', bobot_lm: 50, bobot_sts: 25, bobot_sas: 25, jumlah_tp: 5, jumlah_lm: 5 };
+            if(!db.pengaturan_nilai[mapelId]) db.pengaturan_nilai[mapelId] = { rumus: 'rata_rata', bobot_lm: 50, bobot_sts: 25, bobot_sas: 25, jumlah_tp: 5, jumlah_lm: 5, kktp: 70 };
             
             if(field === 'rumus') {
                 db.pengaturan_nilai[mapelId].rumus = value;
@@ -8683,7 +8683,7 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                 db.pengaturan_nilai[mapelId][field] = parseFloat(value) || 0;
             }
             saveDB();
-            navigateTo('nilai'); // re-render to show/hide weight inputs
+            navigateTo('nilai'); // re-render to show/hide weight inputs & update KKTP highlights
             
             const p = db.pengaturan_nilai[mapelId];
             if(p.rumus === 'pembobotan' && ['bobot_lm', 'bobot_sts', 'bobot_sas'].includes(field)) {
@@ -8711,19 +8711,62 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
             
             // Auto update Rapor cell if recalculation is needed without losing focus
             const n = db.nilai[dataKey][studentId];
-            const p = db.pengaturan_nilai[mapelId] || { rumus: 'rata_rata', bobot_lm: 50, bobot_sts: 25, bobot_sas: 25, jumlah_tp: 5, jumlah_lm: 5 };
+            const p = db.pengaturan_nilai[mapelId] || { rumus: 'rata_rata', bobot_lm: 50, bobot_sts: 25, bobot_sas: 25, jumlah_tp: 5, jumlah_lm: 5, kktp: 70 };
+            const kktp = (p.kktp !== undefined && p.kktp !== null && p.kktp !== '') ? parseFloat(p.kktp) : 70;
             
+            // Update input element background if user is typing directly in TP, LM, STS, or SAS
+            const inputEl = event && event.target && event.target.tagName === 'INPUT' ? event.target : null;
+            if (inputEl && inputEl.classList.contains('grid-input')) {
+                const valNum = parseFloat(inputEl.value);
+                const isUnder = inputEl.value !== '' && !isNaN(valNum) && valNum < kktp;
+                const tdParent = inputEl.parentElement;
+                
+                if (field.startsWith('tp')) {
+                    if (isUnder) {
+                        inputEl.className = 'grid-input w-12 h-8 text-center text-sm border-none bg-pink-100 text-pink-900 font-bold outline-none focus:ring-2 focus:ring-blue-500 rounded';
+                        if(tdParent) tdParent.className = 'p-1 border border-pink-200 bg-pink-100';
+                    } else {
+                        inputEl.className = 'grid-input w-12 h-8 text-center text-sm border-none bg-transparent text-gray-800 outline-none focus:ring-2 focus:ring-blue-500 rounded';
+                        if(tdParent) tdParent.className = 'p-1 border border-gray-200';
+                    }
+                } else if (field.startsWith('lm')) {
+                    if (isUnder) {
+                        inputEl.className = 'grid-input w-12 h-8 text-center text-sm border-none bg-pink-100 text-pink-900 font-bold outline-none focus:ring-2 focus:ring-orange-500 rounded';
+                        if(tdParent) tdParent.className = 'p-1 border border-pink-200 bg-pink-100';
+                    } else {
+                        inputEl.className = 'grid-input w-12 h-8 text-center text-sm border-none bg-transparent text-gray-800 outline-none focus:ring-2 focus:ring-orange-500 rounded';
+                        if(tdParent) tdParent.className = 'p-1 border border-gray-200 bg-orange-50';
+                    }
+                } else if (field === 'sts' || field === 'sas') {
+                    if (isUnder) {
+                        inputEl.className = 'grid-input w-12 h-8 text-center text-sm border-none bg-pink-100 text-pink-900 font-bold outline-none focus:ring-2 focus:ring-purple-500 rounded';
+                        if(tdParent) tdParent.className = 'p-1 border border-pink-200 bg-pink-100';
+                    } else {
+                        inputEl.className = 'grid-input w-12 h-8 text-center text-sm border-none bg-transparent text-purple-700 font-bold outline-none focus:ring-2 focus:ring-purple-500 rounded';
+                        if(tdParent) tdParent.className = 'p-1 border border-gray-200 bg-purple-50';
+                    }
+                }
+            }
+
             let sumTP = 0, countTP = 0;
             for(let i=1; i<=p.jumlah_tp; i++) { if(n[`tp${i}`] !== undefined && n[`tp${i}`] !== '') { sumTP += parseFloat(n[`tp${i}`]); countTP++; } }
             const avgTP = countTP > 0 ? (sumTP / countTP) : 0;
             const cellTP = document.getElementById(`avg_tp_${studentId}`);
-            if(cellTP) cellTP.innerText = countTP > 0 ? window.formatNilaiStr(avgTP) : '';
+            if(cellTP) {
+                cellTP.innerText = countTP > 0 ? window.formatNilaiStr(avgTP) : '';
+                const isUnderTp = countTP > 0 && avgTP < kktp;
+                cellTP.className = `p-1 border text-center text-sm ${isUnderTp ? 'border-pink-300 bg-pink-200 text-pink-900 font-extrabold' : 'border-gray-200 bg-green-100 font-bold text-green-800'}`;
+            }
 
             let sumLM = 0, countLM = 0;
             for(let i=1; i<=p.jumlah_lm; i++) { if(n[`lm${i}`] !== undefined && n[`lm${i}`] !== '') { sumLM += parseFloat(n[`lm${i}`]); countLM++; } }
             const avgLM = countLM > 0 ? (sumLM / countLM) : 0;
             const cellLM = document.getElementById(`avg_lm_${studentId}`);
-            if(cellLM) cellLM.innerText = countLM > 0 ? window.formatNilaiStr(avgLM) : '';
+            if(cellLM) {
+                cellLM.innerText = countLM > 0 ? window.formatNilaiStr(avgLM) : '';
+                const isUnderLm = countLM > 0 && avgLM < kktp;
+                cellLM.className = `p-1 border text-center text-sm ${isUnderLm ? 'border-pink-300 bg-pink-200 text-pink-900 font-extrabold' : 'border-gray-200 bg-green-100 font-bold text-green-800'}`;
+            }
             
             const sts = parseFloat(n['sts']) || 0;
             const sas = parseFloat(n['sas']) || 0;
@@ -8732,7 +8775,11 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
             if(n['sas'] !== undefined && n['sas'] !== '') countSAS++;
             const avgSAS = countSAS > 0 ? ((sts + sas) / countSAS) : 0;
             const cellSAS = document.getElementById(`avg_sas_${studentId}`);
-            if(cellSAS) cellSAS.innerText = countSAS > 0 ? window.formatNilaiStr(avgSAS) : '';
+            if(cellSAS) {
+                cellSAS.innerText = countSAS > 0 ? window.formatNilaiStr(avgSAS) : '';
+                const isUnderSas = countSAS > 0 && avgSAS < kktp;
+                cellSAS.className = `p-1 border text-center text-sm ${isUnderSas ? 'border-pink-300 bg-pink-200 text-pink-900 font-extrabold' : 'border-gray-200 bg-green-100 font-bold text-green-800'}`;
+            }
             
             let finalScore = 0;
             if(p.rumus === 'rata_rata') {
@@ -8742,7 +8789,12 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
             }
             
             const cell = document.getElementById(`rapor_${studentId}`);
-            if(cell) cell.innerText = window.formatNilaiStr(finalScore);
+            if(cell) {
+                cell.innerText = window.formatNilaiStr(finalScore);
+                let hasAnyVal = countLM > 0 || countSAS > 0 || countTP > 0;
+                const isUnderRapor = hasAnyVal && finalScore < kktp;
+                cell.className = `py-2 px-3 text-center border font-bold text-lg ${isUnderRapor ? 'border-pink-300 bg-pink-200 text-pink-900' : 'border-gray-200 bg-blue-100 text-blue-900'}`;
+            }
             
             window.updateRanksNilai(dataKey, p);
         };
@@ -8798,7 +8850,7 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
 
         window.downloadExcelNilai = (isEmpty = false) => {
             if(!window.currentMapelNilai) { alert('Pilih mata pelajaran dulu!'); return; }
-            const p = db.pengaturan_nilai[window.currentMapelNilai] || { rumus: 'rata_rata', bobot_lm: 50, bobot_sts: 25, bobot_sas: 25, jumlah_tp: 5, jumlah_lm: 5 };
+            const p = db.pengaturan_nilai[window.currentMapelNilai] || { rumus: 'rata_rata', bobot_lm: 50, bobot_sts: 25, bobot_sas: 25, jumlah_tp: 5, jumlah_lm: 5, kktp: 70 };
             
             let headers = ['No', 'NISN', 'Nama Siswa'];
             for(let i=1; i<=p.jumlah_tp; i++) headers.push(`TP ${i}`);
@@ -8945,7 +8997,7 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
 
         window.importNilaiExcel = (e) => {
             if(!window.currentMapelNilai) { alert('Pilih mata pelajaran dulu!'); return; }
-            const p = db.pengaturan_nilai[window.currentMapelNilai] || { jumlah_tp: 5, jumlah_lm: 5 };
+            const p = db.pengaturan_nilai[window.currentMapelNilai] || { jumlah_tp: 5, jumlah_lm: 5, kktp: 70 };
             
             const file = e.target.files[0];
             if(!file) return;
@@ -9012,7 +9064,8 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
             let mapelOptions = db.mapel.map(m => `<option value="${m.id}" ${String(m.id) === String(window.currentMapelNilai) ? 'selected' : ''}>${m.nama}</option>`).join('');
             
             let dataKey = window.currentSemester === '1' ? window.currentMapelNilai : window.currentMapelNilai + "_smt" + window.currentSemester;
-            const p = db.pengaturan_nilai[window.currentMapelNilai] || { rumus: 'rata_rata', bobot_lm: 50, bobot_sts: 25, bobot_sas: 25, jumlah_tp: 5, jumlah_lm: 5 };
+            const p = db.pengaturan_nilai[window.currentMapelNilai] || { rumus: 'rata_rata', bobot_lm: 50, bobot_sts: 25, bobot_sas: 25, jumlah_tp: 5, jumlah_lm: 5, kktp: 70 };
+            const kktp = (p.kktp !== undefined && p.kktp !== null && p.kktp !== '') ? parseFloat(p.kktp) : 70;
             
             window.currentKelasNilai = window.currentKelasNilai || 'Semua Kelas';
             let uniqueClasses = [...new Set(db.students.map(s => String(s.kelas || '-')))].sort();
@@ -9060,25 +9113,57 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                 let tpInputs = '';
                 let sumTP = 0, countTP = 0;
                 for(let i=1; i<=p.jumlah_tp; i++) {
-                    if(n[`tp${i}`] !== undefined && n[`tp${i}`] !== '') { sumTP += parseFloat(n[`tp${i}`]); countTP++; }
-                    tpInputs += `<td class="p-1 border border-gray-200"><input type="number" data-row="${index}" data-col="${i-1}" onkeydown="window.handleGridNav(event, ${index}, ${i-1})" min="0" max="100" class="grid-input w-12 h-8 text-center text-sm border-none bg-transparent outline-none focus:ring-2 focus:ring-blue-500 rounded" value="${n[`tp${i}`]!==undefined?n[`tp${i}`]:''}" oninput="window.simpanNilai(${s.id}, ${window.currentMapelNilai}, 'tp${i}', this.value)"></td>`;
+                    const tpValStr = n[`tp${i}`] !== undefined ? n[`tp${i}`] : '';
+                    let isUnder = false;
+                    if(tpValStr !== '') {
+                        sumTP += parseFloat(tpValStr);
+                        countTP++;
+                        if(parseFloat(tpValStr) < kktp) isUnder = true;
+                    }
+                    const bgClass = isUnder ? 'bg-pink-100 text-pink-900 font-bold' : 'bg-transparent text-gray-800';
+                    const tdBgClass = isUnder ? 'bg-pink-100 border-pink-200' : 'border-gray-200';
+                    tpInputs += `<td class="p-1 border ${tdBgClass}"><input type="number" data-row="${index}" data-col="${i-1}" onkeydown="window.handleGridNav(event, ${index}, ${i-1})" min="0" max="100" class="grid-input w-12 h-8 text-center text-sm border-none ${bgClass} outline-none focus:ring-2 focus:ring-blue-500 rounded" value="${tpValStr}" oninput="window.simpanNilai(${s.id}, ${window.currentMapelNilai}, 'tp${i}', this.value)"></td>`;
                 }
                 const avgTP = countTP > 0 ? (sumTP / countTP) : 0;
+                const isAvgTpUnder = countTP > 0 && avgTP < kktp;
+                const avgTpCellClass = isAvgTpUnder ? 'bg-pink-200 text-pink-900 font-extrabold border-pink-300' : 'bg-green-100 text-green-800 font-bold border-gray-200';
                 
                 let lmInputs = '';
                 let sumLM = 0, countLM = 0;
                 for(let i=1; i<=p.jumlah_lm; i++) {
-                    if(n[`lm${i}`] !== undefined && n[`lm${i}`] !== '') { sumLM += parseFloat(n[`lm${i}`]); countLM++; }
-                    lmInputs += `<td class="p-1 border border-gray-200 bg-orange-50"><input type="number" data-row="${index}" data-col="${p.jumlah_tp + i - 1}" onkeydown="window.handleGridNav(event, ${index}, ${p.jumlah_tp + i - 1})" min="0" max="100" class="grid-input w-12 h-8 text-center text-sm border-none bg-transparent outline-none focus:ring-2 focus:ring-orange-500 rounded" value="${n[`lm${i}`]!==undefined?n[`lm${i}`]:''}" oninput="window.simpanNilai(${s.id}, ${window.currentMapelNilai}, 'lm${i}', this.value)"></td>`;
+                    const lmValStr = n[`lm${i}`] !== undefined ? n[`lm${i}`] : '';
+                    let isUnder = false;
+                    if(lmValStr !== '') {
+                        sumLM += parseFloat(lmValStr);
+                        countLM++;
+                        if(parseFloat(lmValStr) < kktp) isUnder = true;
+                    }
+                    const bgClass = isUnder ? 'bg-pink-100 text-pink-900 font-bold' : 'bg-transparent text-gray-800';
+                    const tdBgClass = isUnder ? 'bg-pink-100 border-pink-200' : 'bg-orange-50 border-gray-200';
+                    lmInputs += `<td class="p-1 border ${tdBgClass}"><input type="number" data-row="${index}" data-col="${p.jumlah_tp + i - 1}" onkeydown="window.handleGridNav(event, ${index}, ${p.jumlah_tp + i - 1})" min="0" max="100" class="grid-input w-12 h-8 text-center text-sm border-none ${bgClass} outline-none focus:ring-2 focus:ring-orange-500 rounded" value="${lmValStr}" oninput="window.simpanNilai(${s.id}, ${window.currentMapelNilai}, 'lm${i}', this.value)"></td>`;
                 }
                 const avgLM = countLM > 0 ? (sumLM / countLM) : 0;
+                const isAvgLmUnder = countLM > 0 && avgLM < kktp;
+                const avgLmCellClass = isAvgLmUnder ? 'bg-pink-200 text-pink-900 font-extrabold border-pink-300' : 'bg-green-100 text-green-800 font-bold border-gray-200';
                 
+                const stsStr = n['sts'] !== undefined ? n['sts'] : '';
+                const isStsUnder = stsStr !== '' && parseFloat(stsStr) < kktp;
+                const stsBgClass = isStsUnder ? 'bg-pink-100 text-pink-900 font-bold' : 'bg-transparent text-purple-700 font-bold';
+                const stsTdBgClass = isStsUnder ? 'bg-pink-100 border-pink-200' : 'bg-purple-50 border-gray-200';
+
+                const sasStr = n['sas'] !== undefined ? n['sas'] : '';
+                const isSasUnder = sasStr !== '' && parseFloat(sasStr) < kktp;
+                const sasBgClass = isSasUnder ? 'bg-pink-100 text-pink-900 font-bold' : 'bg-transparent text-purple-700 font-bold';
+                const sasTdBgClass = isSasUnder ? 'bg-pink-100 border-pink-200' : 'bg-purple-50 border-gray-200';
+
                 const sts = parseFloat(n['sts']) || 0;
                 const sas = parseFloat(n['sas']) || 0;
                 let countSAS = 0;
                 if(n['sts'] !== undefined && n['sts'] !== '') countSAS++;
                 if(n['sas'] !== undefined && n['sas'] !== '') countSAS++;
                 const avgSAS = countSAS > 0 ? ((sts + sas) / countSAS) : 0;
+                const isAvgSasUnder = countSAS > 0 && avgSAS < kktp;
+                const avgSasCellClass = isAvgSasUnder ? 'bg-pink-200 text-pink-900 font-extrabold border-pink-300' : 'bg-green-100 text-green-800 font-bold border-gray-200';
                 
                 let finalScore = 0;
                 if(p.rumus === 'rata_rata') {
@@ -9087,18 +9172,22 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                     finalScore = (avgLM * (p.bobot_lm/100)) + (sts * (p.bobot_sts/100)) + (sas * (p.bobot_sas/100));
                 }
                 
+                let hasAnyVal = countLM > 0 || countSAS > 0 || countTP > 0;
+                const isRaporUnder = hasAnyVal && finalScore < kktp;
+                const raporCellClass = isRaporUnder ? 'bg-pink-200 text-pink-900 border-pink-300 font-bold' : 'bg-blue-100 text-blue-900 border-gray-200 font-bold';
+
                 return `
                     <tr class="hover:bg-blue-50 transition-colors">
                         <td class="py-2 px-3 text-center border border-gray-200 text-sm">${index + 1}</td>
                         <td class="py-2 px-3 font-medium border border-gray-200 text-gray-800 text-sm whitespace-nowrap sticky left-0 bg-white z-10 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)] group-hover:bg-blue-50">${s.name}</td>
                         ${tpInputs}
-                        <td class="p-1 border border-gray-200 bg-green-100 text-center font-bold text-green-800 text-sm" id="avg_tp_${s.id}">${countTP > 0 ? window.formatNilaiStr(avgTP) : ''}</td>
+                        <td class="p-1 border text-center text-sm ${avgTpCellClass}" id="avg_tp_${s.id}">${countTP > 0 ? window.formatNilaiStr(avgTP) : ''}</td>
                         ${lmInputs}
-                        <td class="p-1 border border-gray-200 bg-green-100 text-center font-bold text-green-800 text-sm" id="avg_lm_${s.id}">${countLM > 0 ? window.formatNilaiStr(avgLM) : ''}</td>
-                        <td class="p-1 border border-gray-200 bg-purple-50"><input type="number" data-row="${index}" data-col="${p.jumlah_tp + p.jumlah_lm}" onkeydown="window.handleGridNav(event, ${index}, ${p.jumlah_tp + p.jumlah_lm})" min="0" max="100" class="grid-input w-12 h-8 text-center text-sm border-none bg-transparent outline-none focus:ring-2 focus:ring-purple-500 rounded font-bold text-purple-700" value="${n['sts']!==undefined?n['sts']:''}" oninput="window.simpanNilai(${s.id}, ${window.currentMapelNilai}, 'sts', this.value)"></td>
-                        <td class="p-1 border border-gray-200 bg-purple-50"><input type="number" data-row="${index}" data-col="${p.jumlah_tp + p.jumlah_lm + 1}" onkeydown="window.handleGridNav(event, ${index}, ${p.jumlah_tp + p.jumlah_lm + 1})" min="0" max="100" class="grid-input w-12 h-8 text-center text-sm border-none bg-transparent outline-none focus:ring-2 focus:ring-purple-500 rounded font-bold text-purple-700" value="${n['sas']!==undefined?n['sas']:''}" oninput="window.simpanNilai(${s.id}, ${window.currentMapelNilai}, 'sas', this.value)"></td>
-                        <td class="p-1 border border-gray-200 bg-green-100 text-center font-bold text-green-800 text-sm" id="avg_sas_${s.id}">${countSAS > 0 ? window.formatNilaiStr(avgSAS) : ''}</td>
-                        <td class="py-2 px-3 text-center border border-gray-200 font-bold text-lg text-blue-900 bg-blue-100" id="rapor_${s.id}">${window.formatNilaiStr(finalScore)}</td>
+                        <td class="p-1 border text-center text-sm ${avgLmCellClass}" id="avg_lm_${s.id}">${countLM > 0 ? window.formatNilaiStr(avgLM) : ''}</td>
+                        <td class="p-1 border ${stsTdBgClass}"><input type="number" data-row="${index}" data-col="${p.jumlah_tp + p.jumlah_lm}" onkeydown="window.handleGridNav(event, ${index}, ${p.jumlah_tp + p.jumlah_lm})" min="0" max="100" class="grid-input w-12 h-8 text-center text-sm border-none ${stsBgClass} outline-none focus:ring-2 focus:ring-purple-500 rounded" value="${stsStr}" oninput="window.simpanNilai(${s.id}, ${window.currentMapelNilai}, 'sts', this.value)"></td>
+                        <td class="p-1 border ${sasTdBgClass}"><input type="number" data-row="${index}" data-col="${p.jumlah_tp + p.jumlah_lm + 1}" onkeydown="window.handleGridNav(event, ${index}, ${p.jumlah_tp + p.jumlah_lm + 1})" min="0" max="100" class="grid-input w-12 h-8 text-center text-sm border-none ${sasBgClass} outline-none focus:ring-2 focus:ring-purple-500 rounded" value="${sasStr}" oninput="window.simpanNilai(${s.id}, ${window.currentMapelNilai}, 'sas', this.value)"></td>
+                        <td class="p-1 border text-center text-sm ${avgSasCellClass}" id="avg_sas_${s.id}">${countSAS > 0 ? window.formatNilaiStr(avgSAS) : ''}</td>
+                        <td class="py-2 px-3 text-center border font-bold text-lg ${raporCellClass}" id="rapor_${s.id}">${window.formatNilaiStr(finalScore)}</td>
                         <td class="py-2 px-3 text-center border border-gray-200 font-bold text-lg text-yellow-700 bg-yellow-100" id="rank_${s.id}">${rankMap[s.id]}</td>
                     </tr>
                 `;
@@ -9129,7 +9218,7 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                                     </select>
                                 </div>
                             </div>
-                            <div class="grid grid-cols-2 gap-2 mt-1 pt-1 border-t border-gray-100">
+                            <div class="grid grid-cols-3 gap-2 mt-1 pt-1 border-t border-gray-100">
                                 <div>
                                     <label class="block text-[11px] font-bold text-gray-500 mb-0.5">Jml. TP (Formatif)</label>
                                     <input type="number" min="1" max="20" value="${p.jumlah_tp}" onchange="window.simpanPengaturanNilai(${window.currentMapelNilai}, 'jumlah_tp', this.value)" class="w-full border border-gray-300 rounded p-1 text-center text-sm focus:ring-2 focus:ring-blue-500 outline-none bg-gray-50">
@@ -9137,6 +9226,10 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                                 <div>
                                     <label class="block text-[11px] font-bold text-gray-500 mb-0.5">Jml. LM (Sumatif)</label>
                                     <input type="number" min="1" max="20" value="${p.jumlah_lm}" onchange="window.simpanPengaturanNilai(${window.currentMapelNilai}, 'jumlah_lm', this.value)" class="w-full border border-gray-300 rounded p-1 text-center text-sm focus:ring-2 focus:ring-orange-500 outline-none bg-gray-50">
+                                </div>
+                                <div>
+                                    <label class="block text-[11px] font-bold text-pink-700 mb-0.5" title="Kriteria Ketercapaian Tujuan Pembelajaran"><i class="fas fa-flag text-pink-500 mr-0.5"></i>Nilai KKTP</label>
+                                    <input type="number" min="0" max="100" value="${p.kktp !== undefined ? p.kktp : 70}" onchange="window.simpanPengaturanNilai(${window.currentMapelNilai}, 'kktp', this.value)" class="w-full border border-pink-300 rounded p-1 text-center text-sm font-bold text-pink-700 focus:ring-2 focus:ring-pink-500 outline-none bg-pink-50" placeholder="70">
                                 </div>
                             </div>
                         </div>
