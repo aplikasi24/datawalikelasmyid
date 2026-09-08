@@ -142,6 +142,7 @@
         };
 
         let db;
+        Object.defineProperty(window, 'db', { get: () => db });
 
         // ============================================================
         // INDEXEDDB HELPER — Storage Utama (MWK_MainDB)
