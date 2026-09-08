@@ -2293,7 +2293,7 @@
             // Dapatkan Info Sekolah & Tahun Ajaran
             const kelas = db?.pengaturan?.kelas || '[Nama Kelas]';
             const sekolah = db?.pengaturan?.sekolah || '[Nama Sekolah]';
-            const tapel = db?.pengaturan?.tapel || '[Tahun Pelajaran]';
+            const tapel = db?.pengaturan?.tapel || '[Tahun Ajaran]';
 
             let formatInstruction = "";
             if (format === 'gambar') {
@@ -2309,11 +2309,11 @@
 Informasi Kelas:
 - Kelas: ${kelas}
 - Sekolah: ${sekolah}
-- Tahun Pelajaran: ${tapel}
+- Tahun Ajaran: ${tapel}
 
 ${dataText}
 Instruksi Tambahan:
-1. Cantumkan judul besar "Struktur Organisasi Kelas ${kelas}", beserta nama sekolah "${sekolah}" dan Tahun Pelajaran "${tapel}" di bagian paling atas/kop poster.
+1. Cantumkan judul besar "Struktur Organisasi Kelas ${kelas}", beserta nama sekolah "${sekolah}" dan Tahun Ajaran "${tapel}" di bagian paling atas/kop poster.
 2. Buatkan bagan/kotak untuk setiap orang sesuai hierarki jabatannya.
 3. Di dalam setiap bagan, SEDIAKAN TEMPAT KOSONG (placeholder) untuk menempelkan pas foto dengan bentuk ${shape}.
 4. Desain harus terlihat profesional, estetik, ceria, dan cocok untuk dicetak sebagai poster dinding kelas.
@@ -4746,7 +4746,7 @@ ${formatInstruction}`;
                                 <input type="text" id="ai-sekolah" placeholder="Misal: SD Negeri 1 / Kelas 4A" value="${db.pengaturan?.sekolah || ''} / Kelas ${db.pengaturan?.kelas || ''}" class="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-purple-500 outline-none" oninput="window.updatePromptAIJadwal()">
                             </div>
                             <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">Tahun Pelajaran</label>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Tahun Ajaran</label>
                                 <input type="text" id="ai-tahun" placeholder="Misal: 2023/2024" value="${db.pengaturan?.tapel || ''}" class="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-purple-500 outline-none" oninput="window.updatePromptAIJadwal()">
                             </div>
                             <div>
@@ -4826,7 +4826,7 @@ Gaya Desain: ${style === '3D' ? 'Gaya 3D (Tiga Dimensi), terlihat bervolume, ber
 
 Detail Kebutuhan:
 - Sekolah / Kelas: ${sekolah}
-- Tahun Pelajaran: ${tahun}
+- Tahun Ajaran: ${tahun}
 - Ukuran Kertas Cetak: ${kertas}
 - Orientasi Kertas: ${orientasiText}
 
@@ -6651,7 +6651,7 @@ Terima kasih!`;
                                 <input type="text" id="ai-kurikulum" class="w-full border-2 border-gray-200 rounded-xl p-2.5 outline-none focus:border-purple-500 bg-gray-50 focus:bg-white" value="Kurikulum Merdeka" placeholder="Contoh: Kurikulum Merdeka">
                             </div>
                             <div>
-                                <label class="block text-sm font-bold text-gray-700 mb-1">Tahun Pelajaran</label>
+                                <label class="block text-sm font-bold text-gray-700 mb-1">Tahun Ajaran</label>
                                 <input type="text" id="ai-tapel" class="w-full border-2 border-gray-200 rounded-xl p-2.5 outline-none focus:border-purple-500 bg-gray-50 focus:bg-white" value="${new Date().getFullYear()}/${new Date().getFullYear()+1}" placeholder="Contoh: 2026/2027">
                             </div>
                         </div>
@@ -6685,7 +6685,7 @@ Terima kasih!`;
 Data Mengajar:
 - Kelas: ${kls}
 - Kurikulum: ${kur}
-- Tahun Pelajaran: ${tapel}
+- Tahun Ajaran: ${tapel}
 
 Di dalam file tersebut, kolom Tanggal, Jam, JP, dan Mata Pelajaran sudah terisi sesuai jadwal asli. Namun, kolom-kolom berikut ini masih kosong:
 1. Tujuan Pembelajaran (TP)
@@ -7353,7 +7353,7 @@ Setelah semua baris terisi, tolong berikan kembali kepada saya file Excel terseb
                 jadwalText = "(Belum ada data jadwal piket yang diisi. Mohon atur siswa per hari terlebih dahulu.)";
             }
             
-            let promptText = `Tolong buatkan gambar poster desain Jadwal Piket Kebersihan untuk Kelas ${kls} ${sekolah} Tahun Pelajaran ${tapel}.
+            let promptText = `Tolong buatkan gambar poster desain Jadwal Piket Kebersihan untuk Kelas ${kls} ${sekolah} Tahun Ajaran ${tapel}.
 
 Berikut adalah data hari dan nama-nama siswa yang piket:
 
@@ -7435,7 +7435,7 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                                 <input type="text" id="ai-piket-kelas" value="${kls}" class="w-full border border-gray-300 rounded p-2 text-sm outline-none focus:border-purple-500" oninput="window.updatePromptPiket()">
                             </div>
                             <div>
-                                <label class="block text-xs font-bold text-gray-700 mb-1">Tahun Pelajaran</label>
+                                <label class="block text-xs font-bold text-gray-700 mb-1">Tahun Ajaran</label>
                                 <input type="text" id="ai-piket-tapel" value="${tapel}" class="w-full border border-gray-300 rounded p-2 text-sm outline-none focus:border-purple-500" oninput="window.updatePromptPiket()">
                             </div>
                             <div class="col-span-2">
@@ -8045,7 +8045,7 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                         </div>
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                             <div>
-                                <label class="text-sm font-medium text-gray-600">Tahun Pelajaran</label>
+                                <label class="text-sm font-medium text-gray-600">Tahun Ajaran</label>
                                 <input type="text" name="tapel" value="${p.tapel || ''}" placeholder="2025/2026" class="w-full mt-1 border p-2 rounded-lg bg-gray-50 focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none transition" />
                             </div>
                             <div>
@@ -9173,7 +9173,7 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                     <div class="hidden print-show text-center mb-6 pt-4">
                         <h2 class="text-2xl font-bold uppercase underline">Daftar Nilai Siswa</h2>
                         <h3 class="text-lg font-semibold mt-1">Mata Pelajaran: ${db.mapel.find(m => m.id === window.currentMapelNilai)?.nama || ''}</h3>
-                        <p class="text-gray-800 font-bold mb-1 mt-1 text-[15px]">Kelas: ${db.pengaturan?.kelas || '......'} &nbsp;|&nbsp; Semester: ${window.currentSemester === '1' ? 'I (Ganjil)' : 'II (Genap)'} &nbsp;|&nbsp; Tahun Pelajaran: ${db.pengaturan?.tapel || '.....................'}</p>
+                        <p class="text-gray-800 font-bold mb-1 mt-1 text-[15px]">Kelas: ${db.pengaturan?.kelas || '......'} &nbsp;|&nbsp; Semester: ${window.currentSemester === '1' ? 'I (Ganjil)' : 'II (Genap)'} &nbsp;|&nbsp; Tahun Ajaran: ${db.pengaturan?.tapel || '.....................'}</p>
                         <p class="text-gray-600">${db.pengaturan?.sekolah || ''}</p>
                     </div>
                     
