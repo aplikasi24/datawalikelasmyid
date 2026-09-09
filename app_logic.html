@@ -12191,6 +12191,7 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                     case 'word_search': contentHtml += renderWord_search(); break;
                     case 'mind_game': contentHtml += renderMind_game(); break;
                     case 'lengkapi_kata': contentHtml += renderLengkapi_kata(); break;
+                    case 'puzzle': contentHtml += renderPuzzle(); break;
                     case 'aplikasi_lain': contentHtml += renderAplikasiLain(); break;
                     case 'sync': contentHtml += renderSync(); break;
                     case 'pengaturan': contentHtml += renderPengaturan(); break;
@@ -12209,7 +12210,7 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                 targetAppContent.style.minHeight = '500px'; 
                 
                 // Maksimalkan area untuk iframe Aplikasi Lain atau Ekstra
-                if ((menuId === 'aplikasi_lain' && window.currentAplikasiLainUrl) || menuId === 'ekstra' || menuId === 'memory_run' || menuId === 'word_search' || menuId === 'mind_game' || menuId === 'lengkapi_kata') {
+                if ((menuId === 'aplikasi_lain' && window.currentAplikasiLainUrl) || menuId === 'ekstra' || menuId === 'memory_run' || menuId === 'word_search' || menuId === 'mind_game' || menuId === 'lengkapi_kata' || menuId === 'puzzle') {
                     targetAppContent.classList.remove('max-w-7xl', 'md:p-8', 'p-4', 'p-2', 'md:p-4');
                     targetAppContent.classList.add('max-w-full', 'p-0', 'flex', 'flex-col');
                 } else {
@@ -13693,6 +13694,14 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
             return `
                 <div class="bg-slate-50/50 overflow-hidden w-full h-full min-h-[85vh] flex flex-col justify-center items-center p-0">
                     <iframe src="ekstra?tab=lengkapi" class="w-full h-full border-0 min-h-[85vh] block" title="Lengkapi Kata / Angka" allowfullscreen></iframe>
+                </div>
+            `;
+        }
+
+        function renderPuzzle() {
+            return `
+                <div class="bg-slate-50/50 overflow-hidden w-full h-full min-h-[85vh] flex flex-col justify-center items-center p-0">
+                    <iframe src="ekstra?tab=puzzle" class="w-full h-full border-0 min-h-[85vh] block" title="Puzzle Gambar" allowfullscreen></iframe>
                 </div>
             `;
         }
