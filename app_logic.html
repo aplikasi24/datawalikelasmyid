@@ -14907,26 +14907,26 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
             }
 
             let html = `
-                <div id="menuCepatModal" class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm opacity-0 pointer-events-none transition-opacity duration-300" onclick="if(event.target===this) window.toggleMenuCepatModal()">
-                    <div class="bg-white dark:bg-slate-900 rounded-[2rem] shadow-2xl w-full max-w-lg overflow-hidden transform scale-95 transition-transform duration-300 flex flex-col max-h-[90vh]">
+                <div id="menuCepatModal" class="fixed inset-0 z-[100] flex items-center justify-center p-2 sm:p-4 bg-slate-900/70 backdrop-blur-sm opacity-0 pointer-events-none transition-opacity duration-300" onclick="if(event.target===this) window.toggleMenuCepatModal()">
+                    <div class="bg-white dark:bg-slate-900 rounded-3xl shadow-2xl w-full max-w-2xl overflow-hidden transform scale-95 transition-transform duration-300 flex flex-col max-h-[95vh] border border-slate-200 dark:border-slate-800">
                         
-                        <div class="flex items-center justify-between p-4 border-b border-slate-100 dark:border-slate-800">
-                            <h2 class="text-base font-extrabold text-slate-800 dark:text-white flex items-center gap-2">
+                        <div class="flex items-center justify-between px-4 py-3 border-b border-slate-100 dark:border-slate-800">
+                            <h2 class="text-sm sm:text-base font-extrabold text-slate-800 dark:text-white flex items-center gap-2">
                                 <svg class="w-4 h-4 text-blue-500 mb-0.5" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/><rect x="15" y="4" width="5" height="5" rx="1" transform="rotate(45 17.5 6.5)"/></svg> Menu Cepat
                             </h2>
-                            <button onclick="window.toggleMenuCepatModal()" class="w-8 h-8 flex items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 hover:bg-slate-200 transition-colors">
-                                <i class="fas fa-times text-sm"></i>
+                            <button onclick="window.toggleMenuCepatModal()" class="w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">
+                                <i class="fas fa-times text-xs sm:text-sm"></i>
                             </button>
                         </div>
                         
-                        <div class="p-4 overflow-y-auto custom-scrollbar">
-                            <div class="grid grid-cols-4 gap-y-4 gap-x-1">
+                        <div class="p-3 sm:p-4 overflow-y-auto custom-scrollbar">
+                            <div class="grid grid-cols-5 gap-y-2.5 sm:gap-y-3 gap-x-1 sm:gap-x-2">
                                 ${appMenus.map(m => `
-                                    <div onclick="window.toggleMenuCepatModal(); window.navigateTo('${m.id}')" class="flex flex-col items-center gap-1.5 cursor-pointer group">
-                                        <div class="w-10 h-10 flex items-center justify-center rounded-2xl bg-transparent group-hover:bg-yellow-50 dark:group-hover:bg-slate-800 transition-colors">
-                                            <i class="fas ${m.icon} text-2xl text-blue-500 group-hover:text-yellow-500 group-hover:scale-110 transition-all"></i>
+                                    <div onclick="window.toggleMenuCepatModal(); window.navigateTo('${m.id}')" class="flex flex-col items-center gap-1 cursor-pointer group py-1 px-0.5 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800/60 transition-all">
+                                        <div class="w-9 h-9 sm:w-10 sm:h-10 flex items-center justify-center rounded-2xl bg-blue-50 dark:bg-slate-800/80 group-hover:bg-yellow-100 dark:group-hover:bg-yellow-500/20 transition-all">
+                                            <i class="fas ${m.icon} text-lg sm:text-xl text-blue-500 group-hover:text-yellow-500 group-hover:scale-110 transition-all"></i>
                                         </div>
-                                        <span class="text-[9px] text-center font-medium text-slate-600 dark:text-slate-400 group-hover:text-yellow-600 px-0.5 leading-tight">${m.name}</span>
+                                        <span class="text-[9px] sm:text-[10px] text-center font-medium text-slate-700 dark:text-slate-300 group-hover:text-yellow-500 dark:group-hover:text-yellow-400 px-0.5 leading-tight line-clamp-2">${m.name}</span>
                                     </div>
                                 `).join('')}
                             </div>
