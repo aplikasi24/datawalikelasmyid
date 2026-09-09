@@ -14042,11 +14042,11 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                 <div class="flex items-center justify-between bg-white border border-slate-200 rounded-xl p-3 sm:p-4 mb-5 shadow-sm">
                     <div class="text-[10px] font-bold text-slate-500 uppercase tracking-widest flex items-center gap-1.5">
                         Nilai Akhir
-                        <span class="text-[9px] font-bold text-pink-700 bg-pink-50 px-1.5 py-0.5 rounded border border-pink-200">KKTP: ${kktp}</span>
+                        <span class="text-[9px] font-bold text-red-700 bg-red-50 px-1.5 py-0.5 rounded border border-red-200">KKTP: ${kktp}</span>
                     </div>
                     <div class="flex items-baseline justify-end gap-3">
-                        <span id="koreksi_preview_round" class="text-3xl sm:text-4xl font-black ${n.pg !== '' || n.esai !== '' ? (isUnderKktp ? 'text-pink-900 bg-pink-100 px-2 rounded' : 'text-navy-900') : 'text-slate-300'}">${finalScoreRound}</span>
-                        <span id="koreksi_preview_raw" class="text-sm font-bold ${n.pg !== '' || n.esai !== '' ? (isUnderKktp ? 'text-pink-800' : 'text-slate-500') : 'text-slate-300'}">${finalRawText}</span>
+                        <span id="koreksi_preview_round" class="text-3xl sm:text-4xl font-black ${n.pg !== '' || n.esai !== '' ? (isUnderKktp ? 'text-red-600 bg-red-100 px-2 rounded' : 'text-navy-900') : 'text-slate-300'}">${finalScoreRound}</span>
+                        <span id="koreksi_preview_raw" class="text-sm font-bold ${n.pg !== '' || n.esai !== '' ? (isUnderKktp ? 'text-red-500' : 'text-slate-500') : 'text-slate-300'}">${finalRawText}</span>
                     </div>
                 </div>
                 
@@ -14102,11 +14102,11 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
             
             const elRound = document.getElementById('koreksi_preview_round');
             elRound.innerText = finalScoreRound;
-            elRound.className = `text-3xl sm:text-4xl font-black ${isUnder ? 'text-pink-900 bg-pink-100 px-2 rounded' : 'text-navy-900'}`;
+            elRound.className = `text-3xl sm:text-4xl font-black ${isUnder ? 'text-red-600 bg-red-100 px-2 rounded' : 'text-navy-900'}`;
             
             const elRaw = document.getElementById('koreksi_preview_raw');
             elRaw.innerText = '(' + finalScoreRaw.toFixed(2) + ')';
-            elRaw.className = `text-sm font-bold ${isUnder ? 'text-pink-800' : 'text-slate-500'}`;
+            elRaw.className = `text-sm font-bold ${isUnder ? 'text-red-500' : 'text-slate-500'}`;
             
             // Sinkronisasi live ke panel tabel jika memungkinkan
             if (studentId) window.koreksiTabelRowUpdateLive(studentId, pgInput, esaiInput, finalScoreRound, finalScoreRaw);
@@ -14131,8 +14131,8 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                 if(elRaw) { elRaw.innerText = '-'; elRaw.className = 'text-[9px] font-bold text-slate-300'; }
                 tr.classList.remove('bg-indigo-50/50');
             } else {
-                if(elFinal) { elFinal.innerText = round; elFinal.className = `text-sm ${isUnder ? 'text-pink-900 bg-pink-100 px-1 rounded font-black' : 'text-navy-900 font-black'}`; }
-                if(elRaw) { elRaw.innerText = '(' + raw.toFixed(2) + ')'; elRaw.className = `text-[9px] ${isUnder ? 'text-pink-800 font-bold' : 'text-slate-400 font-bold'}`; }
+                if(elFinal) { elFinal.innerText = round; elFinal.className = `text-sm ${isUnder ? 'text-red-600 bg-red-100 px-1 rounded font-black' : 'text-navy-900 font-black'}`; }
+                if(elRaw) { elRaw.innerText = '(' + raw.toFixed(2) + ')'; elRaw.className = `text-[9px] ${isUnder ? 'text-red-500 font-bold' : 'text-slate-400 font-bold'}`; }
                 // Highlight row yang sedang diinput
                 tr.classList.add('bg-indigo-50/50');
             }
@@ -14333,7 +14333,7 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
             <div class="flex justify-between items-center mb-3">
                 <h2 class="text-sm font-bold text-navy-800 flex items-center gap-2">
                     <i class="fas fa-list-ol text-indigo-500"></i>Rekap Tabel Kelas
-                    <span class="text-[10px] font-bold text-pink-700 bg-pink-50 px-2 py-0.5 rounded border border-pink-200" title="KKTP dari Nilai Siswa">KKTP: ${kktp}</span>
+                    <span class="text-[10px] font-bold text-red-700 bg-red-50 px-2 py-0.5 rounded border border-red-200" title="KKTP dari Nilai Siswa">KKTP: ${kktp}</span>
                 </h2>
                 <div class="flex gap-1.5">
                     <button onclick="window.koreksiExportExcel('${key}')" class="bg-emerald-100 text-emerald-700 hover:bg-emerald-600 hover:text-white px-2.5 py-1.5 rounded-lg text-[10px] font-bold flex items-center gap-1 transition-colors border border-emerald-200" title="Simpan Excel"><i class="fas fa-file-excel"></i> Excel</button>
@@ -14379,8 +14379,8 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                     }
                     
                     const isCurrent = idx === window.koreksiState.current_student_idx;
-                    const finalCls = rowEmpty ? 'text-slate-300' : (isUnder ? 'text-pink-900 bg-pink-100 px-1 rounded font-black' : 'text-navy-900 font-black');
-                    const rawCls = rowEmpty ? 'text-slate-300' : (isUnder ? 'text-pink-800 font-bold' : 'text-slate-400 font-bold');
+                    const finalCls = rowEmpty ? 'text-slate-300' : (isUnder ? 'text-red-600 bg-red-100 px-1 rounded font-black' : 'text-navy-900 font-black');
+                    const rawCls = rowEmpty ? 'text-slate-300' : (isUnder ? 'text-red-500 font-bold' : 'text-slate-400 font-bold');
                     
                     html += `
                     <tr id="tr_koreksi_${s.id}" class="${isCurrent ? 'bg-indigo-50/50' : 'hover:bg-slate-50'} transition-colors">
@@ -14463,13 +14463,13 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                 const elFinal = document.getElementById('tbl_final_' + studentId);
                 if(elFinal) {
                     elFinal.innerText = finalScoreRound;
-                    elFinal.className = `text-sm ${isUnder ? 'text-pink-900 bg-pink-100 px-1 rounded font-black' : 'text-navy-900 font-black'}`;
+                    elFinal.className = `text-sm ${isUnder ? 'text-red-600 bg-red-100 px-1 rounded font-black' : 'text-navy-900 font-black'}`;
                 }
                 
                 const elRaw = document.getElementById('tbl_final_raw_' + studentId);
                 if(elRaw) {
                     elRaw.innerText = '(' + finalScoreRaw.toFixed(2) + ')';
-                    elRaw.className = `text-[9px] ${isUnder ? 'text-pink-800 font-bold' : 'text-slate-400 font-bold'}`;
+                    elRaw.className = `text-[9px] ${isUnder ? 'text-red-500 font-bold' : 'text-slate-400 font-bold'}`;
                 }
             }
             
@@ -14645,6 +14645,10 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                         <option value="SAT" ${window.koreksiState.rekap_jenis === 'SAT' ? 'selected' : ''}>SAT</option>
                         <option value="Semester 2 (Genap)" ${window.koreksiState.rekap_jenis === 'Semester 2 (Genap)' ? 'selected' : ''}>Semester 2 (Genap)</option>
                     </select>
+                    <select onchange="window.koreksiStateChange('rekap_sort', this.value)" class="bg-slate-50 border border-slate-300 text-slate-700 text-sm font-bold rounded-xl px-3 py-2 outline-none focus:border-indigo-400 transition min-w-[150px]">
+                        <option value="name" ${window.koreksiState.rekap_sort === 'name' || !window.koreksiState.rekap_sort ? 'selected' : ''}>Urut: Nama Siswa</option>
+                        <option value="rank" ${window.koreksiState.rekap_sort === 'rank' ? 'selected' : ''}>Urut: Peringkat</option>
+                    </select>
                     <div class="flex rounded-xl overflow-hidden border border-slate-300 text-xs font-bold">
                         <button onclick="window.koreksiState.rekap_mode='bulat'; window.navigateTo('koreksi_ujian', true)"
                             class="px-3 py-2 transition ${!isMurni ? 'bg-indigo-600 text-white' : 'bg-slate-50 text-slate-600 hover:bg-slate-100'}">
@@ -14745,6 +14749,15 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                 if (orig) orig.rank = sd.rank;
             });
 
+            // Urutkan legerData berdasarkan preferensi
+            let sortedLegerData = [...legerData];
+            if (window.koreksiState.rekap_sort === 'rank') {
+                sortedLegerData.sort((a, b) => {
+                    if (a.rank !== b.rank) return a.rank - b.rank;
+                    return a.name.localeCompare(b.name);
+                });
+            }
+
             // Helper tampil nilai sesuai mode
             const fmt = (raw) => {
                 if (raw === null) return '-';
@@ -14766,7 +14779,7 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
             });
 
             // Baris data siswa
-            let trs = legerData.map((sd, i) => {
+            let trs = sortedLegerData.map((sd, i) => {
                 let tds = mapelList.map(m => {
                     let rawVal = sd.nilaiRaw[m.nama];
                     let val = fmt(rawVal);
@@ -14775,7 +14788,7 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                     
                     let colorCls = 'text-slate-300';
                     if (val !== '-') {
-                        colorCls = isUnder ? 'bg-pink-100 text-pink-900 font-bold border-pink-200' : 'text-navy-900 font-medium';
+                        colorCls = isUnder ? 'bg-red-100 text-red-600 font-bold border-red-200' : 'text-navy-900 font-medium';
                     }
                     return `<td class="px-2 py-2 border border-gray-200 text-center text-[11px] ${colorCls}">${val}</td>`;
                 }).join('');
@@ -14801,7 +14814,7 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                 let rawAvg = mapelAvg[m.nama];
                 let val = rawAvg !== null ? (isMurni ? rawAvg.toFixed(2).replace('.', ',') : Math.round(rawAvg)) : '-';
                 let isUnder = rawAvg !== null && rawAvg < kktp;
-                let bgCls = isUnder ? 'bg-pink-200 text-pink-950 font-extrabold border-pink-300' : 'bg-indigo-50 text-indigo-700 font-bold';
+                let bgCls = isUnder ? 'bg-red-200 text-red-900 font-extrabold border-red-300' : 'bg-indigo-50 text-indigo-700 font-bold';
                 return `<td class="px-2 py-1.5 border border-gray-300 text-center text-[11px] ${bgCls}">${val}</td>`;
             }).join('');
 
@@ -14828,7 +14841,7 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                                     const k = window.getKktpForMapel(m.id || m.nama);
                                     return `<th class="px-2 py-2 border-b border-gray-200 text-center font-bold text-[10px] min-w-[60px] max-w-[80px] break-words align-bottom">
                                         <div>${m.nama}</div>
-                                        <div class="text-[9px] text-pink-600 font-extrabold mt-0.5 bg-pink-50/80 px-1 py-0.5 rounded border border-pink-200/60 inline-block">KKTP ${k}</div>
+                                        <div class="text-[9px] text-red-600 font-extrabold mt-0.5 bg-red-50/80 px-1 py-0.5 rounded border border-red-200/60 inline-block">KKTP ${k}</div>
                                     </th>`;
                                 }).join('')}
                             </tr>
