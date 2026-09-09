@@ -214,6 +214,7 @@
             { id: "memory_run", name: "Memory Run", icon: "fa-brain", title: "🧠 Memory Run", desc: "Game Mengingat Pola (Memory Runner) untuk melatih ingatan siswa.", group: "Extra Time" },
             { id: "word_search", name: "Cari Kata", icon: "fa-search", title: "🧩 Cari Kata", desc: "Permainan teka-teki silang cari kata interaktif untuk kelas.", group: "Extra Time" },
             { id: "mind_game", name: "Mind Game", icon: "fa-lightbulb", title: "💡 Mind Game", desc: "Teka-teki logika asah otak menghubungkan pasangan tanpa bersilangan.", group: "Extra Time" },
+            { id: "lengkapi_kata", name: "Lengkapi Kata/Angka", icon: "fa-puzzle-piece", title: "🧩 Lengkapi Kata & Angka", desc: "Game edukasi offline melengkapi kata dan deret angka anak SD.", group: "Extra Time" },
             
             { id: "aplikasi_lain", name: "Aplikasi Lain", icon: "fa-th-large", title: "Aplikasi Terintegrasi", desc: "Berbagai aplikasi lain yang dapat diakses.", group: "Sistem & Pengaturan" },
             { id: "sync", name: "Kirim Data (Sync)", icon: "fa-cloud-upload-alt", title: "Sinkronisasi Server", desc: "Kirim data lokal aplikasi ini ke server.", group: "Sistem & Pengaturan" },
@@ -12188,6 +12189,7 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                     case 'memory_run': contentHtml += renderMemory_run(); break;
                     case 'word_search': contentHtml += renderWord_search(); break;
                     case 'mind_game': contentHtml += renderMind_game(); break;
+                    case 'lengkapi_kata': contentHtml += renderLengkapi_kata(); break;
                     case 'aplikasi_lain': contentHtml += renderAplikasiLain(); break;
                     case 'sync': contentHtml += renderSync(); break;
                     case 'pengaturan': contentHtml += renderPengaturan(); break;
@@ -12206,7 +12208,7 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                 targetAppContent.style.minHeight = '500px'; 
                 
                 // Maksimalkan area untuk iframe Aplikasi Lain atau Ekstra
-                if ((menuId === 'aplikasi_lain' && window.currentAplikasiLainUrl) || menuId === 'ekstra' || menuId === 'memory_run' || menuId === 'word_search' || menuId === 'mind_game') {
+                if ((menuId === 'aplikasi_lain' && window.currentAplikasiLainUrl) || menuId === 'ekstra' || menuId === 'memory_run' || menuId === 'word_search' || menuId === 'mind_game' || menuId === 'lengkapi_kata') {
                     targetAppContent.classList.remove('max-w-7xl', 'md:p-8', 'p-4', 'p-2', 'md:p-4');
                     targetAppContent.classList.add('max-w-full', 'p-0', 'flex', 'flex-col');
                 } else {
@@ -13686,6 +13688,14 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
             `;
         }
 
+        function renderLengkapi_kata() {
+            return `
+                <div class="bg-slate-50/50 overflow-hidden w-full h-full min-h-[85vh] flex flex-col justify-center items-center p-0">
+                    <iframe src="ekstra?tab=lengkapi" class="w-full h-full border-0 min-h-[85vh] block" title="Lengkapi Kata / Angka" allowfullscreen></iframe>
+                </div>
+            `;
+        }
+
         // --- FITUR KOREKSI UJIAN ---
         window._originalNavigateTo_koreksi = window._originalNavigateTo_koreksi || window.navigateTo;
         window.navigateTo = function(pageId, isInternal = false) {
@@ -13749,6 +13759,18 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                 const content = document.getElementById('app-content');
                 if (content) {
                     content.innerHTML = renderMind_game();
+                }
+                window.scrollTo(0,0);
+            } else if (pageId === 'lengkapi_kata') {
+                window.currentPage = pageId;
+                try {
+                    localStorage.setItem('mwk_lastMenu', pageId);
+                } catch(e) {}
+                if (typeof renderSidebar === 'function') renderSidebar();
+                if (typeof renderBottomNav === 'function') renderBottomNav();
+                const content = document.getElementById('app-content');
+                if (content) {
+                    content.innerHTML = renderLengkapi_kata();
                 }
                 window.scrollTo(0,0);
             } else {
