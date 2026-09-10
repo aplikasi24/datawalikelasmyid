@@ -246,6 +246,7 @@
                 const unreadCount = Math.max(0, (db.pesan_info ? db.pesan_info.length : 0) - db.pengaturan.read_pesan_count);
 
                 let currentGroup = "";
+                let currentGroupContainer = null;
 
                 appMenus.forEach((menu) => {
                     try {
@@ -281,23 +282,38 @@
                             
                             groupHeader.innerHTML = `
                                 <div class="flex items-center gap-3">
-                                    <i class="fas ${groupIcon} text-sm transition-colors" style="color:${isOpen ? '#3b82f6' : (window._themeGroupColor||'#f97316')}"></i>
-                                    <span class="text-[11px] font-bold uppercase tracking-wider block transition-colors" style="color:${isOpen ? '#3b82f6' : (window._themeGroupColor||'#f97316')};font-family:${window._themeFontFamily||'Inter, sans-serif'}">${currentGroup}</span>
+                                    <i class="fas ${groupIcon} text-sm transition-colors group-icon-main" style="color:${isOpen ? '#3b82f6' : (window._themeGroupColor||'#f97316')}"></i>
+                                    <span class="text-[11px] font-bold uppercase tracking-wider block transition-colors group-text-main" style="color:${isOpen ? '#3b82f6' : (window._themeGroupColor||'#f97316')};font-family:${window._themeFontFamily||'Inter, sans-serif'}">${currentGroup}</span>
                                 </div>
-                                <i class="fas fa-chevron-${isOpen ? 'down' : 'right'} text-xs transition-colors" style="color:${isOpen ? '#3b82f6' : '#64748b'}"></i>
+                                <i class="fas fa-chevron-${isOpen ? 'down' : 'right'} text-xs transition-colors group-icon-chevron" style="color:${isOpen ? '#3b82f6' : '#64748b'}"></i>
                             `;
                             
+                            currentGroupContainer = document.createElement('div');
+                            currentGroupContainer.style.display = isOpen ? 'block' : 'none';
+                            
                             const capturedGroup = currentGroup;
-                            groupHeader.onclick = () => {
-                                window._sidebarGroupState[capturedGroup] = !window._sidebarGroupState[capturedGroup];
-                                renderSidebar();
+                            const capturedContainer = currentGroupContainer;
+                            
+                            groupHeader.onclick = function() {
+                                const isNowOpen = !window._sidebarGroupState[capturedGroup];
+                                window._sidebarGroupState[capturedGroup] = isNowOpen;
+                                capturedContainer.style.display = isNowOpen ? 'block' : 'none';
+                                
+                                const iconMain = this.querySelector('.group-icon-main');
+                                if (iconMain) iconMain.style.color = isNowOpen ? '#3b82f6' : (window._themeGroupColor||'#f97316');
+                                
+                                const textMain = this.querySelector('.group-text-main');
+                                if (textMain) textMain.style.color = isNowOpen ? '#3b82f6' : (window._themeGroupColor||'#f97316');
+                                
+                                const iconChevron = this.querySelector('.group-icon-chevron');
+                                if (iconChevron) {
+                                    iconChevron.className = "fas fa-chevron-" + (isNowOpen ? 'down' : 'right') + " text-xs transition-colors group-icon-chevron";
+                                    iconChevron.style.color = isNowOpen ? '#3b82f6' : '#64748b';
+                                }
                             };
+                            
                             sidebarNav.appendChild(groupHeader);
-                        }
-
-                        // Jika tertutup, jangan tampilkan item menu
-                        if (!window._sidebarGroupState[currentGroup]) {
-                            return;
+                            sidebarNav.appendChild(currentGroupContainer);
                         }
 
                         const isActive = menu.id === window.currentPage;
@@ -335,7 +351,12 @@
                             link.onmouseover = () => { link.style.color = accent; link.querySelector('i').style.color = accent; link.style.background = 'rgba(255,255,255,0.05)'; };
                             link.onmouseout  = () => { link.style.color = textColor; link.querySelector('i').style.color = textColor; link.style.background = ''; };
                         }
-                        sidebarNav.appendChild(link);
+                        
+                        if (currentGroupContainer) {
+                            currentGroupContainer.appendChild(link);
+                        } else {
+                            sidebarNav.appendChild(link);
+                        }
                     } catch (errInner) {
                         console.error('Error menu:', menu, errInner);
                     }
