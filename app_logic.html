@@ -8309,31 +8309,17 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                     });
                 }
                 
-                const data = await new Promise((resolve, reject) => {
-                    const xhr = new XMLHttpRequest();
-                    xhr.open('POST', APPSCRIPT_URL, true);
-                    xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
-                    
-                    xhr.upload.onprogress = (e) => {
-                        if (e.lengthComputable) {
-                            const percent = (e.loaded / e.total) * 100;
-                            if (loader.updateProgress) loader.updateProgress(percent);
-                            if (loader.updateMsg) loader.updateMsg(`Sedang mengirim data ke server... ${Math.round(percent)}%`);
-                        }
-                    };
-                    
-                    xhr.onload = () => {
-                        if (xhr.status >= 200 && xhr.status < 300) {
-                            try { resolve(JSON.parse(xhr.responseText)); }
-                            catch (err) { reject(new Error("Invalid JSON response")); }
-                        } else {
-                            reject(new Error("HTTP Error " + xhr.status));
-                        }
-                    };
-                    
-                    xhr.onerror = () => reject(new Error("Network Error"));
-                    
-                    const params = new URLSearchParams({
+                let fakeProgress = 0;
+                const progressInterval = setInterval(() => {
+                    fakeProgress += (90 - fakeProgress) * 0.15; // Berjalan perlahan mendekati 90%
+                    if (loader.updateProgress) loader.updateProgress(fakeProgress);
+                    if (loader.updateMsg) loader.updateMsg(`Sedang mengirim data ke server... ${Math.round(fakeProgress)}%`);
+                }, 300);
+                
+                const res = await fetch(APPSCRIPT_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: new URLSearchParams({
                         action: 'backupToDrive',
                         data: JSON.stringify({ 
                             email: window.currentUser.email,
@@ -8341,10 +8327,12 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                             backupName: backupName,
                             jsonData: JSON.stringify(dbToCloud)
                         })
-                    });
-                    
-                    xhr.send(params.toString());
+                    })
                 });
+                const data = await res.json();
+                
+                clearInterval(progressInterval);
+                if (loader.updateProgress) loader.updateProgress(100);
                 if (data.status === 'success') {
                     await loader.update('success', 'Berhasil', "Berhasil! Data Anda sudah di-backup ke Drive server.");
                     window.loadCloudBackups();
