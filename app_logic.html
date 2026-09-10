@@ -233,8 +233,39 @@
         window._sidebarGroupState = window._sidebarGroupState || {};
 
         // --- 4. Sidebar Rendering ---
+        window.applyThemes = function() {
+            const p = db.pengaturan || {};
+            const st = p.sidebar_theme || 'navy';
+            const sidebar = document.getElementById('sidebar');
+            const bottomNav = document.getElementById('bottom-nav');
+            
+            let bgStyle = '';
+            if(st === 'white') bgStyle = '#ffffff';
+            else if(st === 'green') bgStyle = '#064e3b';
+            else if(st === 'blue') bgStyle = '#1e3a8a';
+            
+            if(sidebar) {
+                if(bgStyle) {
+                    sidebar.style.backgroundColor = bgStyle;
+                    if(st === 'white') {
+                        sidebar.style.color = '#334155';
+                    } else {
+                        sidebar.style.color = '';
+                    }
+                } else {
+                    sidebar.style.backgroundColor = '';
+                    sidebar.style.color = '';
+                }
+            }
+            if(bottomNav) {
+                if(bgStyle) bottomNav.style.backgroundColor = bgStyle;
+                else bottomNav.style.backgroundColor = '';
+            }
+        };
+
         function renderSidebar() {
             try {
+                window.applyThemes();
                 if (!sidebarNav) return;
                 sidebarNav.innerHTML = '';
                 
@@ -317,12 +348,27 @@
                             menuNameHtml += ` <span class="bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-md ml-2 animate-pulse">(${unreadCount})</span>`;
                         }
                         
+                        const navTheme = (db.pengaturan && db.pengaturan.nav_theme) ? db.pengaturan.nav_theme : 'orange';
+                        let c1 = "from-orange-500 to-orange-600 shadow-orange-500/30";
+                        let c2 = "hover:text-orange-400";
+                        let c3 = "group-hover:bg-orange-500/20";
+                        let c4 = "group-hover:text-orange-400";
+                        if(navTheme === 'blue') {
+                            c1 = "from-blue-500 to-blue-600 shadow-blue-500/30"; c2 = "hover:text-blue-400"; c3 = "group-hover:bg-blue-500/20"; c4 = "group-hover:text-blue-400";
+                        } else if(navTheme === 'emerald') {
+                            c1 = "from-emerald-500 to-emerald-600 shadow-emerald-500/30"; c2 = "hover:text-emerald-400"; c3 = "group-hover:bg-emerald-500/20"; c4 = "group-hover:text-emerald-400";
+                        } else if(navTheme === 'purple') {
+                            c1 = "from-purple-500 to-purple-600 shadow-purple-500/30"; c2 = "hover:text-purple-400"; c3 = "group-hover:bg-purple-500/20"; c4 = "group-hover:text-purple-400";
+                        } else if(navTheme === 'rose') {
+                            c1 = "from-rose-500 to-rose-600 shadow-rose-500/30"; c2 = "hover:text-rose-400"; c3 = "group-hover:bg-rose-500/20"; c4 = "group-hover:text-rose-400";
+                        }
+
                         if (isActive) {
-                            link.className = "flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 bg-gradient-to-r from-orange-500 to-orange-600 text-white shadow-lg shadow-orange-500/30 group transform scale-[1.02] mb-1";
-                            link.innerHTML = '<div class="w-8 h-8 rounded-lg bg-white/20 flex items-center justify-center shrink-0 transition-colors duration-300"><i class="fas ' + menu.icon + ' text-sm"></i></div><span class="font-bold text-sm tracking-wide flex-1 flex items-center transition-colors duration-300">' + menuNameHtml + '</span>';
+                            link.className = `flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 bg-gradient-to-r ${c1} text-white shadow-lg group transform scale-[1.02] mb-1`;
+                            link.innerHTML = `<div class="w-8 h-8 rounded-lg bg-white/20 flex items-center justify-center shrink-0 transition-colors duration-300"><i class="fas ${menu.icon} text-sm"></i></div><span class="font-bold text-sm tracking-wide flex-1 flex items-center transition-colors duration-300">${menuNameHtml}</span>`;
                         } else {
-                            link.className = "flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 text-slate-400 hover:bg-slate-800/80 hover:text-orange-400 group hover:translate-x-1 cursor-pointer mb-1";
-                            link.innerHTML = '<div class="w-8 h-8 rounded-lg bg-slate-800 group-hover:bg-orange-500/20 flex items-center justify-center shrink-0 transition-colors duration-300"><i class="fas ' + menu.icon + ' text-sm text-slate-500 group-hover:text-orange-400 transition-colors duration-300"></i></div><span class="font-medium text-sm flex-1 flex items-center transition-colors duration-300">' + menuNameHtml + '</span>';
+                            link.className = `flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 text-slate-400 hover:bg-slate-800/80 ${c2} group hover:translate-x-1 cursor-pointer mb-1`;
+                            link.innerHTML = `<div class="w-8 h-8 rounded-lg bg-slate-800 ${c3} flex items-center justify-center shrink-0 transition-colors duration-300"><i class="fas ${menu.icon} text-sm text-slate-500 ${c4} transition-colors duration-300"></i></div><span class="font-medium text-sm flex-1 flex items-center transition-colors duration-300">${menuNameHtml}</span>`;
                         }
                         sidebarNav.appendChild(link);
                     } catch (errInner) {
@@ -7980,9 +8026,12 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                 nip_kepsek: form.nip_kepsek.value,
                 tapel: form.tapel.value,
                 semester: form.semester.value,
-                npsn: form.npsn.value
+                npsn: form.npsn.value,
+                sidebar_theme: form.sidebar_theme ? form.sidebar_theme.value : (db.pengaturan.sidebar_theme || 'navy'),
+                nav_theme: form.nav_theme ? form.nav_theme.value : (db.pengaturan.nav_theme || 'orange')
             };
             saveDB();
+            window.applyThemes();
             window.updateUIIdentitas();
             window.showAlert("Pengaturan profil berhasil disimpan!");
             navigateTo('pengaturan');
@@ -8091,7 +8140,31 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                             </div>
                         </div>
                         ` : ''}
-                        
+                        <div class="mt-8 border-t border-gray-200 pt-6">
+                            <h3 class="font-bold text-gray-800 text-lg mb-4">Pengaturan Tema & Warna</h3>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="text-sm font-medium text-gray-600 mb-2 block">Warna Sidebar & Menu Cepat</label>
+                                    <select name="sidebar_theme" class="w-full border p-2 rounded-lg bg-gray-50 focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none transition">
+                                        <option value="navy" ${p.sidebar_theme === 'navy' || !p.sidebar_theme ? 'selected' : ''}>Biru Gelap (Navy) - Default</option>
+                                        <option value="white" ${p.sidebar_theme === 'white' ? 'selected' : ''}>Putih Bersih</option>
+                                        <option value="green" ${p.sidebar_theme === 'green' ? 'selected' : ''}>Hijau Zamrud</option>
+                                        <option value="blue" ${p.sidebar_theme === 'blue' ? 'selected' : ''}>Biru Laut</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="text-sm font-medium text-gray-600 mb-2 block">Warna Aktif Navigasi</label>
+                                    <select name="nav_theme" class="w-full border p-2 rounded-lg bg-gray-50 focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none transition">
+                                        <option value="orange" ${p.nav_theme === 'orange' || !p.nav_theme ? 'selected' : ''}>Oranye - Default</option>
+                                        <option value="blue" ${p.nav_theme === 'blue' ? 'selected' : ''}>Biru</option>
+                                        <option value="emerald" ${p.nav_theme === 'emerald' ? 'selected' : ''}>Hijau Zamrud</option>
+                                        <option value="purple" ${p.nav_theme === 'purple' ? 'selected' : ''}>Ungu</option>
+                                        <option value="rose" ${p.nav_theme === 'rose' ? 'selected' : ''}>Merah Muda</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
                         <div class="mt-8 border-t border-gray-200 pt-6 ${!window.currentUser ? 'hidden' : ''}">
                             <h3 class="font-bold text-gray-800 text-lg mb-4">Ganti Password Akun</h3>
                             <div class="space-y-4">
