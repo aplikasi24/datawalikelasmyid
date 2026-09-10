@@ -8274,12 +8274,24 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
 
             if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fas fa-cloud-upload-alt"></i> Backup ke Server'; }
 
-            if (window.cloudBackupsList.length >= 5) {
-                alert("Kirim ke Server gagal max 5 backup jika ingin tetap melanjutkan hapus salah satu backup");
+            if (window.cloudBackupsList.length >= 7) {
+                alert("Kirim ke Server gagal: Max 7 backup. Jika ingin tetap melanjutkan, hapus salah satu backup terlebih dahulu.");
                 return;
             }
             
-            if (!await showConfirm("Kirim seluruh data (Siswa, Nilai, dll) ke server?")) return;
+            const result = await Swal.fire({
+                title: 'Nama Backup',
+                input: 'text',
+                inputLabel: 'Masukkan deskripsi singkat untuk backup ini:',
+                inputPlaceholder: 'Misal: Sebelum UTS, Selesai Input Nilai, dll',
+                showCancelButton: true,
+                confirmButtonText: '<i class="fas fa-cloud-upload-alt mr-1"></i> Backup',
+                cancelButtonText: 'Batal',
+                allowOutsideClick: false
+            });
+            
+            if (!result.isConfirmed) return;
+            const backupName = result.value.trim() || 'Backup';
             
             if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner animate-spin mr-2"></i> Sedang Mengirim...'; }
             
@@ -8297,19 +8309,42 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                     });
                 }
                 
-                const res = await fetch(APPSCRIPT_URL, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                    body: new URLSearchParams({
+                const data = await new Promise((resolve, reject) => {
+                    const xhr = new XMLHttpRequest();
+                    xhr.open('POST', APPSCRIPT_URL, true);
+                    xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+                    
+                    xhr.upload.onprogress = (e) => {
+                        if (e.lengthComputable) {
+                            const percent = (e.loaded / e.total) * 100;
+                            if (loader.updateProgress) loader.updateProgress(percent);
+                            if (loader.updateMsg) loader.updateMsg(`Sedang mengirim data ke server... ${Math.round(percent)}%`);
+                        }
+                    };
+                    
+                    xhr.onload = () => {
+                        if (xhr.status >= 200 && xhr.status < 300) {
+                            try { resolve(JSON.parse(xhr.responseText)); }
+                            catch (err) { reject(new Error("Invalid JSON response")); }
+                        } else {
+                            reject(new Error("HTTP Error " + xhr.status));
+                        }
+                    };
+                    
+                    xhr.onerror = () => reject(new Error("Network Error"));
+                    
+                    const params = new URLSearchParams({
                         action: 'backupToDrive',
                         data: JSON.stringify({ 
                             email: window.currentUser.email,
                             nama: window.currentUser.nama,
+                            backupName: backupName,
                             jsonData: JSON.stringify(dbToCloud)
                         })
-                    })
+                    });
+                    
+                    xhr.send(params.toString());
                 });
-                const data = await res.json();
                 if (data.status === 'success') {
                     await loader.update('success', 'Berhasil', "Berhasil! Data Anda sudah di-backup ke Drive server.");
                     window.loadCloudBackups();
@@ -8355,6 +8390,7 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                     if (contentLength > 0) {
                         const percent = Math.round((receivedLength / contentLength) * 100);
                         if(loader && loader.updateMsg) loader.updateMsg(`Sedang mengunduh dan memulihkan data dari server... ${percent}%`);
+                        if(loader && loader.updateProgress) loader.updateProgress(percent);
                     } else {
                         if(loader && loader.updateMsg) loader.updateMsg(`Sedang mengunduh dan memulihkan data dari server... ${(receivedLength / 1024).toFixed(1)} KB`);
                     }
@@ -8527,7 +8563,10 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                         <i class="fas fa-circle-notch fa-spin"></i>
                     </div>
                     <h3 id="loading-title" class="text-xl font-bold text-gray-800 mb-2">Memproses</h3>
-                    <p id="loading-msg" class="text-gray-600 mb-6 text-sm">${msg}</p>
+                    <p id="loading-msg" class="text-gray-600 mb-4 text-sm">${msg}</p>
+                    <div id="loading-progress-container" class="w-full bg-gray-200 rounded-full h-2.5 mb-6 hidden">
+                        <div id="loading-progress-bar" class="bg-blue-600 h-2.5 rounded-full transition-all duration-300" style="width: 0%"></div>
+                    </div>
                     <div id="loading-action" class="flex justify-center hidden">
                         <button id="btn-loading-ok" class="px-5 py-2.5 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition font-medium w-full shadow-md">Tutup</button>
                     </div>
@@ -8544,12 +8583,21 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                     const msgEl = overlay.querySelector('#loading-msg');
                     if (msgEl) msgEl.innerHTML = newMsg;
                 },
+                updateProgress: (percent) => {
+                    const pContainer = overlay.querySelector('#loading-progress-container');
+                    const pBar = overlay.querySelector('#loading-progress-bar');
+                    if (pContainer && pBar) {
+                        pContainer.classList.remove('hidden');
+                        pBar.style.width = Math.min(100, Math.max(0, percent)) + '%';
+                    }
+                },
                 update: (status, title, newMsg) => {
                     const icon = overlay.querySelector('#loading-icon');
                     const titleEl = overlay.querySelector('#loading-title');
                     const msgEl = overlay.querySelector('#loading-msg');
                     const action = overlay.querySelector('#loading-action');
                     const btn = overlay.querySelector('#btn-loading-ok');
+                    const pBar = overlay.querySelector('#loading-progress-bar');
                     
                     titleEl.innerText = title;
                     msgEl.innerText = newMsg;
@@ -8558,10 +8606,12 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                         icon.className = 'w-12 h-12 rounded-full flex items-center justify-center mb-4 mx-auto text-xl bg-green-100 text-green-600';
                         icon.innerHTML = '<i class="fas fa-check"></i>';
                         btn.className = 'px-5 py-2.5 bg-green-600 text-white rounded-xl hover:bg-green-700 transition font-medium w-full shadow-md';
+                        if (pBar) { pBar.style.width = '100%'; pBar.className = 'bg-green-600 h-2.5 rounded-full transition-all duration-300'; }
                     } else if (status === 'error') {
                         icon.className = 'w-12 h-12 rounded-full flex items-center justify-center mb-4 mx-auto text-xl bg-red-100 text-red-600';
                         icon.innerHTML = '<i class="fas fa-times"></i>';
                         btn.className = 'px-5 py-2.5 bg-red-600 text-white rounded-xl hover:bg-red-700 transition font-medium w-full shadow-md';
+                        if (pBar) pBar.className = 'bg-red-600 h-2.5 rounded-full transition-all duration-300';
                     }
                     
                     action.classList.remove('hidden');
