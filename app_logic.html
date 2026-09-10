@@ -8195,7 +8195,7 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                     </div>
 
                 </div>
-            \`;
+            `;
         }
 
 
@@ -12489,31 +12489,30 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
         // --- Sidebar Theme Apply ---
         window.applySidebarTheme = () => {
             try {
-                const p = db.pengaturan || {};
-                const sbBg = p.sidebarBg || '#0f172a';
+                if (!db || !db.pengaturan) return;
+                const p = db.pengaturan;
+                const sbBg     = p.sidebarBg     || '#0f172a';
                 const sbAccent = p.sidebarAccent || '#f97316';
-                const sbText = p.sidebarText || '#94a3b8';
+                const sbText   = p.sidebarText   || '#94a3b8';
 
-                const sidebar = document.getElementById('sidebar');
+                // Store theme globals for renderSidebar to use
+                window._themeAccent = sbAccent;
+                window._themeText   = sbText;
+                window._themeBg     = sbBg;
+
+                // Apply background to sidebar element
+                const sidebarEl = document.getElementById('sidebar');
+                if (sidebarEl) sidebarEl.style.background = sbBg;
+
+                // Apply background to bottom nav
                 const bottomNav = document.getElementById('bottom-nav');
-
-                if (sidebar) {
-                    sidebar.style.background = sbBg;
-                    // Quick access card top area
-                    const sidebarHeader = sidebar.querySelector('.sidebar-header');
-                    if (sidebarHeader) sidebarHeader.style.background = sbBg;
-                }
                 if (bottomNav) {
                     bottomNav.style.background = sbBg;
                     bottomNav.style.borderTopColor = sbAccent + '55';
                 }
 
-                // Re-apply sidebar nav colors via renderSidebar override
-                window._themeAccent = sbAccent;
-                window._themeText = sbText;
-                window._themeBg = sbBg;
-
-                renderSidebar();
+                // Re-render sidebar to pick up new colors (safe call)
+                if (typeof renderSidebar === 'function') renderSidebar();
             } catch(e) { console.warn('applySidebarTheme error:', e); }
         };
 
