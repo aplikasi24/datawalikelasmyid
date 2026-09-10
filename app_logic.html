@@ -233,53 +233,8 @@
         window._sidebarGroupState = window._sidebarGroupState || {};
 
         // --- 4. Sidebar Rendering ---
-        window.applyThemes = function() {
-            const p = db.pengaturan || {};
-            const st = p.sidebar_theme || 'navy';
-            const sidebar = document.getElementById('sidebar');
-            const bottomNav = document.getElementById('bottom-nav');
-            const mobileLainnya = document.getElementById('mobileMenuLainnyaContent');
-            
-            let bgStyle = '';
-            let isDark = true;
-            if(st === 'white') { bgStyle = '#ffffff'; isDark = false; }
-            else if(st === 'green') { bgStyle = '#064e3b'; }
-            else if(st === 'blue') { bgStyle = '#1e3a8a'; }
-            else if(st === 'purple') { bgStyle = '#4c1d95'; }
-            else if(st === 'red') { bgStyle = '#7f1d1d'; }
-            else if(st === 'black') { bgStyle = '#0f172a'; }
-            
-            if(sidebar) {
-                if(bgStyle) {
-                    sidebar.style.backgroundColor = bgStyle;
-                    sidebar.style.color = isDark ? '' : '#334155';
-                } else {
-                    sidebar.style.backgroundColor = '';
-                    sidebar.style.color = '';
-                }
-            }
-            if(bottomNav) {
-                if(bgStyle) bottomNav.style.backgroundColor = bgStyle;
-                else bottomNav.style.backgroundColor = '';
-            }
-            if(mobileLainnya) {
-                if(bgStyle && isDark) {
-                    mobileLainnya.style.backgroundColor = bgStyle;
-                    mobileLainnya.querySelectorAll('span.text-slate-700').forEach(el => el.style.color = '#f1f5f9');
-                    const h3 = mobileLainnya.querySelector('h3');
-                    if(h3) h3.style.color = '#ffffff';
-                } else {
-                    mobileLainnya.style.backgroundColor = '';
-                    mobileLainnya.querySelectorAll('span.text-slate-700').forEach(el => el.style.color = '');
-                    const h3 = mobileLainnya.querySelector('h3');
-                    if(h3) h3.style.color = '';
-                }
-            }
-        };
-
         function renderSidebar() {
             try {
-                window.applyThemes();
                 if (!sidebarNav) return;
                 sidebarNav.innerHTML = '';
                 
@@ -362,27 +317,12 @@
                             menuNameHtml += ` <span class="bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-md ml-2 animate-pulse">(${unreadCount})</span>`;
                         }
                         
-                        const navTheme = (db.pengaturan && db.pengaturan.nav_theme) ? db.pengaturan.nav_theme : 'orange';
-                        let c1 = "from-orange-500 to-orange-600 shadow-orange-500/30";
-                        let c2 = "hover:text-orange-400";
-                        let c3 = "group-hover:bg-orange-500/20";
-                        let c4 = "group-hover:text-orange-400";
-                        if(navTheme === 'blue') {
-                            c1 = "from-blue-500 to-blue-600 shadow-blue-500/30"; c2 = "hover:text-blue-400"; c3 = "group-hover:bg-blue-500/20"; c4 = "group-hover:text-blue-400";
-                        } else if(navTheme === 'emerald') {
-                            c1 = "from-emerald-500 to-emerald-600 shadow-emerald-500/30"; c2 = "hover:text-emerald-400"; c3 = "group-hover:bg-emerald-500/20"; c4 = "group-hover:text-emerald-400";
-                        } else if(navTheme === 'purple') {
-                            c1 = "from-purple-500 to-purple-600 shadow-purple-500/30"; c2 = "hover:text-purple-400"; c3 = "group-hover:bg-purple-500/20"; c4 = "group-hover:text-purple-400";
-                        } else if(navTheme === 'rose') {
-                            c1 = "from-rose-500 to-rose-600 shadow-rose-500/30"; c2 = "hover:text-rose-400"; c3 = "group-hover:bg-rose-500/20"; c4 = "group-hover:text-rose-400";
-                        }
-
                         if (isActive) {
-                            link.className = `flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 bg-gradient-to-r ${c1} text-white shadow-lg group transform scale-[1.02] mb-1`;
-                            link.innerHTML = `<div class="w-8 h-8 rounded-lg bg-white/20 flex items-center justify-center shrink-0 transition-colors duration-300"><i class="fas ${menu.icon} text-sm"></i></div><span class="font-bold text-sm tracking-wide flex-1 flex items-center transition-colors duration-300">${menuNameHtml}</span>`;
+                            link.className = "flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 bg-gradient-to-r from-orange-500 to-orange-600 text-white shadow-lg shadow-orange-500/30 group transform scale-[1.02] mb-1";
+                            link.innerHTML = '<div class="w-8 h-8 rounded-lg bg-white/20 flex items-center justify-center shrink-0 transition-colors duration-300"><i class="fas ' + menu.icon + ' text-sm"></i></div><span class="font-bold text-sm tracking-wide flex-1 flex items-center transition-colors duration-300">' + menuNameHtml + '</span>';
                         } else {
-                            link.className = `flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 text-slate-400 hover:bg-slate-800/80 ${c2} group hover:translate-x-1 cursor-pointer mb-1`;
-                            link.innerHTML = `<div class="w-8 h-8 rounded-lg bg-slate-800 ${c3} flex items-center justify-center shrink-0 transition-colors duration-300"><i class="fas ${menu.icon} text-sm text-slate-500 ${c4} transition-colors duration-300"></i></div><span class="font-medium text-sm flex-1 flex items-center transition-colors duration-300">${menuNameHtml}</span>`;
+                            link.className = "flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 text-slate-400 hover:bg-slate-800/80 hover:text-orange-400 group hover:translate-x-1 cursor-pointer mb-1";
+                            link.innerHTML = '<div class="w-8 h-8 rounded-lg bg-slate-800 group-hover:bg-orange-500/20 flex items-center justify-center shrink-0 transition-colors duration-300"><i class="fas ' + menu.icon + ' text-sm text-slate-500 group-hover:text-orange-400 transition-colors duration-300"></i></div><span class="font-medium text-sm flex-1 flex items-center transition-colors duration-300">' + menuNameHtml + '</span>';
                         }
                         sidebarNav.appendChild(link);
                     } catch (errInner) {
@@ -410,16 +350,6 @@
             const nav = document.getElementById('bottom-nav');
             if (!nav) return;
             
-            const navTheme = (db.pengaturan && db.pengaturan.nav_theme) ? db.pengaturan.nav_theme : 'orange';
-            let activeText = 'text-orange-400';
-            let hoverText = 'hover:text-orange-300';
-            if(navTheme === 'blue') { activeText = 'text-blue-400'; hoverText = 'hover:text-blue-300'; }
-            else if(navTheme === 'emerald') { activeText = 'text-emerald-400'; hoverText = 'hover:text-emerald-300'; }
-            else if(navTheme === 'purple') { activeText = 'text-purple-400'; hoverText = 'hover:text-purple-300'; }
-            else if(navTheme === 'rose') { activeText = 'text-rose-400'; hoverText = 'hover:text-rose-300'; }
-            else if(navTheme === 'yellow') { activeText = 'text-yellow-400'; hoverText = 'hover:text-yellow-300'; }
-            else if(navTheme === 'cyan') { activeText = 'text-cyan-400'; hoverText = 'hover:text-cyan-300'; }
-
             // Hanya buat tombol jika belum ada (mencegah duplikasi event handler)
             if (nav.children.length >= bottomNavMenus.length) {
                 // Hanya update tampilan aktif/tidak aktif, JANGAN buat ulang
@@ -428,7 +358,7 @@
                     if (!btn) return;
                     const isActive = (menu.id !== 'menu') && (window.currentPage === menu.id);
                     btn.className = 'flex flex-col items-center justify-center flex-1 min-w-0 py-1 gap-0.5 transition-colors duration-300 ' +
-                        (isActive ? activeText : 'text-slate-400 ' + hoverText);
+                        (isActive ? 'text-orange-400' : 'text-slate-400 hover:text-orange-300');
                 });
                 return;
             }
@@ -466,7 +396,7 @@
                 
                 const isActive = (menu.id !== 'menu') && (window.currentPage === menu.id);
                 btn.className = 'flex flex-col items-center justify-center flex-1 min-w-0 py-1 gap-0.5 transition-colors duration-300 ' +
-                    (isActive ? activeText : 'text-slate-400 ' + hoverText);
+                    (isActive ? 'text-orange-400' : 'text-slate-400 hover:text-orange-300');
                 btn.innerHTML = `<i class="fas ${menu.icon} text-lg transition-colors duration-300"></i><span style="font-size:10px;font-weight:600;white-space:nowrap;" class="transition-colors duration-300">${menu.name}</span>`;
                 nav.appendChild(btn);
             });
@@ -499,15 +429,6 @@
                 }
             }, { passive: false });
 
-            const navTheme = (db.pengaturan && db.pengaturan.nav_theme) ? db.pengaturan.nav_theme : 'orange';
-            let iconColor = 'text-orange-500';
-            if(navTheme === 'blue') iconColor = 'text-blue-500';
-            else if(navTheme === 'emerald') iconColor = 'text-emerald-500';
-            else if(navTheme === 'purple') iconColor = 'text-purple-500';
-            else if(navTheme === 'rose') iconColor = 'text-rose-500';
-            else if(navTheme === 'yellow') iconColor = 'text-yellow-500';
-            else if(navTheme === 'cyan') iconColor = 'text-cyan-500';
-
             const gridMenus = appMenus.filter(m => !['dashboard', 'presensi', 'siswa', 'nilai'].includes(m.id));
             const gridHtml = gridMenus.map(m => {
                 let badgeHtml = '';
@@ -520,7 +441,7 @@
                 return `
                     <div data-nav-target="${m.id}" class="flex flex-col items-center gap-3 cursor-pointer group py-2">
                         <div class="relative flex items-center justify-center transition-transform transform group-hover:scale-110">
-                            <i class="fas ${m.icon} text-3xl ${iconColor}"></i>
+                            <i class="fas ${m.icon} text-3xl text-primary-500"></i>
                             ${badgeHtml}
                         </div>
                         <span class="text-[11px] font-medium text-slate-700 text-center leading-tight w-full">${m.name}</span>
@@ -577,7 +498,6 @@
             window._menuLainnyaOpen = true;
 
             const modal = _createMenuLainnyaModal();
-            window.applyThemes();
 
             // Tampilkan overlay
             modal.style.opacity = '1';
@@ -8060,12 +7980,9 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                 nip_kepsek: form.nip_kepsek.value,
                 tapel: form.tapel.value,
                 semester: form.semester.value,
-                npsn: form.npsn.value,
-                sidebar_theme: form.sidebar_theme ? form.sidebar_theme.value : (db.pengaturan.sidebar_theme || 'navy'),
-                nav_theme: form.nav_theme ? form.nav_theme.value : (db.pengaturan.nav_theme || 'orange')
+                npsn: form.npsn.value
             };
             saveDB();
-            window.applyThemes();
             window.updateUIIdentitas();
             window.showAlert("Pengaturan profil berhasil disimpan!");
             navigateTo('pengaturan');
@@ -8174,36 +8091,7 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                             </div>
                         </div>
                         ` : ''}
-                        <div class="mt-8 border-t border-gray-200 pt-6">
-                            <h3 class="font-bold text-gray-800 text-lg mb-4">Pengaturan Tema & Warna</h3>
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div>
-                                    <label class="text-sm font-medium text-gray-600 mb-2 block">Warna Sidebar & Menu Cepat</label>
-                                    <select name="sidebar_theme" class="w-full border p-2 rounded-lg bg-gray-50 focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none transition">
-                                        <option value="navy" ${p.sidebar_theme === 'navy' || !p.sidebar_theme ? 'selected' : ''}>Biru Gelap (Navy) - Default</option>
-                                        <option value="white" ${p.sidebar_theme === 'white' ? 'selected' : ''}>Putih Bersih</option>
-                                        <option value="green" ${p.sidebar_theme === 'green' ? 'selected' : ''}>Hijau Tua</option>
-                                        <option value="blue" ${p.sidebar_theme === 'blue' ? 'selected' : ''}>Biru Laut</option>
-                                        <option value="purple" ${p.sidebar_theme === 'purple' ? 'selected' : ''}>Ungu Tua</option>
-                                        <option value="red" ${p.sidebar_theme === 'red' ? 'selected' : ''}>Merah Maroon</option>
-                                        <option value="black" ${p.sidebar_theme === 'black' ? 'selected' : ''}>Hitam Pekat</option>
-                                    </select>
-                                </div>
-                                <div>
-                                    <label class="text-sm font-medium text-gray-600 mb-2 block">Warna Aktif Navigasi</label>
-                                    <select name="nav_theme" class="w-full border p-2 rounded-lg bg-gray-50 focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none transition">
-                                        <option value="orange" ${p.nav_theme === 'orange' || !p.nav_theme ? 'selected' : ''}>Oranye - Default</option>
-                                        <option value="blue" ${p.nav_theme === 'blue' ? 'selected' : ''}>Biru</option>
-                                        <option value="emerald" ${p.nav_theme === 'emerald' ? 'selected' : ''}>Hijau Zamrud</option>
-                                        <option value="purple" ${p.nav_theme === 'purple' ? 'selected' : ''}>Ungu</option>
-                                        <option value="rose" ${p.nav_theme === 'rose' ? 'selected' : ''}>Merah Muda</option>
-                                        <option value="yellow" ${p.nav_theme === 'yellow' ? 'selected' : ''}>Kuning Emas</option>
-                                        <option value="cyan" ${p.nav_theme === 'cyan' ? 'selected' : ''}>Cyan / Biru Muda</option>
-                                    </select>
-                                </div>
-                            </div>
-                        </div>
-
+                        
                         <div class="mt-8 border-t border-gray-200 pt-6 ${!window.currentUser ? 'hidden' : ''}">
                             <h3 class="font-bold text-gray-800 text-lg mb-4">Ganti Password Akun</h3>
                             <div class="space-y-4">
