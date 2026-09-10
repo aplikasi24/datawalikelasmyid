@@ -318,11 +318,19 @@
                         }
                         
                         if (isActive) {
-                            link.className = "flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 bg-gradient-to-r from-orange-500 to-orange-600 text-white shadow-lg shadow-orange-500/30 group transform scale-[1.02] mb-1";
-                            link.innerHTML = '<div class="w-8 h-8 rounded-lg bg-white/20 flex items-center justify-center shrink-0 transition-colors duration-300"><i class="fas ' + menu.icon + ' text-sm"></i></div><span class="font-bold text-sm tracking-wide flex-1 flex items-center transition-colors duration-300">' + menuNameHtml + '</span>';
+                            const accent = window._themeAccent || '#f97316';
+                            link.className = "flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 text-white shadow-lg group transform scale-[1.02] mb-1";
+                            link.style.background = `linear-gradient(to right, ${accent}, ${accent}cc)`;
+                            link.style.boxShadow = `0 8px 24px ${accent}44`;
+                            link.innerHTML = '<div class="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 transition-colors duration-300" style="background:rgba(255,255,255,0.2)"><i class="fas ' + menu.icon + ' text-sm"></i></div><span class="font-bold text-sm tracking-wide flex-1 flex items-center transition-colors duration-300">' + menuNameHtml + '</span>';
                         } else {
-                            link.className = "flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 text-slate-400 hover:bg-slate-800/80 hover:text-orange-400 group hover:translate-x-1 cursor-pointer mb-1";
-                            link.innerHTML = '<div class="w-8 h-8 rounded-lg bg-slate-800 group-hover:bg-orange-500/20 flex items-center justify-center shrink-0 transition-colors duration-300"><i class="fas ' + menu.icon + ' text-sm text-slate-500 group-hover:text-orange-400 transition-colors duration-300"></i></div><span class="font-medium text-sm flex-1 flex items-center transition-colors duration-300">' + menuNameHtml + '</span>';
+                            const textColor = window._themeText || '#94a3b8';
+                            const accent = window._themeAccent || '#f97316';
+                            link.className = "flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 group hover:translate-x-1 cursor-pointer mb-1";
+                            link.style.color = textColor;
+                            link.innerHTML = '<div class="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 transition-colors duration-300" style="background:rgba(255,255,255,0.07)"><i class="fas ' + menu.icon + ' text-sm" style="color:' + textColor + '"></i></div><span class="font-medium text-sm flex-1 flex items-center transition-colors duration-300">' + menuNameHtml + '</span>';
+                            link.onmouseover = () => { link.style.color = accent; link.querySelector('i').style.color = accent; link.style.background = 'rgba(255,255,255,0.05)'; };
+                            link.onmouseout  = () => { link.style.color = textColor; link.querySelector('i').style.color = textColor; link.style.background = ''; };
                         }
                         sidebarNav.appendChild(link);
                     } catch (errInner) {
@@ -8117,10 +8125,79 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                             <button type="submit" class="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition shadow-md flex items-center justify-center gap-2 font-bold flex-1"><i class="fas fa-save"></i> Simpan Perubahan Profil</button>
                             <button type="button" onclick="window.handleLogout()" class="bg-red-50 text-red-600 px-6 py-3 rounded-lg hover:bg-red-100 hover:text-red-700 transition shadow-sm border border-red-100 flex items-center justify-center gap-2 font-bold"><i class="fas fa-sign-out-alt"></i> Keluar Aplikasi</button>
                         </div>
-                    </form>
+                     </form>
+
+                    <!-- ===== TAMPILAN SIDEBAR ===== -->
+                    <div class="mt-6 pt-6 border-t border-gray-200">
+                        <h3 class="font-bold text-gray-800 text-base mb-1 flex items-center gap-2"><i class="fas fa-palette text-indigo-500"></i> Tampilan Sidebar & Navigasi</h3>
+                        <p class="text-xs text-gray-400 mb-4">Sesuaikan warna sidebar, tombol aktif, dan teks navigasi sesuai selera. Perubahan langsung diterapkan.</p>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-5">
+
+                            <!-- Warna Background Sidebar -->
+                            <div>
+                                <label class="text-xs font-bold text-gray-600 mb-2 block"><i class="fas fa-layer-group mr-1 text-indigo-400"></i> Warna Background Sidebar</label>
+                                <div class="flex flex-wrap gap-2">
+                                    ${[['#0f172a','Abu Tua (Default)'],['#064e3b','Hijau Tua'],['#1e3a8a','Biru Tua'],['#1a1a2e','Navy Gelap'],['#ffffff','Putih'],['#1f2937','Abu Netral'],['#4a1942','Ungu Tua'],['#7c2d12','Coklat Merah']].map(([hex,label]) => {
+                                        const curr = (p.sidebarBg || '#0f172a');
+                                        const isActive = curr.toLowerCase() === hex.toLowerCase();
+                                        return '<button type="button" title="' + label + '" onclick="window.setSidebarColor(\'bg\',\'' + hex + '\',this)" style="background:' + hex + ';width:28px;height:28px;border-radius:8px;border:3px solid ' + (isActive ? '#6366f1' : 'transparent') + ';box-shadow:0 2px 6px rgba(0,0,0,0.2);cursor:pointer;transition:transform 0.15s" onmouseover="this.style.transform=\'scale(1.15)\'" onmouseout="this.style.transform=\'scale(1)\'"></button>';
+                                    }).join('')}
+                                </div>
+                            </div>
+
+                            <!-- Warna Menu Aktif (Accent) -->
+                            <div>
+                                <label class="text-xs font-bold text-gray-600 mb-2 block"><i class="fas fa-mouse-pointer mr-1 text-indigo-400"></i> Warna Menu Aktif (Klik)</label>
+                                <div class="flex flex-wrap gap-2">
+                                    ${[['#f97316','Orange (Default)'],['#10b981','Hijau Emerald'],['#3b82f6','Biru'],['#8b5cf6','Ungu'],['#ec4899','Merah Muda'],['#ef4444','Merah'],['#f59e0b','Kuning Amber'],['#06b6d4','Cyan']].map(([hex,label]) => {
+                                        const curr = (p.sidebarAccent || '#f97316');
+                                        const isActive = curr.toLowerCase() === hex.toLowerCase();
+                                        return '<button type="button" title="' + label + '" onclick="window.setSidebarColor(\'accent\',\'' + hex + '\',this)" style="background:' + hex + ';width:28px;height:28px;border-radius:8px;border:3px solid ' + (isActive ? '#6366f1' : 'transparent') + ';box-shadow:0 2px 6px rgba(0,0,0,0.2);cursor:pointer;transition:transform 0.15s" onmouseover="this.style.transform=\'scale(1.15)\'" onmouseout="this.style.transform=\'scale(1)\'"></button>';
+                                    }).join('')}
+                                </div>
+                            </div>
+
+                            <!-- Warna Teks Navigasi -->
+                            <div>
+                                <label class="text-xs font-bold text-gray-600 mb-2 block"><i class="fas fa-font mr-1 text-indigo-400"></i> Warna Teks Navigasi</label>
+                                <div class="flex flex-wrap gap-2">
+                                    ${[['#94a3b8','Abu Muda (Default)'],['#ffffff','Putih'],['#cbd5e1','Putih Abu'],['#fcd34d','Kuning'],['#6ee7b7','Hijau Muda'],['#93c5fd','Biru Muda'],['#f9a8d4','Merah Muda'],['#c4b5fd','Lavender']].map(([hex,label]) => {
+                                        const curr = (p.sidebarText || '#94a3b8');
+                                        const isActive = curr.toLowerCase() === hex.toLowerCase();
+                                        return '<button type="button" title="' + label + '" onclick="window.setSidebarColor(\'text\',\'' + hex + '\',this)" style="background:' + hex + ';width:28px;height:28px;border-radius:8px;border:3px solid ' + (isActive ? '#6366f1' : 'transparent') + ';box-shadow:0 2px 6px rgba(0,0,0,0.2);cursor:pointer;transition:transform 0.15s" onmouseover="this.style.transform=\'scale(1.15)\'" onmouseout="this.style.transform=\'scale(1)\'"></button>';
+                                    }).join('')}
+                                </div>
+                            </div>
+
+                        </div>
+
+                        <!-- Preview Mini -->
+                        <div class="mt-4">
+                            <p class="text-xs font-bold text-gray-500 mb-2"><i class="fas fa-eye mr-1"></i> Preview</p>
+                            <div id="sidebar-preview-box" style="background:${p.sidebarBg||'#0f172a'};padding:10px;border-radius:12px;display:inline-block;min-width:180px;box-shadow:0 4px 12px rgba(0,0,0,0.25)">
+                                <div style="display:flex;align-items:center;gap:8px;padding:6px 10px;border-radius:8px;background:${p.sidebarAccent||'#f97316'};margin-bottom:4px">
+                                    <i class="fas fa-home" style="color:white;font-size:10px"></i>
+                                    <span style="color:white;font-size:10px;font-weight:700">Dashboard (Aktif)</span>
+                                </div>
+                                <div style="display:flex;align-items:center;gap:8px;padding:6px 10px;border-radius:8px">
+                                    <i class="fas fa-users" style="color:${p.sidebarText||'#94a3b8'};font-size:10px"></i>
+                                    <span style="color:${p.sidebarText||'#94a3b8'};font-size:10px">Data Siswa</span>
+                                </div>
+                                <div style="display:flex;align-items:center;gap:8px;padding:6px 10px;border-radius:8px">
+                                    <i class="fas fa-cog" style="color:${p.sidebarText||'#94a3b8'};font-size:10px"></i>
+                                    <span style="color:${p.sidebarText||'#94a3b8'};font-size:10px">Pengaturan</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <button type="button" onclick="window.resetSidebarTheme()" class="mt-3 text-xs text-gray-400 hover:text-red-500 underline transition"><i class="fas fa-undo mr-1"></i> Reset ke Warna Default</button>
+                    </div>
+
                 </div>
-            `;
+            \`;
         }
+
 
         // --- Modul 12: Backup & Restore (Sync) ---
         window.exportDatabase = () => {
@@ -12403,9 +12480,77 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                     }
                 }
                 document.title = "Manajemen Wali Kelas | " + (p.sekolah || 'Sekolah');
+                window.applySidebarTheme();
             } catch (err) {
                 console.error("UI Update error:", err);
             }
+        };
+
+        // --- Sidebar Theme Apply ---
+        window.applySidebarTheme = () => {
+            try {
+                const p = db.pengaturan || {};
+                const sbBg = p.sidebarBg || '#0f172a';
+                const sbAccent = p.sidebarAccent || '#f97316';
+                const sbText = p.sidebarText || '#94a3b8';
+
+                const sidebar = document.getElementById('sidebar');
+                const bottomNav = document.getElementById('bottom-nav');
+
+                if (sidebar) {
+                    sidebar.style.background = sbBg;
+                    // Quick access card top area
+                    const sidebarHeader = sidebar.querySelector('.sidebar-header');
+                    if (sidebarHeader) sidebarHeader.style.background = sbBg;
+                }
+                if (bottomNav) {
+                    bottomNav.style.background = sbBg;
+                    bottomNav.style.borderTopColor = sbAccent + '55';
+                }
+
+                // Re-apply sidebar nav colors via renderSidebar override
+                window._themeAccent = sbAccent;
+                window._themeText = sbText;
+                window._themeBg = sbBg;
+
+                renderSidebar();
+            } catch(e) { console.warn('applySidebarTheme error:', e); }
+        };
+
+        window.setSidebarColor = (type, hex, btn) => {
+            if (!db.pengaturan) db.pengaturan = {};
+            if (type === 'bg') db.pengaturan.sidebarBg = hex;
+            if (type === 'accent') db.pengaturan.sidebarAccent = hex;
+            if (type === 'text') db.pengaturan.sidebarText = hex;
+            saveDB();
+            window.applySidebarTheme();
+            // Update preview box
+            const p = db.pengaturan;
+            const preview = document.getElementById('sidebar-preview-box');
+            if (preview) {
+                preview.style.background = p.sidebarBg || '#0f172a';
+                const activeItem = preview.querySelector('div:first-child');
+                if (activeItem) activeItem.style.background = p.sidebarAccent || '#f97316';
+                preview.querySelectorAll('div:not(:first-child) span, div:not(:first-child) i').forEach(el => {
+                    el.style.color = p.sidebarText || '#94a3b8';
+                });
+            }
+            // Update active border on swatches
+            const parentRow = btn ? btn.closest('.flex') : null;
+            if (parentRow) {
+                parentRow.querySelectorAll('button').forEach(b => b.style.borderColor = 'transparent');
+                btn.style.borderColor = '#6366f1';
+            }
+        };
+
+        window.resetSidebarTheme = () => {
+            if (!db.pengaturan) db.pengaturan = {};
+            db.pengaturan.sidebarBg = '#0f172a';
+            db.pengaturan.sidebarAccent = '#f97316';
+            db.pengaturan.sidebarText = '#94a3b8';
+            saveDB();
+            window.applySidebarTheme();
+            window.navigateTo('pengaturan');
         };
 
         document.getElementById('mobile-menu-btn').addEventListener('click', toggleSidebar);
