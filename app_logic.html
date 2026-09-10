@@ -7988,6 +7988,46 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
             navigateTo('pengaturan');
         };
 
+        window.terapkanTampilanLokal = () => {
+            try {
+                const settings = JSON.parse(localStorage.getItem('tema_lokal_v2') || '{}');
+                const theme = settings.tema || 'default';
+                const fontSize = settings.fontSize || '16px';
+                const fontFamily = settings.fontFamily || "'Inter', sans-serif";
+
+                // Terapkan Huruf
+                document.body.style.fontSize = fontSize;
+                document.body.style.fontFamily = fontFamily;
+
+                // Terapkan Warna Sidebar & Bottom Nav
+                const sidebar = document.getElementById('sidebar');
+                const bottomNav = document.getElementById('bottom-nav');
+
+                let bgStyle = ''; 
+                if(theme === 'default') bgStyle = '#0f172a'; // navy-900
+                else if(theme === 'blue') bgStyle = 'linear-gradient(to bottom, #1d4ed8, #1e3a8a)';
+                else if(theme === 'purple') bgStyle = 'linear-gradient(to bottom, #6b21a8, #312e81)';
+                else if(theme === 'green') bgStyle = 'linear-gradient(to bottom, #065f46, #134e4a)';
+                else if(theme === 'dark') bgStyle = '#111827';
+
+                if(sidebar) sidebar.style.background = bgStyle;
+                if(bottomNav) bottomNav.style.background = bgStyle;
+            } catch(e) { console.error('Gagal menerapkan tema lokal', e); }
+        };
+
+        window.simpanTampilanLokal = (e) => {
+            e.preventDefault();
+            const form = e.target;
+            const settings = {
+                tema: form.tema.value,
+                fontSize: form.fontSize.value,
+                fontFamily: form.fontFamily.value
+            };
+            localStorage.setItem('tema_lokal_v2', JSON.stringify(settings));
+            window.terapkanTampilanLokal();
+            window.showAlert("Tampilan lokal berhasil diterapkan!");
+        };
+
         function renderPengaturan() {
             const p = db.pengaturan || {nama: '', nip: '-', sekolah: ''};
             const avatarSrc = p.foto ? p.foto : `https://ui-avatars.com/api/?name=${encodeURIComponent(p.nama || 'Guru')}&background=f97316&color=fff&size=150`;
@@ -8119,6 +8159,58 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                         </div>
                     </form>
                 </div>
+
+                <div class="bg-white rounded-2xl p-8 border shadow-sm max-w-2xl mx-auto mt-6 relative">
+                    <h3 class="font-bold text-gray-800 text-lg mb-4"><i class="fas fa-desktop text-blue-500 mr-2"></i> Pengaturan Tampilan Lokal</h3>
+                    <p class="text-sm text-gray-500 mb-6">Pengaturan ini hanya berlaku pada perangkat ini dan tidak akan disinkronisasi ke perangkat lain.</p>
+                    <form id="form-tampilan-lokal" onsubmit="window.simpanTampilanLokal(event)" class="space-y-5">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="text-sm font-medium text-gray-600">Warna Sidebar & Menu Cepat</label>
+                                <select name="tema" id="setting-tema" class="w-full mt-1 border p-2 rounded-lg bg-gray-50 focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none transition">
+                                    <option value="default">Biru Dongker (Default)</option>
+                                    <option value="blue">Biru Laut (Gradient)</option>
+                                    <option value="purple">Ungu (Gradient)</option>
+                                    <option value="green">Hijau Zamrud (Gradient)</option>
+                                    <option value="dark">Gelap / Hitam</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="text-sm font-medium text-gray-600">Ukuran Huruf (Font Size)</label>
+                                <select name="fontSize" id="setting-fontSize" class="w-full mt-1 border p-2 rounded-lg bg-gray-50 focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none transition">
+                                    <option value="12px">Kecil (12px)</option>
+                                    <option value="14px">Normal (14px)</option>
+                                    <option value="16px">Sedang (16px - Default)</option>
+                                    <option value="18px">Besar (18px)</option>
+                                </select>
+                            </div>
+                            <div class="md:col-span-2">
+                                <label class="text-sm font-medium text-gray-600">Jenis Huruf (Font Family)</label>
+                                <select name="fontFamily" id="setting-fontFamily" class="w-full mt-1 border p-2 rounded-lg bg-gray-50 focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none transition">
+                                    <option value="'Inter', sans-serif">Inter (Modern & Bersih - Default)</option>
+                                    <option value="'Roboto', sans-serif">Roboto (Kaku & Formal)</option>
+                                    <option value="'Poppins', sans-serif">Poppins (Membulat & Ramah)</option>
+                                    <option value="'Comic Sans MS', cursive, sans-serif">Comic Sans (Bermain/Anak)</option>
+                                    <option value="'Times New Roman', serif">Times New Roman (Klasik)</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="flex justify-end mt-4 pt-4 border-t border-gray-200">
+                            <button type="submit" class="bg-indigo-600 text-white px-6 py-2.5 rounded-lg hover:bg-indigo-700 transition shadow-md flex items-center justify-center gap-2 font-bold w-full sm:w-auto"><i class="fas fa-paint-brush"></i> Terapkan Tampilan</button>
+                        </div>
+                    </form>
+                </div>
+                
+                <script>
+                    setTimeout(() => {
+                        try {
+                            const lSet = JSON.parse(localStorage.getItem('tema_lokal_v2') || '{}');
+                            if(lSet.tema) document.getElementById('setting-tema').value = lSet.tema;
+                            if(lSet.fontSize) document.getElementById('setting-fontSize').value = lSet.fontSize;
+                            if(lSet.fontFamily) document.getElementById('setting-fontFamily').value = lSet.fontFamily;
+                        } catch(e) {}
+                    }, 50);
+                </script>
             `;
         }
 
@@ -12598,6 +12690,11 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
 
             window.updateUIIdentitas();
             renderSidebar();
+            
+            if(typeof window.terapkanTampilanLokal === 'function') {
+                window.terapkanTampilanLokal();
+            }
+
             renderBottomNav();
             const lastMenu = localStorage.getItem('mwk_lastMenu') || "dashboard";
             window.navigateTo(lastMenu);
