@@ -8167,58 +8167,48 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                             <!-- Warna Background Sidebar -->
                             <div>
                                 <label class="text-xs font-bold text-gray-600 mb-2 block"><i class="fas fa-layer-group mr-1 text-indigo-400"></i> Background Sidebar</label>
-                                <div class="flex flex-wrap gap-2">
-                                    ${[['#0f172a','Abu Tua (Default)'],['#064e3b','Hijau Tua'],['#1e3a8a','Biru Tua'],['#1a1a2e','Navy Gelap'],['#ffffff','Putih'],['#1f2937','Abu Netral'],['#4a1942','Ungu Tua'],['#7c2d12','Coklat Merah']].map(([hex,label]) => {
-                                        const isActive = (p.sidebarBg||'#0f172a').toLowerCase()===hex.toLowerCase();
-                                        return '<button type="button" title="'+label+'" onclick="window.setSidebarColor(\'bg\',\''+hex+'\',this)" style="background:'+hex+';width:28px;height:28px;border-radius:8px;border:3px solid '+(isActive?'#6366f1':'transparent')+';box-shadow:0 2px 6px rgba(0,0,0,0.2);cursor:pointer;transition:transform 0.15s" onmouseover="this.style.transform=\'scale(1.15)\'" onmouseout="this.style.transform=\'scale(1)\'"></button>';
-                                    }).join('')}
+                                <div class="flex items-center gap-3 bg-gray-50 border border-gray-200 p-2 rounded-xl">
+                                    <input type="color" value="${p.sidebarBg||'#0f172a'}" oninput="window.setSidebarColor('bg', this.value, true); this.nextElementSibling.innerText=this.value" onchange="window.setSidebarColor('bg', this.value)" class="w-10 h-10 rounded cursor-pointer border-0 p-0 bg-transparent" />
+                                    <span class="text-xs font-mono font-bold text-gray-600 uppercase">${p.sidebarBg||'#0f172a'}</span>
                                 </div>
                             </div>
 
                             <!-- Warna Menu Aktif (Accent) -->
                             <div>
                                 <label class="text-xs font-bold text-gray-600 mb-2 block"><i class="fas fa-mouse-pointer mr-1 text-indigo-400"></i> Warna Menu Aktif (Klik)</label>
-                                <div class="flex flex-wrap gap-2">
-                                    ${[['#f97316','Orange (Default)'],['#10b981','Hijau Emerald'],['#3b82f6','Biru'],['#8b5cf6','Ungu'],['#ec4899','Merah Muda'],['#ef4444','Merah'],['#f59e0b','Kuning Amber'],['#06b6d4','Cyan']].map(([hex,label]) => {
-                                        const isActive = (p.sidebarAccent||'#f97316').toLowerCase()===hex.toLowerCase();
-                                        return '<button type="button" title="'+label+'" onclick="window.setSidebarColor(\'accent\',\''+hex+'\',this)" style="background:'+hex+';width:28px;height:28px;border-radius:8px;border:3px solid '+(isActive?'#6366f1':'transparent')+';box-shadow:0 2px 6px rgba(0,0,0,0.2);cursor:pointer;transition:transform 0.15s" onmouseover="this.style.transform=\'scale(1.15)\'" onmouseout="this.style.transform=\'scale(1)\'"></button>';
-                                    }).join('')}
+                                <div class="flex items-center gap-3 bg-gray-50 border border-gray-200 p-2 rounded-xl">
+                                    <input type="color" value="${p.sidebarAccent||'#f97316'}" oninput="window.setSidebarColor('accent', this.value, true); this.nextElementSibling.innerText=this.value" onchange="window.setSidebarColor('accent', this.value)" class="w-10 h-10 rounded cursor-pointer border-0 p-0 bg-transparent" />
+                                    <span class="text-xs font-mono font-bold text-gray-600 uppercase">${p.sidebarAccent||'#f97316'}</span>
                                 </div>
                             </div>
 
                             <!-- Warna Teks Item Navigasi -->
                             <div>
                                 <label class="text-xs font-bold text-gray-600 mb-2 block"><i class="fas fa-font mr-1 text-indigo-400"></i> Warna Teks Item Navigasi</label>
-                                <div class="flex flex-wrap gap-2">
-                                    ${[['#94a3b8','Abu Muda (Default)'],['#ffffff','Putih'],['#cbd5e1','Putih Abu'],['#fcd34d','Kuning'],['#6ee7b7','Hijau Muda'],['#93c5fd','Biru Muda'],['#f9a8d4','Merah Muda'],['#c4b5fd','Lavender']].map(([hex,label]) => {
-                                        const isActive = (p.sidebarText||'#94a3b8').toLowerCase()===hex.toLowerCase();
-                                        return '<button type="button" title="'+label+'" onclick="window.setSidebarColor(\'text\',\''+hex+'\',this)" style="background:'+hex+';width:28px;height:28px;border-radius:8px;border:3px solid '+(isActive?'#6366f1':'transparent')+';box-shadow:0 2px 6px rgba(0,0,0,0.2);cursor:pointer;transition:transform 0.15s" onmouseover="this.style.transform=\'scale(1.15)\'" onmouseout="this.style.transform=\'scale(1)\'"></button>';
-                                    }).join('')}
+                                <div class="flex items-center gap-3 bg-gray-50 border border-gray-200 p-2 rounded-xl">
+                                    <input type="color" value="${p.sidebarText||'#94a3b8'}" oninput="window.setSidebarColor('text', this.value, true); this.nextElementSibling.innerText=this.value" onchange="window.setSidebarColor('text', this.value)" class="w-10 h-10 rounded cursor-pointer border-0 p-0 bg-transparent" />
+                                    <span class="text-xs font-mono font-bold text-gray-600 uppercase">${p.sidebarText||'#94a3b8'}</span>
                                 </div>
                             </div>
 
                             <!-- Warna Teks Header Grup (Navigasi Utama) -->
                             <div>
                                 <label class="text-xs font-bold text-gray-600 mb-2 block"><i class="fas fa-heading mr-1 text-indigo-400"></i> Warna Teks Header Grup</label>
-                                <div class="text-[10px] text-gray-400 mb-1.5">Misal: MENU UTAMA, SISTEM & PENGATURAN</div>
-                                <div class="flex flex-wrap gap-2">
-                                    ${[['#f97316','Orange (Default)'],['#10b981','Hijau'],['#3b82f6','Biru'],['#a78bfa','Ungu'],['#f472b6','Pink'],['#fbbf24','Kuning'],['#94a3b8','Abu'],['#ffffff','Putih']].map(([hex,label]) => {
-                                        const isActive = (p.sidebarGroupColor||'#f97316').toLowerCase()===hex.toLowerCase();
-                                        return '<button type="button" title="'+label+'" onclick="window.setSidebarColor(\'groupColor\',\''+hex+'\',this)" style="background:'+hex+';width:28px;height:28px;border-radius:8px;border:3px solid '+(isActive?'#6366f1':'transparent')+';box-shadow:0 2px 6px rgba(0,0,0,0.2);cursor:pointer;transition:transform 0.15s" onmouseover="this.style.transform=\'scale(1.15)\'" onmouseout="this.style.transform=\'scale(1)\'"></button>';
-                                    }).join('')}
+                                <div class="flex items-center gap-3 bg-gray-50 border border-gray-200 p-2 rounded-xl">
+                                    <input type="color" value="${p.sidebarGroupColor||'#f97316'}" oninput="window.setSidebarColor('groupColor', this.value, true); this.nextElementSibling.innerText=this.value" onchange="window.setSidebarColor('groupColor', this.value)" class="w-10 h-10 rounded cursor-pointer border-0 p-0 bg-transparent" />
+                                    <span class="text-xs font-mono font-bold text-gray-600 uppercase">${p.sidebarGroupColor||'#f97316'}</span>
                                 </div>
                             </div>
 
                             <!-- Ukuran Huruf Navigasi -->
                             <div>
                                 <label class="text-xs font-bold text-gray-600 mb-2 block"><i class="fas fa-text-height mr-1 text-indigo-400"></i> Ukuran Huruf Navigasi</label>
-                                <div class="flex flex-wrap gap-2">
+                                <select onchange="window.setSidebarColor('fontSize', this.value)" class="w-full border border-gray-200 rounded-xl px-4 py-2 text-sm focus:ring-2 focus:ring-indigo-500 outline-none text-gray-700 bg-gray-50 hover:bg-white transition cursor-pointer">
                                     ${[['11','Kecil (11px)'],['13','Normal (13px, Default)'],['15','Sedang (15px)'],['17','Besar (17px)']].map(([val,label]) => {
                                         const curr = String(p.sidebarFontSize||'13');
-                                        const isActive = curr===val;
-                                        return '<button type="button" title="'+label+'" onclick="window.setSidebarColor(\'fontSize\',\''+val+'\',this)" style="min-width:44px;height:28px;border-radius:8px;border:2px solid '+(isActive?'#6366f1':'#e2e8f0')+';background:'+(isActive?'#eef2ff':'#f8fafc')+';color:'+(isActive?'#4f46e5':'#64748b')+';font-size:'+val+'px;font-weight:'+(isActive?'700':'500')+';cursor:pointer;padding:0 6px;transition:all 0.15s">'+val+'px</button>';
+                                        return `<option value="${val}" ${curr===val?'selected':''}>${label}</option>`;
                                     }).join('')}
-                                </div>
+                                </select>
                             </div>
 
                             <!-- Jenis Huruf Navigasi -->
@@ -12605,7 +12595,7 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
             } catch(e) { console.warn('applySidebarTheme error:', e); }
         };
 
-        window.setSidebarColor = (type, hex, btn) => {
+        window.setSidebarColor = (type, hex, isPreviewOnly) => {
             if (!db.pengaturan) db.pengaturan = {};
             if (type === 'bg')         db.pengaturan.sidebarBg         = hex;
             if (type === 'accent')     db.pengaturan.sidebarAccent     = hex;
@@ -12613,8 +12603,12 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
             if (type === 'groupColor') db.pengaturan.sidebarGroupColor = hex;
             if (type === 'fontSize')   db.pengaturan.sidebarFontSize   = hex;
             if (type === 'fontFamily') db.pengaturan.sidebarFontFamily = hex;
-            saveDB();
+            
+            if (isPreviewOnly !== true) {
+                saveDB();
+            }
             window.applySidebarTheme();
+            
             // Update preview
             const p = db.pengaturan;
             const preview = document.getElementById('sidebar-preview-box');
@@ -12638,11 +12632,6 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                 preview.querySelectorAll('.preview-nav-icon').forEach(el => { el.style.color = tc; el.style.fontSize = fs; });
                 preview.querySelectorAll('.preview-active-span').forEach(el => { el.style.fontFamily = ff; el.style.fontSize = fs; });
                 preview.querySelectorAll('.preview-active-icon').forEach(el => { el.style.fontSize = fs; });
-            }
-            
-            // Re-render settings page to update active button borders
-            if (window.currentPage === 'pengaturan') {
-                window.navigateTo('pengaturan', true); 
             }
         };
 
