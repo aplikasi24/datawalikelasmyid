@@ -8143,10 +8143,7 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                             </div>
                         </div>
 
-                        <div class="flex items-center gap-2 mt-4 pt-4 border-t border-gray-200">
-                            <i class="fas fa-check-circle text-green-500 text-sm"></i>
-                            <span class="text-xs text-gray-400 italic">Profil tersimpan otomatis setiap ada perubahan</span>
-                        </div>
+
                      </form>
 
                     <!-- ===== TAMPILAN SIDEBAR ===== -->
@@ -8162,97 +8159,92 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                         </button>
 
                         <div id="sidebar-theme-panel" class="${window._sidebarThemePanelOpen ? '' : 'hidden'} mt-6">
-                            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-5">
 
-                            <!-- Warna Background Sidebar -->
-                            <div>
-                                <label class="text-xs font-bold text-gray-600 mb-2 block"><i class="fas fa-layer-group mr-1 text-indigo-400"></i> Background Sidebar</label>
-                                <div class="flex items-center gap-3 bg-gray-50 border border-gray-200 p-2 rounded-xl">
-                                    <input type="color" value="${p.sidebarBg||'#0f172a'}" oninput="window.setSidebarColor('bg', this.value, true); this.nextElementSibling.innerText=this.value" onchange="window.setSidebarColor('bg', this.value)" class="w-10 h-10 rounded cursor-pointer border-0 p-0 bg-transparent" />
-                                    <span class="text-xs font-mono font-bold text-gray-600 uppercase">${p.sidebarBg||'#0f172a'}</span>
-                                </div>
-                            </div>
-
-                            <!-- Warna Menu Aktif (Accent) -->
-                            <div>
-                                <label class="text-xs font-bold text-gray-600 mb-2 block"><i class="fas fa-mouse-pointer mr-1 text-indigo-400"></i> Warna Menu Aktif (Klik)</label>
-                                <div class="flex items-center gap-3 bg-gray-50 border border-gray-200 p-2 rounded-xl">
-                                    <input type="color" value="${p.sidebarAccent||'#f97316'}" oninput="window.setSidebarColor('accent', this.value, true); this.nextElementSibling.innerText=this.value" onchange="window.setSidebarColor('accent', this.value)" class="w-10 h-10 rounded cursor-pointer border-0 p-0 bg-transparent" />
-                                    <span class="text-xs font-mono font-bold text-gray-600 uppercase">${p.sidebarAccent||'#f97316'}</span>
-                                </div>
-                            </div>
-
-                            <!-- Warna Teks Item Navigasi -->
-                            <div>
-                                <label class="text-xs font-bold text-gray-600 mb-2 block"><i class="fas fa-font mr-1 text-indigo-400"></i> Warna Teks Item Navigasi</label>
-                                <div class="flex items-center gap-3 bg-gray-50 border border-gray-200 p-2 rounded-xl">
-                                    <input type="color" value="${p.sidebarText||'#94a3b8'}" oninput="window.setSidebarColor('text', this.value, true); this.nextElementSibling.innerText=this.value" onchange="window.setSidebarColor('text', this.value)" class="w-10 h-10 rounded cursor-pointer border-0 p-0 bg-transparent" />
-                                    <span class="text-xs font-mono font-bold text-gray-600 uppercase">${p.sidebarText||'#94a3b8'}</span>
-                                </div>
-                            </div>
-
-                            <!-- Warna Teks Header Grup (Navigasi Utama) -->
-                            <div>
-                                <label class="text-xs font-bold text-gray-600 mb-2 block"><i class="fas fa-heading mr-1 text-indigo-400"></i> Warna Teks Header Grup</label>
-                                <div class="flex items-center gap-3 bg-gray-50 border border-gray-200 p-2 rounded-xl">
-                                    <input type="color" value="${p.sidebarGroupColor||'#f97316'}" oninput="window.setSidebarColor('groupColor', this.value, true); this.nextElementSibling.innerText=this.value" onchange="window.setSidebarColor('groupColor', this.value)" class="w-10 h-10 rounded cursor-pointer border-0 p-0 bg-transparent" />
-                                    <span class="text-xs font-mono font-bold text-gray-600 uppercase">${p.sidebarGroupColor||'#f97316'}</span>
-                                </div>
-                            </div>
-
-                            <!-- Ukuran Huruf Navigasi -->
-                            <div>
-                                <label class="text-xs font-bold text-gray-600 mb-2 block"><i class="fas fa-text-height mr-1 text-indigo-400"></i> Ukuran Huruf Navigasi</label>
-                                <select onchange="window.setSidebarColor('fontSize', this.value)" class="w-full border border-gray-200 rounded-xl px-4 py-2 text-sm focus:ring-2 focus:ring-indigo-500 outline-none text-gray-700 bg-gray-50 hover:bg-white transition cursor-pointer">
-                                    ${[['11','Kecil (11px)'],['13','Normal (13px, Default)'],['15','Sedang (15px)'],['17','Besar (17px)']].map(([val,label]) => {
-                                        const curr = String(p.sidebarFontSize||'13');
-                                        return `<option value="${val}" ${curr===val?'selected':''}>${label}</option>`;
-                                    }).join('')}
-                                </select>
-                            </div>
-
-                            <!-- Jenis Huruf Navigasi -->
-                            <div>
-                                <label class="text-xs font-bold text-gray-600 mb-2 block"><i class="fas fa-italic mr-1 text-indigo-400"></i> Jenis Huruf Navigasi</label>
-                                <select onchange="window.setSidebarColor('fontFamily', this.value)" class="w-full border border-gray-200 rounded-xl px-4 py-2 text-sm focus:ring-2 focus:ring-indigo-500 outline-none text-gray-700 bg-gray-50 hover:bg-white transition cursor-pointer">
-                                    ${[['Inter, sans-serif','Inter (Default)'],['Poppins, sans-serif','Poppins'],['Nunito, sans-serif','Nunito'],['Roboto, sans-serif','Roboto'],['Georgia, serif','Georgia (Serif)'],['monospace','Monospace']].map(([val,label]) => {
-                                        const curr = (p.sidebarFontFamily||'Inter, sans-serif');
-                                        return `<option value="${val}" ${curr===val?'selected':''}>${label}</option>`;
-                                    }).join('')}
-                                </select>
-                            </div>
-
-                        </div>
-
-                        <!-- Preview Mini -->
-                        <div class="mt-8 pt-6 border-t border-gray-100 flex flex-col md:flex-row gap-8 items-start">
-                            <div>
-                                <p class="text-xs font-bold text-gray-500 mb-3"><i class="fas fa-eye mr-1"></i> Preview</p>
-                                <div id="sidebar-preview-box" style="background:${p.sidebarBg||'#0f172a'};padding:16px;border-radius:16px;display:inline-block;min-width:220px;box-shadow:0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1); border: 1px solid rgba(255,255,255,0.05)">
-                                    <div style="display:flex;align-items:center;gap:6px;padding:3px 8px;margin-bottom:12px">
-                                        <i class="fas fa-th-large preview-group-icon" style="color:${p.sidebarGroupColor||'#f97316'};font-size:9px"></i>
-                                        <span class="preview-group-header" style="color:${p.sidebarGroupColor||'#f97316'};font-size:10px;font-weight:800;font-family:${p.sidebarFontFamily||'Inter, sans-serif'};letter-spacing:0.1em;text-transform:uppercase">MENU UTAMA</span>
-                                    </div>
-                                    <div class="preview-active-item" style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;background:${p.sidebarAccent||'#f97316'};margin-bottom:6px;box-shadow:0 4px 12px rgba(0,0,0,0.1)">
-                                        <i class="fas fa-home preview-active-icon" style="color:white;font-size:${p.sidebarFontSize||13}px"></i>
-                                        <span class="preview-active-span" style="color:white;font-size:${p.sidebarFontSize||13}px;font-weight:700;font-family:${p.sidebarFontFamily||'Inter, sans-serif'}">Dashboard</span>
-                                    </div>
-                                    <div style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;transition:background 0.2s" onmouseover="this.style.background='rgba(255,255,255,0.05)'" onmouseout="this.style.background='transparent'">
-                                        <i class="fas fa-users preview-nav-icon" style="color:${p.sidebarText||'#94a3b8'};font-size:${p.sidebarFontSize||13}px"></i>
-                                        <span class="preview-nav-span" style="color:${p.sidebarText||'#94a3b8'};font-size:${p.sidebarFontSize||13}px;font-weight:500;font-family:${p.sidebarFontFamily||'Inter, sans-serif'}">Data Siswa</span>
-                                    </div>
-                                    <div style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;transition:background 0.2s" onmouseover="this.style.background='rgba(255,255,255,0.05)'" onmouseout="this.style.background='transparent'">
-                                        <i class="fas fa-cog preview-nav-icon" style="color:${p.sidebarText||'#94a3b8'};font-size:${p.sidebarFontSize||13}px"></i>
-                                        <span class="preview-nav-span" style="color:${p.sidebarText||'#94a3b8'};font-size:${p.sidebarFontSize||13}px;font-weight:500;font-family:${p.sidebarFontFamily||'Inter, sans-serif'}">Pengaturan</span>
+                                <!-- 1. Warna Background Sidebar -->
+                                <div>
+                                    <label class="text-xs font-bold text-gray-600 mb-2 block"><i class="fas fa-layer-group mr-1 text-indigo-400"></i> Background Sidebar</label>
+                                    <div class="flex items-center gap-3 bg-gray-50 border border-gray-200 p-2 rounded-xl">
+                                        <input type="color" value="${p.sidebarBg||'#0f172a'}" oninput="window.setSidebarColor('bg', this.value, true); this.nextElementSibling.innerText=this.value" onchange="window.setSidebarColor('bg', this.value)" class="w-10 h-10 rounded cursor-pointer border-0 p-0 bg-transparent" />
+                                        <span class="text-xs font-mono font-bold text-gray-600 uppercase">${p.sidebarBg||'#0f172a'}</span>
                                     </div>
                                 </div>
-                            </div>
-                            <div class="flex-1 hidden md:block opacity-60">
-                                <p class="text-xs text-gray-500 italic mt-6 leading-relaxed">Pilih kombinasi warna dan huruf yang paling nyaman untuk Anda gunakan sehari-hari. Tampilan yang baik dapat meningkatkan produktivitas dan mengurangi kelelahan mata.</p>
-                            </div>
-                        </div>
 
-                            <button type="button" onclick="window.resetSidebarTheme()" class="mt-3 text-xs text-gray-400 hover:text-red-500 underline transition"><i class="fas fa-undo mr-1"></i> Reset ke Warna Default</button>
+                                <!-- 2. Warna Menu Aktif (Accent) -->
+                                <div>
+                                    <label class="text-xs font-bold text-gray-600 mb-2 block"><i class="fas fa-mouse-pointer mr-1 text-indigo-400"></i> Warna Menu Aktif (Klik)</label>
+                                    <div class="flex items-center gap-3 bg-gray-50 border border-gray-200 p-2 rounded-xl">
+                                        <input type="color" value="${p.sidebarAccent||'#f97316'}" oninput="window.setSidebarColor('accent', this.value, true); this.nextElementSibling.innerText=this.value" onchange="window.setSidebarColor('accent', this.value)" class="w-10 h-10 rounded cursor-pointer border-0 p-0 bg-transparent" />
+                                        <span class="text-xs font-mono font-bold text-gray-600 uppercase">${p.sidebarAccent||'#f97316'}</span>
+                                    </div>
+                                </div>
+
+                                <!-- 3. Warna Teks Item Navigasi -->
+                                <div>
+                                    <label class="text-xs font-bold text-gray-600 mb-2 block"><i class="fas fa-font mr-1 text-indigo-400"></i> Warna Teks Item Navigasi</label>
+                                    <div class="flex items-center gap-3 bg-gray-50 border border-gray-200 p-2 rounded-xl">
+                                        <input type="color" value="${p.sidebarText||'#94a3b8'}" oninput="window.setSidebarColor('text', this.value, true); this.nextElementSibling.innerText=this.value" onchange="window.setSidebarColor('text', this.value)" class="w-10 h-10 rounded cursor-pointer border-0 p-0 bg-transparent" />
+                                        <span class="text-xs font-mono font-bold text-gray-600 uppercase">${p.sidebarText||'#94a3b8'}</span>
+                                    </div>
+                                </div>
+
+                                <!-- PREVIEW MINI (Di samping kanan mulai dari baris 2) -->
+                                <div class="md:row-span-4 flex flex-col items-start md:pl-6 border-t md:border-t-0 md:border-l border-gray-200 pt-6 md:pt-0 mt-2 md:mt-0">
+                                    <p class="text-xs font-bold text-gray-500 mb-3"><i class="fas fa-eye mr-1"></i> Preview</p>
+                                    <div id="sidebar-preview-box" style="background:${p.sidebarBg||'#0f172a'};padding:16px;border-radius:16px;display:inline-block;width:100%;max-width:280px;box-shadow:0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1); border: 1px solid rgba(255,255,255,0.05)">
+                                        <div style="display:flex;align-items:center;gap:6px;padding:3px 8px;margin-bottom:12px">
+                                            <i class="fas fa-th-large preview-group-icon" style="color:${p.sidebarGroupColor||'#f97316'};font-size:9px"></i>
+                                            <span class="preview-group-header" style="color:${p.sidebarGroupColor||'#f97316'};font-size:10px;font-weight:800;font-family:${p.sidebarFontFamily||'Inter, sans-serif'};letter-spacing:0.1em;text-transform:uppercase">MENU UTAMA</span>
+                                        </div>
+                                        <div class="preview-active-item" style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;background:${p.sidebarAccent||'#f97316'};margin-bottom:6px;box-shadow:0 4px 12px rgba(0,0,0,0.1)">
+                                            <i class="fas fa-home preview-active-icon" style="color:white;font-size:${p.sidebarFontSize||13}px"></i>
+                                            <span class="preview-active-span" style="color:white;font-size:${p.sidebarFontSize||13}px;font-weight:700;font-family:${p.sidebarFontFamily||'Inter, sans-serif'}">Dashboard</span>
+                                        </div>
+                                        <div style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;transition:background 0.2s" onmouseover="this.style.background='rgba(255,255,255,0.05)'" onmouseout="this.style.background='transparent'">
+                                            <i class="fas fa-users preview-nav-icon" style="color:${p.sidebarText||'#94a3b8'};font-size:${p.sidebarFontSize||13}px"></i>
+                                            <span class="preview-nav-span" style="color:${p.sidebarText||'#94a3b8'};font-size:${p.sidebarFontSize||13}px;font-weight:500;font-family:${p.sidebarFontFamily||'Inter, sans-serif'}">Data Siswa</span>
+                                        </div>
+                                        <div style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;transition:background 0.2s" onmouseover="this.style.background='rgba(255,255,255,0.05)'" onmouseout="this.style.background='transparent'">
+                                            <i class="fas fa-cog preview-nav-icon" style="color:${p.sidebarText||'#94a3b8'};font-size:${p.sidebarFontSize||13}px"></i>
+                                            <span class="preview-nav-span" style="color:${p.sidebarText||'#94a3b8'};font-size:${p.sidebarFontSize||13}px;font-weight:500;font-family:${p.sidebarFontFamily||'Inter, sans-serif'}">Pengaturan</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- 4. Warna Teks Header Grup -->
+                                <div>
+                                    <label class="text-xs font-bold text-gray-600 mb-2 block"><i class="fas fa-heading mr-1 text-indigo-400"></i> Warna Teks Header Grup</label>
+                                    <div class="flex items-center gap-3 bg-gray-50 border border-gray-200 p-2 rounded-xl">
+                                        <input type="color" value="${p.sidebarGroupColor||'#f97316'}" oninput="window.setSidebarColor('groupColor', this.value, true); this.nextElementSibling.innerText=this.value" onchange="window.setSidebarColor('groupColor', this.value)" class="w-10 h-10 rounded cursor-pointer border-0 p-0 bg-transparent" />
+                                        <span class="text-xs font-mono font-bold text-gray-600 uppercase">${p.sidebarGroupColor||'#f97316'}</span>
+                                    </div>
+                                </div>
+
+                                <!-- 5. Ukuran Huruf Navigasi -->
+                                <div>
+                                    <label class="text-xs font-bold text-gray-600 mb-2 block"><i class="fas fa-text-height mr-1 text-indigo-400"></i> Ukuran Huruf Navigasi</label>
+                                    <select onchange="window.setSidebarColor('fontSize', this.value)" class="w-full border border-gray-200 rounded-xl px-4 py-2 text-sm focus:ring-2 focus:ring-indigo-500 outline-none text-gray-700 bg-gray-50 hover:bg-white transition cursor-pointer">
+                                        ${[['11','Kecil (11px)'],['13','Normal (13px, Default)'],['15','Sedang (15px)'],['17','Besar (17px)']].map(([val,label]) => {
+                                            const curr = String(p.sidebarFontSize||'13');
+                                            return `<option value="${val}" ${curr===val?'selected':''}>${label}</option>`;
+                                        }).join('')}
+                                    </select>
+                                </div>
+
+                                <!-- 6. Jenis Huruf Navigasi -->
+                                <div>
+                                    <label class="text-xs font-bold text-gray-600 mb-2 block"><i class="fas fa-italic mr-1 text-indigo-400"></i> Jenis Huruf Navigasi</label>
+                                    <select onchange="window.setSidebarColor('fontFamily', this.value)" class="w-full border border-gray-200 rounded-xl px-4 py-2 text-sm focus:ring-2 focus:ring-indigo-500 outline-none text-gray-700 bg-gray-50 hover:bg-white transition cursor-pointer">
+                                        ${[['Inter, sans-serif','Inter (Default)'],['Poppins, sans-serif','Poppins'],['Nunito, sans-serif','Nunito'],['Roboto, sans-serif','Roboto'],['Georgia, serif','Georgia (Serif)'],['monospace','Monospace']].map(([val,label]) => {
+                                            const curr = (p.sidebarFontFamily||'Inter, sans-serif');
+                                            return `<option value="${val}" ${curr===val?'selected':''}>${label}</option>`;
+                                        }).join('')}
+                                    </select>
+                                </div>
+
+                            </div>
+                            
+                            <button type="button" onclick="window.resetSidebarTheme()" class="mt-6 text-xs text-gray-400 hover:text-red-500 underline transition"><i class="fas fa-undo mr-1"></i> Reset ke Warna Default</button>
                         </div>
                     </div>
 
@@ -8261,7 +8253,6 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                         <button type="button" onclick="window.handleLogout()" class="w-full sm:w-auto bg-red-600 text-white px-8 py-3 rounded-xl hover:bg-red-700 transition shadow-md flex items-center justify-center gap-2 font-bold">
                             <i class="fas fa-sign-out-alt"></i> Keluar Aplikasi
                         </button>
-                        <p class="text-xs text-gray-400 mt-2">Anda akan keluar dari akun dan sesi ini.</p>
                     </div>
 
                 </div>
