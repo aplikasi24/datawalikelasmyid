@@ -8195,37 +8195,41 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                             <!-- Jenis Huruf Navigasi -->
                             <div>
                                 <label class="text-xs font-bold text-gray-600 mb-2 block"><i class="fas fa-italic mr-1 text-indigo-400"></i> Jenis Huruf Navigasi</label>
-                                <div class="flex flex-col gap-1.5">
+                                <select onchange="window.setSidebarColor('fontFamily', this.value)" class="w-full border border-gray-200 rounded-xl px-4 py-2 text-sm focus:ring-2 focus:ring-indigo-500 outline-none text-gray-700 bg-gray-50 hover:bg-white transition cursor-pointer">
                                     ${[['Inter, sans-serif','Inter (Default)'],['Poppins, sans-serif','Poppins'],['Nunito, sans-serif','Nunito'],['Roboto, sans-serif','Roboto'],['Georgia, serif','Georgia (Serif)'],['monospace','Monospace']].map(([val,label]) => {
                                         const curr = (p.sidebarFontFamily||'Inter, sans-serif');
-                                        const isActive = curr===val;
-                                        return '<button type="button" onclick="window.setSidebarColor(\'fontFamily\',\''+val+'\',this)" style="text-align:left;padding:4px 10px;border-radius:8px;border:2px solid '+(isActive?'#6366f1':'#e2e8f0')+';background:'+(isActive?'#eef2ff':'#f8fafc')+';color:'+(isActive?'#4f46e5':'#475569')+';font-family:'+val+';font-size:11px;font-weight:'+(isActive?'700':'500')+';cursor:pointer;transition:all 0.15s">'+label+'</button>';
+                                        return `<option value="${val}" ${curr===val?'selected':''}>${label}</option>`;
                                     }).join('')}
-                                </div>
+                                </select>
                             </div>
 
                         </div>
 
                         <!-- Preview Mini -->
-                        <div class="mt-5">
-                            <p class="text-xs font-bold text-gray-500 mb-2"><i class="fas fa-eye mr-1"></i> Preview</p>
-                            <div id="sidebar-preview-box" style="background:${p.sidebarBg||'#0f172a'};padding:12px;border-radius:12px;display:inline-block;min-width:200px;box-shadow:0 4px 12px rgba(0,0,0,0.25)">
-                                <div style="display:flex;align-items:center;gap:6px;padding:3px 8px;margin-bottom:8px">
-                                    <i class="fas fa-th-large" style="color:${p.sidebarGroupColor||'#f97316'};font-size:9px"></i>
-                                    <span style="color:${p.sidebarGroupColor||'#f97316'};font-size:9px;font-weight:800;font-family:${p.sidebarFontFamily||'Inter, sans-serif'};letter-spacing:0.1em;text-transform:uppercase">MENU UTAMA</span>
+                        <div class="mt-8 pt-6 border-t border-gray-100 flex flex-col md:flex-row gap-8 items-start">
+                            <div>
+                                <p class="text-xs font-bold text-gray-500 mb-3"><i class="fas fa-eye mr-1"></i> Preview</p>
+                                <div id="sidebar-preview-box" style="background:${p.sidebarBg||'#0f172a'};padding:16px;border-radius:16px;display:inline-block;min-width:220px;box-shadow:0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1); border: 1px solid rgba(255,255,255,0.05)">
+                                    <div style="display:flex;align-items:center;gap:6px;padding:3px 8px;margin-bottom:12px">
+                                        <i class="fas fa-th-large preview-group-icon" style="color:${p.sidebarGroupColor||'#f97316'};font-size:9px"></i>
+                                        <span class="preview-group-header" style="color:${p.sidebarGroupColor||'#f97316'};font-size:10px;font-weight:800;font-family:${p.sidebarFontFamily||'Inter, sans-serif'};letter-spacing:0.1em;text-transform:uppercase">MENU UTAMA</span>
+                                    </div>
+                                    <div class="preview-active-item" style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;background:${p.sidebarAccent||'#f97316'};margin-bottom:6px;box-shadow:0 4px 12px rgba(0,0,0,0.1)">
+                                        <i class="fas fa-home preview-active-icon" style="color:white;font-size:${p.sidebarFontSize||13}px"></i>
+                                        <span class="preview-active-span" style="color:white;font-size:${p.sidebarFontSize||13}px;font-weight:700;font-family:${p.sidebarFontFamily||'Inter, sans-serif'}">Dashboard</span>
+                                    </div>
+                                    <div style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;transition:background 0.2s" onmouseover="this.style.background='rgba(255,255,255,0.05)'" onmouseout="this.style.background='transparent'">
+                                        <i class="fas fa-users preview-nav-icon" style="color:${p.sidebarText||'#94a3b8'};font-size:${p.sidebarFontSize||13}px"></i>
+                                        <span class="preview-nav-span" style="color:${p.sidebarText||'#94a3b8'};font-size:${p.sidebarFontSize||13}px;font-weight:500;font-family:${p.sidebarFontFamily||'Inter, sans-serif'}">Data Siswa</span>
+                                    </div>
+                                    <div style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;transition:background 0.2s" onmouseover="this.style.background='rgba(255,255,255,0.05)'" onmouseout="this.style.background='transparent'">
+                                        <i class="fas fa-cog preview-nav-icon" style="color:${p.sidebarText||'#94a3b8'};font-size:${p.sidebarFontSize||13}px"></i>
+                                        <span class="preview-nav-span" style="color:${p.sidebarText||'#94a3b8'};font-size:${p.sidebarFontSize||13}px;font-weight:500;font-family:${p.sidebarFontFamily||'Inter, sans-serif'}">Pengaturan</span>
+                                    </div>
                                 </div>
-                                <div style="display:flex;align-items:center;gap:8px;padding:6px 10px;border-radius:8px;background:${p.sidebarAccent||'#f97316'};margin-bottom:4px">
-                                    <i class="fas fa-home" style="color:white;font-size:${p.sidebarFontSize||13}px"></i>
-                                    <span style="color:white;font-size:${p.sidebarFontSize||13}px;font-weight:700;font-family:${p.sidebarFontFamily||'Inter, sans-serif'}">Dashboard (Aktif)</span>
-                                </div>
-                                <div style="display:flex;align-items:center;gap:8px;padding:6px 10px;border-radius:8px">
-                                    <i class="fas fa-users" style="color:${p.sidebarText||'#94a3b8'};font-size:${p.sidebarFontSize||13}px"></i>
-                                    <span style="color:${p.sidebarText||'#94a3b8'};font-size:${p.sidebarFontSize||13}px;font-family:${p.sidebarFontFamily||'Inter, sans-serif'}">Data Siswa</span>
-                                </div>
-                                <div style="display:flex;align-items:center;gap:8px;padding:6px 10px;border-radius:8px">
-                                    <i class="fas fa-cog" style="color:${p.sidebarText||'#94a3b8'};font-size:${p.sidebarFontSize||13}px"></i>
-                                    <span style="color:${p.sidebarText||'#94a3b8'};font-size:${p.sidebarFontSize||13}px;font-family:${p.sidebarFontFamily||'Inter, sans-serif'}">Pengaturan</span>
-                                </div>
+                            </div>
+                            <div class="flex-1 hidden md:block opacity-60">
+                                <p class="text-xs text-gray-500 italic mt-6 leading-relaxed">Pilih kombinasi warna dan huruf yang paling nyaman untuk Anda gunakan sehari-hari. Tampilan yang baik dapat meningkatkan produktivitas dan mengurangi kelelahan mata.</p>
                             </div>
                         </div>
 
@@ -12604,6 +12608,11 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                 preview.querySelectorAll('.preview-nav-icon').forEach(el => { el.style.color = tc; el.style.fontSize = fs; });
                 preview.querySelectorAll('.preview-active-span').forEach(el => { el.style.fontFamily = ff; el.style.fontSize = fs; });
                 preview.querySelectorAll('.preview-active-icon').forEach(el => { el.style.fontSize = fs; });
+            }
+            
+            // Re-render settings page to update active button borders
+            if (window.currentPage === 'pengaturan') {
+                window.navigateTo('pengaturan', true); 
             }
         };
 
