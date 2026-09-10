@@ -238,20 +238,21 @@
             const st = p.sidebar_theme || 'navy';
             const sidebar = document.getElementById('sidebar');
             const bottomNav = document.getElementById('bottom-nav');
+            const mobileLainnya = document.getElementById('mobileMenuLainnyaContent');
             
             let bgStyle = '';
-            if(st === 'white') bgStyle = '#ffffff';
-            else if(st === 'green') bgStyle = '#064e3b';
-            else if(st === 'blue') bgStyle = '#1e3a8a';
+            let isDark = true;
+            if(st === 'white') { bgStyle = '#ffffff'; isDark = false; }
+            else if(st === 'green') { bgStyle = '#064e3b'; }
+            else if(st === 'blue') { bgStyle = '#1e3a8a'; }
+            else if(st === 'purple') { bgStyle = '#4c1d95'; }
+            else if(st === 'red') { bgStyle = '#7f1d1d'; }
+            else if(st === 'black') { bgStyle = '#0f172a'; }
             
             if(sidebar) {
                 if(bgStyle) {
                     sidebar.style.backgroundColor = bgStyle;
-                    if(st === 'white') {
-                        sidebar.style.color = '#334155';
-                    } else {
-                        sidebar.style.color = '';
-                    }
+                    sidebar.style.color = isDark ? '' : '#334155';
                 } else {
                     sidebar.style.backgroundColor = '';
                     sidebar.style.color = '';
@@ -260,6 +261,19 @@
             if(bottomNav) {
                 if(bgStyle) bottomNav.style.backgroundColor = bgStyle;
                 else bottomNav.style.backgroundColor = '';
+            }
+            if(mobileLainnya) {
+                if(bgStyle && isDark) {
+                    mobileLainnya.style.backgroundColor = bgStyle;
+                    mobileLainnya.querySelectorAll('span.text-slate-700').forEach(el => el.style.color = '#f1f5f9');
+                    const h3 = mobileLainnya.querySelector('h3');
+                    if(h3) h3.style.color = '#ffffff';
+                } else {
+                    mobileLainnya.style.backgroundColor = '';
+                    mobileLainnya.querySelectorAll('span.text-slate-700').forEach(el => el.style.color = '');
+                    const h3 = mobileLainnya.querySelector('h3');
+                    if(h3) h3.style.color = '';
+                }
             }
         };
 
@@ -396,6 +410,16 @@
             const nav = document.getElementById('bottom-nav');
             if (!nav) return;
             
+            const navTheme = (db.pengaturan && db.pengaturan.nav_theme) ? db.pengaturan.nav_theme : 'orange';
+            let activeText = 'text-orange-400';
+            let hoverText = 'hover:text-orange-300';
+            if(navTheme === 'blue') { activeText = 'text-blue-400'; hoverText = 'hover:text-blue-300'; }
+            else if(navTheme === 'emerald') { activeText = 'text-emerald-400'; hoverText = 'hover:text-emerald-300'; }
+            else if(navTheme === 'purple') { activeText = 'text-purple-400'; hoverText = 'hover:text-purple-300'; }
+            else if(navTheme === 'rose') { activeText = 'text-rose-400'; hoverText = 'hover:text-rose-300'; }
+            else if(navTheme === 'yellow') { activeText = 'text-yellow-400'; hoverText = 'hover:text-yellow-300'; }
+            else if(navTheme === 'cyan') { activeText = 'text-cyan-400'; hoverText = 'hover:text-cyan-300'; }
+
             // Hanya buat tombol jika belum ada (mencegah duplikasi event handler)
             if (nav.children.length >= bottomNavMenus.length) {
                 // Hanya update tampilan aktif/tidak aktif, JANGAN buat ulang
@@ -404,7 +428,7 @@
                     if (!btn) return;
                     const isActive = (menu.id !== 'menu') && (window.currentPage === menu.id);
                     btn.className = 'flex flex-col items-center justify-center flex-1 min-w-0 py-1 gap-0.5 transition-colors duration-300 ' +
-                        (isActive ? 'text-orange-400' : 'text-slate-400 hover:text-orange-300');
+                        (isActive ? activeText : 'text-slate-400 ' + hoverText);
                 });
                 return;
             }
@@ -442,7 +466,7 @@
                 
                 const isActive = (menu.id !== 'menu') && (window.currentPage === menu.id);
                 btn.className = 'flex flex-col items-center justify-center flex-1 min-w-0 py-1 gap-0.5 transition-colors duration-300 ' +
-                    (isActive ? 'text-orange-400' : 'text-slate-400 hover:text-orange-300');
+                    (isActive ? activeText : 'text-slate-400 ' + hoverText);
                 btn.innerHTML = `<i class="fas ${menu.icon} text-lg transition-colors duration-300"></i><span style="font-size:10px;font-weight:600;white-space:nowrap;" class="transition-colors duration-300">${menu.name}</span>`;
                 nav.appendChild(btn);
             });
@@ -475,6 +499,15 @@
                 }
             }, { passive: false });
 
+            const navTheme = (db.pengaturan && db.pengaturan.nav_theme) ? db.pengaturan.nav_theme : 'orange';
+            let iconColor = 'text-orange-500';
+            if(navTheme === 'blue') iconColor = 'text-blue-500';
+            else if(navTheme === 'emerald') iconColor = 'text-emerald-500';
+            else if(navTheme === 'purple') iconColor = 'text-purple-500';
+            else if(navTheme === 'rose') iconColor = 'text-rose-500';
+            else if(navTheme === 'yellow') iconColor = 'text-yellow-500';
+            else if(navTheme === 'cyan') iconColor = 'text-cyan-500';
+
             const gridMenus = appMenus.filter(m => !['dashboard', 'presensi', 'siswa', 'nilai'].includes(m.id));
             const gridHtml = gridMenus.map(m => {
                 let badgeHtml = '';
@@ -487,7 +520,7 @@
                 return `
                     <div data-nav-target="${m.id}" class="flex flex-col items-center gap-3 cursor-pointer group py-2">
                         <div class="relative flex items-center justify-center transition-transform transform group-hover:scale-110">
-                            <i class="fas ${m.icon} text-3xl text-primary-500"></i>
+                            <i class="fas ${m.icon} text-3xl ${iconColor}"></i>
                             ${badgeHtml}
                         </div>
                         <span class="text-[11px] font-medium text-slate-700 text-center leading-tight w-full">${m.name}</span>
@@ -544,6 +577,7 @@
             window._menuLainnyaOpen = true;
 
             const modal = _createMenuLainnyaModal();
+            window.applyThemes();
 
             // Tampilkan overlay
             modal.style.opacity = '1';
@@ -8148,8 +8182,11 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                                     <select name="sidebar_theme" class="w-full border p-2 rounded-lg bg-gray-50 focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none transition">
                                         <option value="navy" ${p.sidebar_theme === 'navy' || !p.sidebar_theme ? 'selected' : ''}>Biru Gelap (Navy) - Default</option>
                                         <option value="white" ${p.sidebar_theme === 'white' ? 'selected' : ''}>Putih Bersih</option>
-                                        <option value="green" ${p.sidebar_theme === 'green' ? 'selected' : ''}>Hijau Zamrud</option>
+                                        <option value="green" ${p.sidebar_theme === 'green' ? 'selected' : ''}>Hijau Tua</option>
                                         <option value="blue" ${p.sidebar_theme === 'blue' ? 'selected' : ''}>Biru Laut</option>
+                                        <option value="purple" ${p.sidebar_theme === 'purple' ? 'selected' : ''}>Ungu Tua</option>
+                                        <option value="red" ${p.sidebar_theme === 'red' ? 'selected' : ''}>Merah Maroon</option>
+                                        <option value="black" ${p.sidebar_theme === 'black' ? 'selected' : ''}>Hitam Pekat</option>
                                     </select>
                                 </div>
                                 <div>
@@ -8160,6 +8197,8 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                                         <option value="emerald" ${p.nav_theme === 'emerald' ? 'selected' : ''}>Hijau Zamrud</option>
                                         <option value="purple" ${p.nav_theme === 'purple' ? 'selected' : ''}>Ungu</option>
                                         <option value="rose" ${p.nav_theme === 'rose' ? 'selected' : ''}>Merah Muda</option>
+                                        <option value="yellow" ${p.nav_theme === 'yellow' ? 'selected' : ''}>Kuning Emas</option>
+                                        <option value="cyan" ${p.nav_theme === 'cyan' ? 'selected' : ''}>Cyan / Biru Muda</option>
                                     </select>
                                 </div>
                             </div>
