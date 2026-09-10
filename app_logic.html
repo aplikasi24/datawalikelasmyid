@@ -8188,8 +8188,8 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                                     </div>
                                 </div>
 
-                                <!-- PREVIEW MINI (Di samping kanan mulai dari baris 2) -->
-                                <div class="md:row-span-4 flex flex-col items-start md:pl-6 border-t md:border-t-0 md:border-l border-gray-200 pt-6 md:pt-0 mt-2 md:mt-0">
+                                <!-- PREVIEW MINI (Di samping kanan) -->
+                                <div class="md:row-span-5 flex flex-col items-start md:pl-6 border-t md:border-t-0 md:border-l border-gray-200 pt-6 md:pt-0 mt-2 md:mt-0">
                                     <p class="text-xs font-bold text-gray-500 mb-3"><i class="fas fa-eye mr-1"></i> Preview</p>
                                     <div id="sidebar-preview-box" style="background:${p.sidebarBg||'#0f172a'};padding:16px;border-radius:16px;display:inline-block;width:100%;max-width:280px;box-shadow:0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1); border: 1px solid rgba(255,255,255,0.05)">
                                         <div style="display:flex;align-items:center;gap:6px;padding:3px 8px;margin-bottom:12px">
@@ -8205,8 +8205,8 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                                             <span class="preview-nav-span" style="color:${p.sidebarText||'#94a3b8'};font-size:${p.sidebarFontSize||13}px;font-weight:500;font-family:${p.sidebarFontFamily||'Inter, sans-serif'}">Data Siswa</span>
                                         </div>
                                         <div style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;transition:background 0.2s" onmouseover="this.style.background='rgba(255,255,255,0.05)'" onmouseout="this.style.background='transparent'">
-                                            <i class="fas fa-cog preview-nav-icon" style="color:${p.sidebarText||'#94a3b8'};font-size:${p.sidebarFontSize||13}px"></i>
-                                            <span class="preview-nav-span" style="color:${p.sidebarText||'#94a3b8'};font-size:${p.sidebarFontSize||13}px;font-weight:500;font-family:${p.sidebarFontFamily||'Inter, sans-serif'}">Pengaturan</span>
+                                            <i class="fas fa-th-large preview-mc-icon" style="color:${p.menuCepatIconColor||p.sidebarAccent||'#3b82f6'};font-size:${p.sidebarFontSize||13}px"></i>
+                                            <span class="preview-nav-span" style="color:${p.sidebarText||'#94a3b8'};font-size:${p.sidebarFontSize||13}px;font-weight:500;font-family:${p.sidebarFontFamily||'Inter, sans-serif'}">Menu Cepat</span>
                                         </div>
                                     </div>
                                 </div>
@@ -8220,7 +8220,16 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                                     </div>
                                 </div>
 
-                                <!-- 5. Ukuran Huruf Navigasi -->
+                                <!-- 5. Warna Icon Menu Cepat -->
+                                <div>
+                                    <label class="text-xs font-bold text-gray-600 mb-2 block"><i class="fas fa-star mr-1 text-indigo-400"></i> Warna Icon Menu Cepat</label>
+                                    <div class="flex items-center gap-3 bg-gray-50 border border-gray-200 p-2 rounded-xl">
+                                        <input type="color" value="${p.menuCepatIconColor||p.sidebarAccent||'#3b82f6'}" oninput="window.setSidebarColor('menuCepatIconColor', this.value, true); this.nextElementSibling.innerText=this.value" onchange="window.setSidebarColor('menuCepatIconColor', this.value)" class="w-10 h-10 rounded cursor-pointer border-0 p-0 bg-transparent" />
+                                        <span class="text-xs font-mono font-bold text-gray-600 uppercase">${p.menuCepatIconColor||p.sidebarAccent||'#3b82f6'}</span>
+                                    </div>
+                                </div>
+
+                                <!-- 6. Ukuran Huruf Navigasi -->
                                 <div>
                                     <label class="text-xs font-bold text-gray-600 mb-2 block"><i class="fas fa-text-height mr-1 text-indigo-400"></i> Ukuran Huruf Navigasi</label>
                                     <select onchange="window.setSidebarColor('fontSize', this.value)" class="w-full border border-gray-200 rounded-xl px-4 py-2 text-sm focus:ring-2 focus:ring-indigo-500 outline-none text-gray-700 bg-gray-50 hover:bg-white transition cursor-pointer">
@@ -8231,7 +8240,7 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                                     </select>
                                 </div>
 
-                                <!-- 6. Jenis Huruf Navigasi -->
+                                <!-- 7. Jenis Huruf Navigasi -->
                                 <div>
                                     <label class="text-xs font-bold text-gray-600 mb-2 block"><i class="fas fa-italic mr-1 text-indigo-400"></i> Jenis Huruf Navigasi</label>
                                     <select onchange="window.setSidebarColor('fontFamily', this.value)" class="w-full border border-gray-200 rounded-xl px-4 py-2 text-sm focus:ring-2 focus:ring-indigo-500 outline-none text-gray-700 bg-gray-50 hover:bg-white transition cursor-pointer">
@@ -12588,12 +12597,13 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
 
         window.setSidebarColor = (type, hex, isPreviewOnly) => {
             if (!db.pengaturan) db.pengaturan = {};
-            if (type === 'bg')         db.pengaturan.sidebarBg         = hex;
-            if (type === 'accent')     db.pengaturan.sidebarAccent     = hex;
-            if (type === 'text')       db.pengaturan.sidebarText       = hex;
-            if (type === 'groupColor') db.pengaturan.sidebarGroupColor = hex;
-            if (type === 'fontSize')   db.pengaturan.sidebarFontSize   = hex;
-            if (type === 'fontFamily') db.pengaturan.sidebarFontFamily = hex;
+            if (type === 'bg')                 db.pengaturan.sidebarBg         = hex;
+            if (type === 'accent')             db.pengaturan.sidebarAccent     = hex;
+            if (type === 'text')               db.pengaturan.sidebarText       = hex;
+            if (type === 'groupColor')         db.pengaturan.sidebarGroupColor = hex;
+            if (type === 'menuCepatIconColor') db.pengaturan.menuCepatIconColor = hex;
+            if (type === 'fontSize')           db.pengaturan.sidebarFontSize   = hex;
+            if (type === 'fontFamily')         db.pengaturan.sidebarFontFamily = hex;
             
             if (isPreviewOnly !== true) {
                 saveDB();
@@ -12610,6 +12620,7 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                 const gc = p.sidebarGroupColor || '#f97316';
                 const ac = p.sidebarAccent || '#f97316';
                 const tc = p.sidebarText || '#94a3b8';
+                const mc = p.menuCepatIconColor || ac;
                 // group header
                 const gh = preview.querySelector('.preview-group-header');
                 if (gh) { gh.style.color = gc; gh.style.fontFamily = ff; }
@@ -12618,6 +12629,9 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                 // active item
                 const ai = preview.querySelector('.preview-active-item');
                 if (ai) { ai.style.background = ac; }
+                // menu cepat preview icon
+                const mcIcon = preview.querySelector('.preview-mc-icon');
+                if (mcIcon) { mcIcon.style.color = mc; mcIcon.style.fontSize = fs; }
                 // all text spans & icons in inactive items
                 preview.querySelectorAll('.preview-nav-span').forEach(el => { el.style.color = tc; el.style.fontFamily = ff; el.style.fontSize = fs; });
                 preview.querySelectorAll('.preview-nav-icon').forEach(el => { el.style.color = tc; el.style.fontSize = fs; });
@@ -12632,8 +12646,13 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
             db.pengaturan.sidebarAccent     = '#f97316';
             db.pengaturan.sidebarText       = '#94a3b8';
             db.pengaturan.sidebarGroupColor = '#f97316';
+            delete db.pengaturan.menuCepatIconColor;
             db.pengaturan.sidebarFontSize   = '13';
             db.pengaturan.sidebarFontFamily = 'Inter, sans-serif';
+            saveDB();
+            window.applySidebarTheme();
+            window.navigateTo('pengaturan');
+        };
             saveDB();
             window.applySidebarTheme();
             window.navigateTo('pengaturan');
@@ -15281,7 +15300,7 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                         
                         <div class="flex items-center justify-between px-4 py-3 border-b border-white/10">
                             <h2 class="text-sm sm:text-base font-extrabold flex items-center gap-2" style="color:${db?.pengaturan?.sidebarGroupColor || (document.documentElement.classList.contains('dark') ? '#ffffff' : '#1e293b')}">
-                                <svg class="w-4 h-4 mb-0.5" style="color:${db?.pengaturan?.sidebarAccent || '#3b82f6'}" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/><rect x="15" y="4" width="5" height="5" rx="1" transform="rotate(45 17.5 6.5)"/></svg> Menu Cepat
+                                <svg class="w-4 h-4 mb-0.5" style="color:${db?.pengaturan?.menuCepatIconColor || db?.pengaturan?.sidebarAccent || '#3b82f6'}" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/><rect x="15" y="4" width="5" height="5" rx="1" transform="rotate(45 17.5 6.5)"/></svg> Menu Cepat
                             </h2>
                             <button onclick="window.toggleMenuCepatModal()" class="w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center rounded-full transition-colors hover:bg-black/10 dark:hover:bg-white/10" style="color:${db?.pengaturan?.sidebarText || '#64748b'}">
                                 <i class="fas fa-times text-xs sm:text-sm"></i>
@@ -15293,7 +15312,7 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                                 ${appMenus.map(m => `
                                     <div onclick="window.toggleMenuCepatModal(); window.navigateTo('${m.id}')" class="flex flex-col items-center gap-1 cursor-pointer group py-1 px-0.5 rounded-xl transition-all hover:bg-black/10 dark:hover:bg-white/5">
                                         <div class="w-9 h-9 sm:w-10 sm:h-10 flex items-center justify-center rounded-2xl transition-all group-hover:scale-105" style="background: rgba(120,120,120,0.1)">
-                                            <i class="fas ${m.icon} text-lg sm:text-xl transition-all" style="color:${db?.pengaturan?.sidebarAccent || '#3b82f6'}"></i>
+                                            <i class="fas ${m.icon} text-lg sm:text-xl transition-all" style="color:${db?.pengaturan?.menuCepatIconColor || db?.pengaturan?.sidebarAccent || '#3b82f6'}"></i>
                                         </div>
                                         <span class="text-[9px] sm:text-[10px] text-center font-medium px-0.5 leading-tight line-clamp-2" style="color:${db?.pengaturan?.sidebarText || '#64748b'}; font-family:${db?.pengaturan?.sidebarFontFamily || 'inherit'}">${m.name}</span>
                                     </div>
