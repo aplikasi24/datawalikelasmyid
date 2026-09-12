@@ -14055,7 +14055,12 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
 
         // --- FITUR KOREKSI UJIAN ---
         window._originalNavigateTo_koreksi = window._originalNavigateTo_koreksi || window.navigateTo;
+        window._navCooldown = false;
         window.navigateTo = function(pageId, isInternal = false) {
+            if (window._navCooldown) return;
+            window._navCooldown = true;
+            setTimeout(() => { window._navCooldown = false; }, 350);
+
             // Tutup sidebar di layar kecil jika dipanggil dari menu (bukan navigasi internal)
             if (!isInternal && window.innerWidth < 1024) {
                 const sidebar = document.getElementById('sidebar');
