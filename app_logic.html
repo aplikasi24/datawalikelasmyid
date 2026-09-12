@@ -210,12 +210,13 @@
             { id: "generator_soal", name: "Generator Soal", icon: "fa-robot", title: "Generator Soal AI", desc: "Buat soal secara otomatis menggunakan AI (Selama Token dan Api Masih aktif).", group: "Asisten (AI Tools)" },
             { id: "modul_ajar_ai", name: "Modul Ajar AI", icon: "fa-chalkboard-teacher", title: "Modul Ajar AI", desc: "Buat Modul Ajar Kurikulum Merdeka yang komprehensif dengan AI.", group: "Asisten (AI Tools)" },
             
-            { id: "ekstra", name: "Spinning Wheel", icon: "fa-dharmachakra", title: "🎡 Spinning Wheel", desc: "Permainan Roda Keberuntungan Acak Nama Siswa.", group: "Extra Time" },
-            { id: "memory_run", name: "Memory Run", icon: "fa-brain", title: "🧠 Memory Run", desc: "Game Mengingat Pola (Memory Runner) untuk melatih ingatan siswa.", group: "Extra Time" },
-            { id: "word_search", name: "Cari Kata", icon: "fa-search", title: "🧩 Cari Kata", desc: "Permainan teka-teki silang cari kata interaktif untuk kelas.", group: "Extra Time" },
-            { id: "mind_game", name: "Mind Game", icon: "fa-lightbulb", title: "💡 Mind Game", desc: "Teka-teki logika asah otak menyambung titik untuk anak.", group: "Extra Time" },
-            { id: "lengkapi_kata", name: "Lengkapi Kata/Angka", icon: "fa-font", title: "🔤🔢 Lengkapi Kata & Angka", desc: "Game edukasi offline melengkapi kata dan deret angka anak SD.", group: "Extra Time" },
-            { id: "puzzle", name: "Puzzle Gambar", icon: "fa-puzzle-piece", title: "🧩 Puzzle Gambar", desc: "Game menyusun gambar acak dengan mode pindah dan geser posisi.", group: "Extra Time" },
+            { id: "extra_game", name: "Extra Time", icon: "fa-gamepad", title: "🎮 Extra Time", desc: "Kumpulan game edukatif dan interaktif untuk kegiatan kelas yang menyenangkan.", group: "Extra Time" },
+            { id: "ekstra", name: "Spinning Wheel", icon: "fa-dharmachakra", title: "🎡 Spinning Wheel", desc: "Permainan Roda Keberuntungan Acak Nama Siswa.", group: "Extra Time", hiddenFromSidebar: true },
+            { id: "memory_run", name: "Memory Run", icon: "fa-brain", title: "🧠 Memory Run", desc: "Game Mengingat Pola (Memory Runner) untuk melatih ingatan siswa.", group: "Extra Time", hiddenFromSidebar: true },
+            { id: "word_search", name: "Cari Kata", icon: "fa-search", title: "🧩 Cari Kata", desc: "Permainan teka-teki silang cari kata interaktif untuk kelas.", group: "Extra Time", hiddenFromSidebar: true },
+            { id: "mind_game", name: "Mind Game", icon: "fa-lightbulb", title: "💡 Mind Game", desc: "Teka-teki logika asah otak menyambung titik untuk anak.", group: "Extra Time", hiddenFromSidebar: true },
+            { id: "lengkapi_kata", name: "Lengkapi Kata/Angka", icon: "fa-font", title: "🔤🔢 Lengkapi Kata & Angka", desc: "Game edukasi offline melengkapi kata dan deret angka anak SD.", group: "Extra Time", hiddenFromSidebar: true },
+            { id: "puzzle", name: "Puzzle Gambar", icon: "fa-puzzle-piece", title: "🧩 Puzzle Gambar", desc: "Game menyusun gambar acak dengan mode pindah dan geser posisi.", group: "Extra Time", hiddenFromSidebar: true },
             
             { id: "aplikasi_lain", name: "Aplikasi Lain", icon: "fa-th-large", title: "Aplikasi Terintegrasi", desc: "Berbagai aplikasi lain yang dapat diakses.", group: "Sistem & Pengaturan" },
             { id: "sync", name: "Kirim Data (Sync)", icon: "fa-cloud-upload-alt", title: "Sinkronisasi Server", desc: "Kirim data lokal aplikasi ini ke server.", group: "Sistem & Pengaturan" },
@@ -248,7 +249,7 @@
                 let currentGroup = "";
                 let currentGroupContainer = null;
 
-                appMenus.forEach((menu) => {
+                appMenus.filter(m => !m.hiddenFromSidebar).forEach((menu) => {
                     try {
                         if (menu.group && menu.group !== currentGroup) {
                             currentGroup = menu.group;
@@ -12409,7 +12410,7 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
 
             let contentHtml = `
                 <div>
-                    ${menuId !== 'struktur' && menuId !== 'jadwal' && menuId !== 'aplikasi_lain' && menuId !== 'ekstra' && menuId !== 'memory_run' && menuId !== 'word_search' && menuId !== 'mind_game' && menuId !== 'lengkapi_kata' ? `
+                    ${menuId !== 'struktur' && menuId !== 'jadwal' && menuId !== 'aplikasi_lain' && menuId !== 'ekstra' && menuId !== 'memory_run' && menuId !== 'word_search' && menuId !== 'mind_game' && menuId !== 'lengkapi_kata' && menuId !== 'extra_game' ? `
                     <header class="mb-8 border-b border-gray-200 pb-4 flex flex-col md:flex-row md:items-start justify-between">
                         <div class="flex flex-wrap justify-between items-start w-full md:w-auto gap-y-3">
                             <div class="flex-1 min-w-0 pr-2">
@@ -12464,6 +12465,7 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                     case 'mind_game': contentHtml += renderMind_game(); break;
                     case 'lengkapi_kata': contentHtml += renderLengkapi_kata(); break;
                     case 'puzzle': contentHtml += renderPuzzle(); break;
+                    case 'extra_game': contentHtml += renderExtraGame(); break;
                     case 'aplikasi_lain': contentHtml += renderAplikasiLain(); break;
                     case 'sync': contentHtml += renderSync(); break;
                     case 'pengaturan': contentHtml += renderPengaturan(); break;
@@ -12485,6 +12487,9 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                 if ((menuId === 'aplikasi_lain' && window.currentAplikasiLainUrl) || menuId === 'ekstra' || menuId === 'memory_run' || menuId === 'word_search' || menuId === 'mind_game' || menuId === 'lengkapi_kata' || menuId === 'puzzle') {
                     targetAppContent.classList.remove('max-w-7xl', 'md:p-8', 'p-4', 'p-2', 'md:p-4');
                     targetAppContent.classList.add('max-w-full', 'p-0', 'flex', 'flex-col');
+                } else if (menuId === 'extra_game') {
+                    targetAppContent.classList.add('max-w-7xl', 'md:p-8', 'p-4');
+                    targetAppContent.classList.remove('max-w-full', 'p-0', 'p-2', 'md:p-4', 'flex', 'flex-col');
                 } else {
                     targetAppContent.classList.add('max-w-7xl', 'md:p-8', 'p-4');
                     targetAppContent.classList.remove('max-w-full', 'p-0', 'p-2', 'md:p-4', 'flex', 'flex-col');
@@ -14028,51 +14033,255 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
             document.body.insertAdjacentHTML('beforeend', chatHtml);
         }
 
+        // --- FITUR EXTRA GAME HUB ---
+        function renderExtraGame() {
+            const games = [
+                {
+                    id: 'ekstra',
+                    name: 'Spinning Wheel',
+                    emoji: '🎡',
+                    icon: 'fa-dharmachakra',
+                    desc: 'Putar roda keberuntungan untuk acak nama siswa secara adil dan menyenangkan.',
+                    color: 'from-orange-500 to-amber-500',
+                    bg: 'bg-orange-50',
+                    border: 'border-orange-200',
+                    iconColor: 'text-orange-500',
+                    tag: 'Populer',
+                    tagColor: 'bg-orange-100 text-orange-700'
+                },
+                {
+                    id: 'memory_run',
+                    name: 'Memory Run',
+                    emoji: '🧠',
+                    icon: 'fa-brain',
+                    desc: 'Latih daya ingat siswa dengan game mengingat dan mencocokkan pola warna yang berubah.',
+                    color: 'from-purple-500 to-indigo-600',
+                    bg: 'bg-purple-50',
+                    border: 'border-purple-200',
+                    iconColor: 'text-purple-500',
+                    tag: 'Otak',
+                    tagColor: 'bg-purple-100 text-purple-700'
+                },
+                {
+                    id: 'word_search',
+                    name: 'Cari Kata',
+                    emoji: '🧩',
+                    icon: 'fa-search',
+                    desc: 'Permainan teka-teki mencari kata tersembunyi di dalam kisi huruf yang menarik.',
+                    color: 'from-teal-500 to-cyan-600',
+                    bg: 'bg-teal-50',
+                    border: 'border-teal-200',
+                    iconColor: 'text-teal-500',
+                    tag: 'Bahasa',
+                    tagColor: 'bg-teal-100 text-teal-700'
+                },
+                {
+                    id: 'mind_game',
+                    name: 'Mind Game',
+                    emoji: '💡',
+                    icon: 'fa-lightbulb',
+                    desc: 'Teka-teki logika asah otak dengan cara menyambung titik tanpa mengangkat pena.',
+                    color: 'from-yellow-500 to-orange-500',
+                    bg: 'bg-yellow-50',
+                    border: 'border-yellow-200',
+                    iconColor: 'text-yellow-600',
+                    tag: 'Logika',
+                    tagColor: 'bg-yellow-100 text-yellow-700'
+                },
+                {
+                    id: 'lengkapi_kata',
+                    name: 'Lengkapi Kata',
+                    emoji: '🔤',
+                    icon: 'fa-font',
+                    desc: 'Game edukasi melengkapi kata dan deret angka yang hilang, cocok untuk siswa SD.',
+                    color: 'from-blue-500 to-indigo-500',
+                    bg: 'bg-blue-50',
+                    border: 'border-blue-200',
+                    iconColor: 'text-blue-500',
+                    tag: 'Edukasi',
+                    tagColor: 'bg-blue-100 text-blue-700'
+                },
+                {
+                    id: 'puzzle',
+                    name: 'Puzzle Gambar',
+                    emoji: '🧩',
+                    icon: 'fa-puzzle-piece',
+                    desc: 'Susun potongan gambar yang diacak menjadi gambar utuh dengan mode geser yang seru.',
+                    color: 'from-rose-500 to-pink-500',
+                    bg: 'bg-rose-50',
+                    border: 'border-rose-200',
+                    iconColor: 'text-rose-500',
+                    tag: 'Kreatif',
+                    tagColor: 'bg-rose-100 text-rose-700'
+                }
+            ];
+
+            const cardsHtml = games.map(g => `
+                <div onclick="window.navigateTo('${g.id}')"
+                     class="group relative bg-white rounded-2xl border ${g.border} shadow-sm hover:shadow-xl cursor-pointer transition-all duration-300 hover:-translate-y-1 overflow-hidden flex flex-col"
+                     style="min-height: 220px;">
+                    <!-- Gradient Top Strip -->
+                    <div class="h-1.5 w-full bg-gradient-to-r ${g.color}"></div>
+
+                    <!-- Card Body -->
+                    <div class="p-5 flex flex-col flex-1">
+                        <!-- Icon & Tag -->
+                        <div class="flex items-start justify-between mb-4">
+                            <div class="w-14 h-14 rounded-2xl ${g.bg} flex items-center justify-center shadow-sm group-hover:scale-110 transition-transform duration-300">
+                                <i class="fas ${g.icon} text-2xl ${g.iconColor}"></i>
+                            </div>
+                            <span class="text-[11px] font-bold px-2.5 py-1 rounded-full ${g.tagColor}">${g.tag}</span>
+                        </div>
+
+                        <!-- Title -->
+                        <h3 class="font-bold text-slate-800 text-lg leading-tight mb-1">${g.emoji} ${g.name}</h3>
+
+                        <!-- Description -->
+                        <p class="text-slate-500 text-sm leading-relaxed flex-1">${g.desc}</p>
+
+                        <!-- Play Button -->
+                        <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between">
+                            <span class="text-xs text-slate-400 font-medium">Klik untuk main</span>
+                            <div class="w-8 h-8 rounded-full bg-gradient-to-r ${g.color} flex items-center justify-center shadow-md group-hover:scale-110 transition-transform">
+                                <i class="fas fa-play text-white text-xs ml-0.5"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Hover Overlay -->
+                    <div class="absolute inset-0 bg-gradient-to-br ${g.color} opacity-0 group-hover:opacity-[0.04] transition-opacity duration-300 pointer-events-none rounded-2xl"></div>
+                </div>
+            `).join('');
+
+            return `
+                <div>
+                    <!-- Hero Banner -->
+                    <div class="relative overflow-hidden rounded-2xl bg-gradient-to-br from-slate-800 via-indigo-900 to-slate-900 p-6 md:p-8 mb-8 shadow-xl">
+                        <div class="absolute inset-0 opacity-10" style="background-image: radial-gradient(circle at 20% 50%, #6366f1 0%, transparent 50%), radial-gradient(circle at 80% 20%, #8b5cf6 0%, transparent 40%), radial-gradient(circle at 60% 90%, #06b6d4 0%, transparent 35%);"></div>
+                        <div class="relative z-10 flex flex-col md:flex-row md:items-center gap-5">
+                            <div class="w-16 h-16 md:w-20 md:h-20 rounded-2xl bg-white/10 flex items-center justify-center shrink-0 shadow-lg border border-white/20">
+                                <i class="fas fa-gamepad text-white text-3xl md:text-4xl"></i>
+                            </div>
+                            <div class="flex-1">
+                                <div class="inline-flex items-center gap-2 bg-white/10 border border-white/20 rounded-full px-3 py-1 mb-2">
+                                    <span class="w-2 h-2 rounded-full bg-green-400 animate-pulse"></span>
+                                    <span class="text-white/80 text-xs font-semibold tracking-wide">6 GAME TERSEDIA</span>
+                                </div>
+                                <h1 class="text-white font-extrabold text-2xl md:text-3xl leading-tight">🎮 Extra Time</h1>
+                                <p class="text-white/60 text-sm mt-1 leading-relaxed">Kumpulan game edukatif interaktif untuk membuat kegiatan belajar di kelas lebih seru dan menyenangkan.</p>
+                            </div>
+                            <div class="hidden md:flex flex-col items-end gap-1 shrink-0">
+                                <div class="text-white/40 text-xs">Pilih game favoritmu</div>
+                                <div class="flex gap-2 text-2xl">🎡 🧠 🧩 💡 🔤 🧩</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Games Grid -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+                        ${cardsHtml}
+                    </div>
+
+                    <!-- Footer Note -->
+                    <div class="mt-8 flex items-center gap-3 bg-slate-50 border border-slate-200 rounded-xl p-4">
+                        <div class="w-9 h-9 rounded-xl bg-indigo-100 flex items-center justify-center shrink-0">
+                            <i class="fas fa-info-circle text-indigo-500"></i>
+                        </div>
+                        <p class="text-slate-500 text-sm leading-relaxed">
+                            Semua game berjalan <strong class="text-slate-700">di dalam aplikasi</strong> tanpa berpindah halaman. Game dapat digunakan sebagai <strong class="text-slate-700">ice breaking</strong>, reward, atau kegiatan pengisi waktu yang edukatif.
+                        </p>
+                    </div>
+                </div>
+            `;
+        }
+
         // --- FITUR EKSTRA ---
         function renderEkstra() {
             return `
-                <div class="bg-slate-50/50 overflow-hidden w-full h-full min-h-[85vh] flex flex-col justify-center items-center p-0">
-                    <iframe src="ekstra?tab=wheel" class="w-full h-full border-0 min-h-[85vh] block" title="Spinning Wheel" allowfullscreen></iframe>
+                <div class="bg-slate-50/50 overflow-hidden w-full h-full min-h-[85vh] flex flex-col p-0">
+                    <div class="flex items-center gap-3 bg-slate-800 px-4 py-2.5 shrink-0">
+                        <button onclick="window.navigateTo('extra_game')" class="flex items-center gap-2 text-white/70 hover:text-white text-sm font-medium transition-colors">
+                            <i class="fas fa-arrow-left text-xs"></i> Kembali ke Extra Time
+                        </button>
+                        <span class="text-white/30 text-xs">|</span>
+                        <span class="text-white/80 text-sm font-semibold">🎡 Spinning Wheel</span>
+                    </div>
+                    <iframe src="ekstra?tab=wheel" class="w-full flex-1 border-0 min-h-[80vh] block" title="Spinning Wheel" allowfullscreen></iframe>
                 </div>
             `;
         }
 
         function renderMemory_run() {
             return `
-                <div class="bg-slate-50/50 overflow-hidden w-full h-full min-h-[85vh] flex flex-col justify-center items-center p-0">
-                    <iframe src="ekstra?tab=memory" class="w-full h-full border-0 min-h-[85vh] block" title="Memory Run" allowfullscreen></iframe>
+                <div class="bg-slate-50/50 overflow-hidden w-full h-full min-h-[85vh] flex flex-col p-0">
+                    <div class="flex items-center gap-3 bg-slate-800 px-4 py-2.5 shrink-0">
+                        <button onclick="window.navigateTo('extra_game')" class="flex items-center gap-2 text-white/70 hover:text-white text-sm font-medium transition-colors">
+                            <i class="fas fa-arrow-left text-xs"></i> Kembali ke Extra Time
+                        </button>
+                        <span class="text-white/30 text-xs">|</span>
+                        <span class="text-white/80 text-sm font-semibold">🧠 Memory Run</span>
+                    </div>
+                    <iframe src="ekstra?tab=memory" class="w-full flex-1 border-0 min-h-[80vh] block" title="Memory Run" allowfullscreen></iframe>
                 </div>
             `;
         }
 
         function renderWord_search() {
             return `
-                <div class="bg-slate-50/50 overflow-hidden w-full h-full min-h-[85vh] flex flex-col justify-center items-center p-0">
-                    <iframe src="word_search" class="w-full h-full border-0 min-h-[85vh] block" title="Permainan Cari Kata" allowfullscreen></iframe>
+                <div class="bg-slate-50/50 overflow-hidden w-full h-full min-h-[85vh] flex flex-col p-0">
+                    <div class="flex items-center gap-3 bg-slate-800 px-4 py-2.5 shrink-0">
+                        <button onclick="window.navigateTo('extra_game')" class="flex items-center gap-2 text-white/70 hover:text-white text-sm font-medium transition-colors">
+                            <i class="fas fa-arrow-left text-xs"></i> Kembali ke Extra Time
+                        </button>
+                        <span class="text-white/30 text-xs">|</span>
+                        <span class="text-white/80 text-sm font-semibold">🧩 Cari Kata</span>
+                    </div>
+                    <iframe src="word_search" class="w-full flex-1 border-0 min-h-[80vh] block" title="Permainan Cari Kata" allowfullscreen></iframe>
                 </div>
             `;
         }
 
         function renderMind_game() {
             return `
-                <div class="bg-slate-50/50 overflow-hidden w-full h-full min-h-[85vh] flex flex-col justify-center items-center p-0">
-                    <iframe src="ekstra?tab=mind" class="w-full h-full border-0 min-h-[85vh] block" title="Mind Game" allowfullscreen></iframe>
+                <div class="bg-slate-50/50 overflow-hidden w-full h-full min-h-[85vh] flex flex-col p-0">
+                    <div class="flex items-center gap-3 bg-slate-800 px-4 py-2.5 shrink-0">
+                        <button onclick="window.navigateTo('extra_game')" class="flex items-center gap-2 text-white/70 hover:text-white text-sm font-medium transition-colors">
+                            <i class="fas fa-arrow-left text-xs"></i> Kembali ke Extra Time
+                        </button>
+                        <span class="text-white/30 text-xs">|</span>
+                        <span class="text-white/80 text-sm font-semibold">💡 Mind Game</span>
+                    </div>
+                    <iframe src="ekstra?tab=mind" class="w-full flex-1 border-0 min-h-[80vh] block" title="Mind Game" allowfullscreen></iframe>
                 </div>
             `;
         }
 
         function renderLengkapi_kata() {
             return `
-                <div class="bg-slate-50/50 overflow-hidden w-full h-full min-h-[85vh] flex flex-col justify-center items-center p-0">
-                    <iframe src="ekstra?tab=lengkapi" class="w-full h-full border-0 min-h-[85vh] block" title="Lengkapi Kata / Angka" allowfullscreen></iframe>
+                <div class="bg-slate-50/50 overflow-hidden w-full h-full min-h-[85vh] flex flex-col p-0">
+                    <div class="flex items-center gap-3 bg-slate-800 px-4 py-2.5 shrink-0">
+                        <button onclick="window.navigateTo('extra_game')" class="flex items-center gap-2 text-white/70 hover:text-white text-sm font-medium transition-colors">
+                            <i class="fas fa-arrow-left text-xs"></i> Kembali ke Extra Time
+                        </button>
+                        <span class="text-white/30 text-xs">|</span>
+                        <span class="text-white/80 text-sm font-semibold">🔤 Lengkapi Kata & Angka</span>
+                    </div>
+                    <iframe src="ekstra?tab=lengkapi" class="w-full flex-1 border-0 min-h-[80vh] block" title="Lengkapi Kata / Angka" allowfullscreen></iframe>
                 </div>
             `;
         }
 
         function renderPuzzle() {
             return `
-                <div class="bg-slate-50/50 overflow-hidden w-full h-full min-h-[85vh] flex flex-col justify-center items-center p-0">
-                    <iframe src="ekstra?tab=puzzle" class="w-full h-full border-0 min-h-[85vh] block" title="Puzzle Gambar" allowfullscreen></iframe>
+                <div class="bg-slate-50/50 overflow-hidden w-full h-full min-h-[85vh] flex flex-col p-0">
+                    <div class="flex items-center gap-3 bg-slate-800 px-4 py-2.5 shrink-0">
+                        <button onclick="window.navigateTo('extra_game')" class="flex items-center gap-2 text-white/70 hover:text-white text-sm font-medium transition-colors">
+                            <i class="fas fa-arrow-left text-xs"></i> Kembali ke Extra Time
+                        </button>
+                        <span class="text-white/30 text-xs">|</span>
+                        <span class="text-white/80 text-sm font-semibold">🧩 Puzzle Gambar</span>
+                    </div>
+                    <iframe src="ekstra?tab=puzzle" class="w-full flex-1 border-0 min-h-[80vh] block" title="Puzzle Gambar" allowfullscreen></iframe>
                 </div>
             `;
         }
