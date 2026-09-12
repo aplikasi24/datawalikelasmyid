@@ -201,6 +201,7 @@
             { id: "presensi", name: "Presensi Siswa", icon: "fa-user-check", title: "Presensi Siswa", desc: "Kelola kehadiran siswa (Hadir, Izin, Sakit, Alpa).", group: "Evaluasi & Pantauan Siswa" },
             { id: "tugas", name: "Tugas Siswa", icon: "fa-tasks", title: "Tugas Siswa", desc: "Manajemen tugas dan penilaian siswa.", group: "Evaluasi & Pantauan Siswa" },
             { id: "nilai", name: "Nilai Siswa", icon: "fa-chart-bar", title: "Nilai Siswa", desc: "Rekapitulasi dan input nilai akademik.", group: "Evaluasi & Pantauan Siswa" },
+            { id: "rapor", name: "Rapor", icon: "fa-file-signature", title: "Rapor", desc: "Aplikasi e-Rapor Siswa.", group: "Evaluasi & Pantauan Siswa" },
             { id: "catatan", name: "Catatan Siswa", icon: "fa-comments", title: "Catatan Siswa", desc: "Catatan anekdotal dan perkembangan siswa.", group: "Evaluasi & Pantauan Siswa" },
             { id: "koreksi_ujian", name: "Koreksi Ujian", icon: "fa-check-double", title: "Koreksi Ujian", desc: "Input dan koreksi nilai ujian secara cepat.", group: "Evaluasi & Pantauan Siswa" },
             
@@ -12410,7 +12411,7 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
 
             let contentHtml = `
                 <div>
-                    ${menuId !== 'struktur' && menuId !== 'jadwal' && menuId !== 'aplikasi_lain' && menuId !== 'ekstra' && menuId !== 'memory_run' && menuId !== 'word_search' && menuId !== 'mind_game' && menuId !== 'lengkapi_kata' && menuId !== 'extra_game' ? `
+                    ${menuId !== 'struktur' && menuId !== 'jadwal' && menuId !== 'aplikasi_lain' && menuId !== 'ekstra' && menuId !== 'memory_run' && menuId !== 'word_search' && menuId !== 'mind_game' && menuId !== 'lengkapi_kata' && menuId !== 'extra_game' && menuId !== 'rapor' ? `
                     <header class="mb-8 border-b border-gray-200 pb-4 flex flex-col md:flex-row md:items-start justify-between">
                         <div class="flex flex-wrap justify-between items-start w-full md:w-auto gap-y-3">
                             <div class="flex-1 min-w-0 pr-2">
@@ -12449,6 +12450,7 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                     case 'jadwal': contentHtml += renderJadwal(); break;
                     case 'presensi': contentHtml += renderPresensi(); break;
                     case 'nilai': contentHtml += renderNilai(); break;
+                    case 'rapor': contentHtml += renderRapor(); break;
                     case 'jurnal': contentHtml += renderJurnal(); break;
                     case 'tugas': contentHtml += renderTugas(); break;
                     case 'catatan': contentHtml += renderCatatan(); break;
@@ -12484,7 +12486,7 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                 targetAppContent.style.minHeight = '500px'; 
                 
                 // Maksimalkan area untuk iframe Aplikasi Lain atau Ekstra
-                if ((menuId === 'aplikasi_lain' && window.currentAplikasiLainUrl) || menuId === 'ekstra' || menuId === 'memory_run' || menuId === 'word_search' || menuId === 'mind_game' || menuId === 'lengkapi_kata' || menuId === 'puzzle') {
+                if ((menuId === 'aplikasi_lain' && window.currentAplikasiLainUrl) || menuId === 'ekstra' || menuId === 'memory_run' || menuId === 'word_search' || menuId === 'mind_game' || menuId === 'lengkapi_kata' || menuId === 'puzzle' || menuId === 'rapor') {
                     targetAppContent.classList.remove('max-w-7xl', 'md:p-8', 'p-4', 'p-2', 'md:p-4');
                     targetAppContent.classList.add('max-w-full', 'p-0', 'flex', 'flex-col');
                 } else if (menuId === 'extra_game') {
@@ -14282,6 +14284,14 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                         <span class="text-white/80 text-sm font-semibold">🧩 Puzzle Gambar</span>
                     </div>
                     <iframe src="ekstra?tab=puzzle" class="w-full flex-1 border-0 min-h-[80vh] block" title="Puzzle Gambar" allowfullscreen></iframe>
+                </div>
+            `;
+        }
+
+        function renderRapor() {
+            return `
+                <div class="bg-slate-50/50 overflow-hidden w-full h-full min-h-[85vh] flex flex-col p-0">
+                    <iframe src="./raporv3/index.html" class="w-full flex-1 border-0 min-h-[85vh] block" title="Aplikasi Rapor" allowfullscreen></iframe>
                 </div>
             `;
         }
