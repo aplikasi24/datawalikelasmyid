@@ -797,7 +797,7 @@
                 html += `<div class="text-center text-gray-400 text-sm mt-6 italic col-span-2 py-8"><i class="fas fa-link text-3xl mb-2 block opacity-30"></i>Belum ada tautan.<br><span class="text-xs">Klik tombol Tambah untuk menambahkan.</span></div>`;
             } else {
                 visibleItems.forEach((item, idx) => {
-                    const colorClass = bgColors[idx % bgColors.length];
+                    const colorClass = item.color || bgColors[idx % bgColors.length];
                     html += `
                         <div class="relative group">
                             <a href="${item.url}" target="_blank" class="flex items-center gap-2.5 bg-gray-50 hover:bg-blue-50 border border-gray-100 hover:border-blue-200 transition-all duration-200 px-3 py-2.5 rounded-xl w-full shadow-sm hover:shadow-md">
@@ -818,14 +818,35 @@
         };
 
         window.tambahTautanCepat = () => {
+            const colorOptions = [
+                { label: 'Biru',    value: 'bg-blue-100 text-blue-600',    hex: '#dbeafe', txtHex: '#2563eb' },
+                { label: 'Teal',    value: 'bg-teal-100 text-teal-600',    hex: '#ccfbf1', txtHex: '#0d9488' },
+                { label: 'Ungu',    value: 'bg-purple-100 text-purple-600', hex: '#f3e8ff', txtHex: '#9333ea' },
+                { label: 'Oranye', value: 'bg-orange-100 text-orange-600', hex: '#ffedd5', txtHex: '#ea580c' },
+                { label: 'Pink',    value: 'bg-pink-100 text-pink-600',    hex: '#fce7f3', txtHex: '#db2777' },
+                { label: 'Hijau',  value: 'bg-green-100 text-green-600',  hex: '#dcfce7', txtHex: '#16a34a' },
+                { label: 'Merah',  value: 'bg-red-100 text-red-600',      hex: '#fee2e2', txtHex: '#dc2626' },
+                { label: 'Kuning', value: 'bg-yellow-100 text-yellow-700', hex: '#fef9c3', txtHex: '#a16207' },
+                { label: 'Indigo', value: 'bg-indigo-100 text-indigo-600', hex: '#e0e7ff', txtHex: '#4f46e5' },
+            ];
+
+            const colorSwatches = colorOptions.map((c, i) =>
+                `<button type="button" onclick="document.querySelectorAll('.color-swatch').forEach(el=>el.classList.remove('ring-2','ring-offset-1','ring-blue-500')); this.classList.add('ring-2','ring-offset-1','ring-blue-500'); document.getElementById('swal-color').value='${c.value}';" 
+                    class="color-swatch w-8 h-8 rounded-lg border-2 border-white shadow-sm hover:scale-110 transition-transform ${i===0?'ring-2 ring-offset-1 ring-blue-500':''}" 
+                    style="background:${c.hex};" title="${c.label}"></button>`
+            ).join('');
+
             Swal.fire({
                 title: 'Tambah Tautan',
-                width: '26em',
-                customClass: { title: 'text-2xl text-gray-800' },
+                width: '28em',
+                customClass: { title: 'text-xl text-gray-800' },
                 html:
-                    '<div class="px-2 mt-2">' +
-                    '<input id="swal-nama" class="border border-gray-300 rounded-lg w-full p-3 text-gray-800 font-medium block mb-4 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none text-sm shadow-sm placeholder-gray-400" placeholder="Nama Tautan (misal: Canva)">' +
-                    '<input id="swal-url" class="border border-gray-300 rounded-lg w-full p-3 text-gray-800 font-medium block focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none text-sm shadow-sm placeholder-gray-400" placeholder="URL (misal: https://canva.com)">' +
+                    '<div class="px-2 mt-2 text-left">' +
+                    '<input id="swal-nama" class="border border-gray-300 rounded-lg w-full p-3 text-gray-800 font-medium block mb-3 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none text-sm shadow-sm placeholder-gray-400" placeholder="Nama Tautan (misal: Canva)">' +
+                    '<input id="swal-url" class="border border-gray-300 rounded-lg w-full p-3 text-gray-800 font-medium block mb-3 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none text-sm shadow-sm placeholder-gray-400" placeholder="URL (misal: https://canva.com)">' +
+                    '<p class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Warna Ikon</p>' +
+                    '<div class="flex flex-wrap gap-2 mb-1">' + colorSwatches + '</div>' +
+                    '<input type="hidden" id="swal-color" value="' + colorOptions[0].value + '">' +
                     '</div>',
                 focusConfirm: false,
                 showCancelButton: true,
@@ -834,6 +855,7 @@
                 preConfirm: () => {
                     const name = document.getElementById('swal-nama').value;
                     const url = document.getElementById('swal-url').value;
+                    const color = document.getElementById('swal-color').value;
                     if (!name || !url) {
                         Swal.showValidationMessage('Nama dan URL harus diisi!');
                     }
@@ -841,14 +863,15 @@
                     if(!finalUrl.startsWith('http://') && !finalUrl.startsWith('https://')) {
                         finalUrl = 'https://' + finalUrl;
                     }
-                    return { name: name, url: finalUrl };
+                    return { name: name, url: finalUrl, color: color };
                 }
             }).then((result) => {
                 if (result.isConfirmed) {
-                    db.tautanCepatList.unshift({ id: Date.now(), name: result.value.name, url: result.value.url });
+                    db.tautanCepatList.unshift({ id: Date.now(), name: result.value.name, url: result.value.url, color: result.value.color });
                     window.dashboardState.tautanPage = 0;
                     saveDB();
                     document.getElementById('tautan-container').innerHTML = window.renderTautanCepatUI();
+                    window.addAktivitas && window.addAktivitas('default', 'Tautan baru ditambahkan', result.value.name);
                 }
             });
         };
@@ -3529,10 +3552,12 @@ ${formatInstruction}`;
                 const index = db.students.findIndex(x => String(x.id) === String(editId));
                 if(index > -1) {
                     db.students[index] = { ...db.students[index], ...studentData };
+                    window.addAktivitas && window.addAktivitas('siswa', 'Data siswa diperbarui', studentData.name);
                 }
             } else {
                 studentData.id = Date.now();
                 db.students.push(studentData);
+                window.addAktivitas && window.addAktivitas('siswa', 'Siswa baru ditambahkan', studentData.name + ' - ' + studentData.kelas);
                 
                 const todayStr = new Date().toLocaleDateString('en-CA');
                 if(!db.attendance[todayStr]) db.attendance[todayStr] = {};
@@ -9300,6 +9325,18 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
             db.nilai[dataKey][studentId][field] = num;
             saveDB();
             
+            // Catat aktivitas (debounce - hanya catat sekali per 10 detik per mapel)
+            if (!window._nilaiAktivitasTimer) window._nilaiAktivitasTimer = {};
+            const timerKey = mapelId + '_' + studentId;
+            clearTimeout(window._nilaiAktivitasTimer[timerKey]);
+            window._nilaiAktivitasTimer[timerKey] = setTimeout(() => {
+                const siswa = db.students ? db.students.find(s => String(s.id) === String(studentId)) : null;
+                const mapel = db.mapel ? db.mapel.find(m => String(m.id) === String(mapelId)) : null;
+                const namaSiswa = siswa ? siswa.name : 'Siswa';
+                const namaMapel = mapel ? mapel.name : 'Mapel';
+                window.addAktivitas && window.addAktivitas('nilai', 'Nilai diperbarui', namaSiswa + ' - ' + namaMapel);
+            }, 10000);
+            
             // Auto update Rapor cell if recalculation is needed without losing focus
             const n = db.nilai[dataKey][studentId];
             const p = db.pengaturan_nilai[mapelId] || { rumus: 'rata_rata', bobot_lm: 50, bobot_sts: 25, bobot_sas: 25, jumlah_tp: 5, jumlah_lm: 5, kktp: 70 };
@@ -11406,6 +11443,7 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
             });
             
             saveDB();
+            window.addAktivitas && window.addAktivitas('kas', 'Pengeluaran kas dicatat', ket + ' - Rp ' + nom.toLocaleString('id-ID'));
             navigateTo('kas_kelas');
         };
 
