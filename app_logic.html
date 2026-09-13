@@ -211,13 +211,13 @@
             { id: "generator_soal", name: "Generator Soal", icon: "fa-robot", title: "Generator Soal AI", desc: "Buat soal secara otomatis menggunakan AI (Selama Token dan Api Masih aktif).", group: "Asisten (AI Tools)" },
             { id: "modul_ajar_ai", name: "Modul Ajar AI", icon: "fa-chalkboard-teacher", title: "Modul Ajar AI", desc: "Buat Modul Ajar Kurikulum Merdeka yang komprehensif dengan AI.", group: "Asisten (AI Tools)" },
             
-            { id: "extra_game", name: "Extra Time", icon: "fa-gamepad", title: "ðŸŽ® Extra Time", desc: "Kumpulan game edukatif dan interaktif untuk kegiatan kelas yang menyenangkan.", group: "Extra Time" },
-            { id: "ekstra", name: "Spinning Wheel", icon: "fa-dharmachakra", title: "ðŸŽ¡ Spinning Wheel", desc: "Permainan Roda Keberuntungan Acak Nama Siswa.", group: "Extra Time", hiddenFromSidebar: true },
-            { id: "memory_run", name: "Memory Run", icon: "fa-brain", title: "ðŸ§  Memory Run", desc: "Game Mengingat Pola (Memory Runner) untuk melatih ingatan siswa.", group: "Extra Time", hiddenFromSidebar: true },
+            { id: "extra_game", name: "Extra Time", icon: "fa-gamepad", title: "🎮 Extra Time", desc: "Kumpulan game edukatif dan interaktif untuk kegiatan kelas yang menyenangkan.", group: "Extra Time" },
+            { id: "ekstra", name: "Spinning Wheel", icon: "fa-dharmachakra", title: "🎡 Spinning Wheel", desc: "Permainan Roda Keberuntungan Acak Nama Siswa.", group: "Extra Time", hiddenFromSidebar: true },
+            { id: "memory_run", name: "Memory Run", icon: "fa-brain", title: "🧠 Memory Run", desc: "Game Mengingat Pola (Memory Runner) untuk melatih ingatan siswa.", group: "Extra Time", hiddenFromSidebar: true },
             { id: "word_search", name: "Cari Kata", icon: "fa-search", title: "ðŸ” Cari Kata", desc: "Permainan teka-teki silang cari kata interaktif untuk kelas.", group: "Extra Time", hiddenFromSidebar: true },
-            { id: "mind_game", name: "Mind Game", icon: "fa-lightbulb", title: "ðŸ’¡ Mind Game", desc: "Teka-teki logika asah otak menyambung titik untuk anak.", group: "Extra Time", hiddenFromSidebar: true },
-            { id: "lengkapi_kata", name: "Lengkapi Kata/Angka", icon: "fa-font", title: "ðŸ”¤ðŸ”¢ Lengkapi Kata & Angka", desc: "Game edukasi offline melengkapi kata dan deret angka anak SD.", group: "Extra Time", hiddenFromSidebar: true },
-            { id: "puzzle", name: "Puzzle Gambar", icon: "fa-puzzle-piece", title: "ðŸ§© Puzzle Gambar", desc: "Game menyusun gambar acak dengan mode pindah dan geser posisi.", group: "Extra Time", hiddenFromSidebar: true },
+            { id: "mind_game", name: "Mind Game", icon: "fa-lightbulb", title: "💡 Mind Game", desc: "Teka-teki logika asah otak menyambung titik untuk anak.", group: "Extra Time", hiddenFromSidebar: true },
+            { id: "lengkapi_kata", name: "Lengkapi Kata/Angka", icon: "fa-font", title: "🔤🔢 Lengkapi Kata & Angka", desc: "Game edukasi offline melengkapi kata dan deret angka anak SD.", group: "Extra Time", hiddenFromSidebar: true },
+            { id: "puzzle", name: "Puzzle Gambar", icon: "fa-puzzle-piece", title: "🧩 Puzzle Gambar", desc: "Game menyusun gambar acak dengan mode pindah dan geser posisi.", group: "Extra Time", hiddenFromSidebar: true },
             
             { id: "aplikasi_lain", name: "Aplikasi Lain", icon: "fa-th-large", title: "Aplikasi Terintegrasi", desc: "Berbagai aplikasi lain yang dapat diakses.", group: "Sistem & Pengaturan" },
             { id: "sync", name: "Kirim Data (Sync)", icon: "fa-cloud-upload-alt", title: "Sinkronisasi Server", desc: "Kirim data lokal aplikasi ini ke server.", group: "Sistem & Pengaturan" },
@@ -1530,10 +1530,10 @@
                 if(sortedNames.length > 60) {
                     res.push(`... dan ${sortedNames.length - 60} lainnya`);
                     res.push(``);
-                    res.push(`ðŸ‘† KLIK GRAFIK UNTUK DAFTAR LENGKAP`);
+                    res.push(`👆 KLIK GRAFIK UNTUK DAFTAR LENGKAP`);
                 } else if(sortedNames.length > 0) {
                     res.push(``);
-                    res.push(`ðŸ‘† Klik grafik untuk melihat lebih jelas`);
+                    res.push(`👆 Klik grafik untuk melihat lebih jelas`);
                 }
                 return res;
             };
@@ -8515,6 +8515,7 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                 semester: form.semester.value,
                 npsn: form.npsn.value
             };
+            window.addAktivitas && window.addAktivitas('pengaturan', 'Pengaturan diperbarui', 'Profil/Identitas');
             saveDB();
             window.updateUIIdentitas();
         };
@@ -10867,7 +10868,7 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                 <div class="bg-white rounded-3xl shadow-2xl w-full max-w-xs overflow-hidden transform scale-100 transition-all border border-slate-100">
                     <div class="p-6 text-center">
                         <div class="w-20 h-20 bg-emerald-50 rounded-full flex items-center justify-center mx-auto mb-4 shadow-inner">
-                            ${iconHtml || '<span class="text-4xl">ðŸ¤”</span>'}
+                            ${iconHtml || '<span class="text-4xl">🤔</span>'}
                         </div>
                         <h3 class="text-xl font-black text-slate-800 mb-2">Konfirmasi</h3>
                         <p class="text-slate-600 text-sm mb-6 leading-relaxed">${message}</p>
@@ -11584,13 +11585,14 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
         window.bayarSemuaKas = (dateStr) => {
             window.showModernConfirm(
                 "Gas auto-lunasin uang kas sekelas buat tanggal ini?",
-                '<span class="text-5xl">ðŸ’¸</span>',
+                '<span class="text-5xl">💸</span>',
                 () => {
                     const nom = db.kas_kelas.nominal;
                     db.students.forEach(s => {
                         if(!db.kas_kelas.pembayaran[s.id]) db.kas_kelas.pembayaran[s.id] = {};
                         db.kas_kelas.pembayaran[s.id][dateStr] = nom;
                     });
+                    window.addAktivitas && window.addAktivitas('kas', 'Pembayaran kas', 'Semua siswa (Gas Lunasin)');
                     saveDB();
                     navigateTo('kas_kelas');
                 }
@@ -13573,6 +13575,7 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                 });
             }
             
+            window.addAktivitas && window.addAktivitas('keuangan', 'Item Pembayaran Baru/Edit', name);
             saveDB();
             document.getElementById('modal-kelola-item-pk').remove();
             navigateTo('pembayaran_kelas');
@@ -13582,6 +13585,7 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
         window.hapusItemPK = (itemId) => {
             if (confirm("Yakin ingin menghapus item ini? Transaksi siswa terkait item ini akan tetap ada namun item tagihannya hilang.")) {
                 db.pembayaran_kelas.items = db.pembayaran_kelas.items.filter(i => i.id !== itemId);
+                window.addAktivitas && window.addAktivitas('keuangan', 'Item Pembayaran Dihapus', 'ID: ' + itemId);
                 saveDB();
                 document.getElementById('modal-kelola-item-pk').remove();
                 navigateTo('pembayaran_kelas');
@@ -13844,6 +13848,8 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                     }
                 }
             });
+            const s = db.students ? db.students.find(x => String(x.id) === String(studentId)) : null;
+            if (s) window.addAktivitas && window.addAktivitas('keuangan', 'Pembaruan Pembayaran', s.name);
             saveDB();
             document.getElementById('modal-bayar-pk').remove();
             navigateTo('pembayaran_kelas');
@@ -14597,7 +14603,7 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                 {
                     id: 'ekstra',
                     name: 'Spinning Wheel',
-                    emoji: 'ðŸŽ¡',
+                    emoji: '🎡',
                     icon: 'fa-dharmachakra',
                     desc: 'Putar roda keberuntungan untuk acak nama siswa secara adil dan menyenangkan.',
                     color: 'from-orange-500 to-amber-500',
@@ -14610,7 +14616,7 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                 {
                     id: 'memory_run',
                     name: 'Memory Run',
-                    emoji: 'ðŸ§ ',
+                    emoji: '🧠',
                     icon: 'fa-brain',
                     desc: 'Latih daya ingat siswa dengan game mengingat dan mencocokkan pola warna yang berubah.',
                     color: 'from-purple-500 to-indigo-600',
@@ -14636,7 +14642,7 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                 {
                     id: 'mind_game',
                     name: 'Mind Game',
-                    emoji: 'ðŸ’¡',
+                    emoji: '💡',
                     icon: 'fa-lightbulb',
                     desc: 'Teka-teki logika asah otak dengan cara menyambung titik tanpa mengangkat pena.',
                     color: 'from-yellow-500 to-orange-500',
@@ -14649,7 +14655,7 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                 {
                     id: 'lengkapi_kata',
                     name: 'Lengkapi Kata',
-                    emoji: 'ðŸ”¤',
+                    emoji: '🔤',
                     icon: 'fa-font',
                     desc: 'Game edukasi melengkapi kata dan deret angka yang hilang, cocok untuk siswa SD.',
                     color: 'from-blue-500 to-indigo-500',
@@ -14662,7 +14668,7 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                 {
                     id: 'puzzle',
                     name: 'Puzzle Gambar',
-                    emoji: 'ðŸ§©',
+                    emoji: '🧩',
                     icon: 'fa-puzzle-piece',
                     desc: 'Susun potongan gambar yang diacak menjadi gambar utuh dengan mode geser yang seru.',
                     color: 'from-rose-500 to-pink-500',
@@ -14725,12 +14731,12 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                                     <span class="w-2 h-2 rounded-full bg-green-400 animate-pulse"></span>
                                     <span class="text-white/80 text-xs font-semibold tracking-wide">6 GAME TERSEDIA</span>
                                 </div>
-                                <h1 class="text-white font-extrabold text-2xl md:text-3xl leading-tight">ðŸŽ® Extra Time</h1>
+                                <h1 class="text-white font-extrabold text-2xl md:text-3xl leading-tight">🎮 Extra Time</h1>
                                 <p class="text-white/60 text-sm mt-1 leading-relaxed">Kumpulan game edukatif interaktif untuk membuat kegiatan belajar di kelas lebih seru dan menyenangkan.</p>
                             </div>
                             <div class="hidden md:flex flex-col items-end gap-1 shrink-0">
                                 <div class="text-white/40 text-xs">Pilih game favoritmu</div>
-                                <div class="flex gap-2 text-2xl">ðŸŽ¡ ðŸ§  ðŸ§© ðŸ’¡ ðŸ”¤ ðŸ§©</div>
+                                <div class="flex gap-2 text-2xl">🎡 🧠 🔍 💡 🔤 🧩</div>
                             </div>
                         </div>
                     </div>
@@ -14762,7 +14768,7 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                             <i class="fas fa-arrow-left text-xs"></i> Kembali ke Extra Time
                         </button>
                         <span class="text-white/30 text-xs">|</span>
-                        <span class="text-white/80 text-sm font-semibold">ðŸŽ¡ Spinning Wheel</span>
+                        <span class="text-white/80 text-sm font-semibold">🎡 Spinning Wheel</span>
                     </div>
                     <iframe src="ekstra?tab=wheel" class="w-full flex-1 border-0 min-h-[80vh] block" title="Spinning Wheel" allowfullscreen></iframe>
                 </div>
@@ -14777,7 +14783,7 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                             <i class="fas fa-arrow-left text-xs"></i> Kembali ke Extra Time
                         </button>
                         <span class="text-white/30 text-xs">|</span>
-                        <span class="text-white/80 text-sm font-semibold">ðŸ§  Memory Run</span>
+                        <span class="text-white/80 text-sm font-semibold">🧠 Memory Run</span>
                     </div>
                     <iframe src="ekstra?tab=memory" class="w-full flex-1 border-0 min-h-[80vh] block" title="Memory Run" allowfullscreen></iframe>
                 </div>
@@ -14807,7 +14813,7 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                             <i class="fas fa-arrow-left text-xs"></i> Kembali ke Extra Time
                         </button>
                         <span class="text-white/30 text-xs">|</span>
-                        <span class="text-white/80 text-sm font-semibold">ðŸ’¡ Mind Game</span>
+                        <span class="text-white/80 text-sm font-semibold">💡 Mind Game</span>
                     </div>
                     <iframe src="ekstra?tab=mind" class="w-full flex-1 border-0 min-h-[80vh] block" title="Mind Game" allowfullscreen></iframe>
                 </div>
@@ -14822,7 +14828,7 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                             <i class="fas fa-arrow-left text-xs"></i> Kembali ke Extra Time
                         </button>
                         <span class="text-white/30 text-xs">|</span>
-                        <span class="text-white/80 text-sm font-semibold">ðŸ”¤ Lengkapi Kata & Angka</span>
+                        <span class="text-white/80 text-sm font-semibold">🔤 Lengkapi Kata & Angka</span>
                     </div>
                     <iframe src="ekstra?tab=lengkapi" class="w-full flex-1 border-0 min-h-[80vh] block" title="Lengkapi Kata / Angka" allowfullscreen></iframe>
                 </div>
@@ -14837,7 +14843,7 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                             <i class="fas fa-arrow-left text-xs"></i> Kembali ke Extra Time
                         </button>
                         <span class="text-white/30 text-xs">|</span>
-                        <span class="text-white/80 text-sm font-semibold">ðŸ§© Puzzle Gambar</span>
+                        <span class="text-white/80 text-sm font-semibold">🧩 Puzzle Gambar</span>
                     </div>
                     <iframe src="ekstra?tab=puzzle" class="w-full flex-1 border-0 min-h-[80vh] block" title="Puzzle Gambar" allowfullscreen></iframe>
                 </div>
@@ -15347,7 +15353,7 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                 };
             }
             window.syncKoreksiToNilai(student.id, pgInput, esaiInput, maxTotal);
-            
+            window.addAktivitas && window.addAktivitas('tugas', 'Koreksi Ujian', 'Input Nilai (Mode Koreksi)');
             try { localStorage.setItem('mwk_koreksiState', JSON.stringify(window.koreksiState)); } catch(e){}
             saveDB();
             
@@ -15423,7 +15429,7 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                 };
             }
             window.syncKoreksiToNilai(student.id, pgInput, esaiInput, maxTotal);
-            
+            window.addAktivitas && window.addAktivitas('tugas', 'Koreksi Ujian', 'Input Nilai (Mode Koreksi)');
             try { localStorage.setItem('mwk_koreksiState', JSON.stringify(window.koreksiState)); } catch(e){}
             saveDB();
             
@@ -15666,6 +15672,7 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                     }
                 }
             });
+            window.addAktivitas && window.addAktivitas('tugas', 'Koreksi Ujian', 'Input Nilai Massal (Semua Siswa)');
             try { localStorage.setItem('mwk_koreksiState', JSON.stringify(window.koreksiState)); } catch(e){}
             saveDB();
             Swal.fire({
