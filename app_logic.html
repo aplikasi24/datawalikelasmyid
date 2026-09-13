@@ -751,39 +751,46 @@
             const visible = list.slice(start, start + AKTIVITAS_PER_PAGE);
 
             let html = `
-                <div class="flex items-center justify-between mb-3">
-                    <div>
-                        <p class="text-[10px] text-gray-400 uppercase font-semibold tracking-wider">Aktivitas</p>
-                        <h4 class="font-bold text-gray-800 text-base">Aktivitas Terbaru</h4>
+                <div class="flex items-center justify-between mb-4 mt-1">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 text-white flex items-center justify-center shadow-md shadow-blue-500/20">
+                            <i class="fas fa-history"></i>
+                        </div>
+                        <div>
+                            <p class="text-[10px] text-gray-400 uppercase font-bold tracking-wider">Aktivitas</p>
+                            <h4 class="font-bold text-gray-800 text-base">Aktivitas Terbaru</h4>
+                        </div>
                     </div>
-                    <div class="flex items-center gap-2">
-                        <span class="text-xs text-gray-400">${list.length}/${MAX_AKTIVITAS}</span>
-                        <a href="#" onclick="window.bukaSemuaAktivitas(); return false;" class="text-xs text-blue-500 font-semibold hover:underline">Lihat Semua →</a>
+                    <div class="flex items-center gap-3">
+                        <span class="text-xs font-semibold text-gray-400 bg-gray-100 px-2 py-1 rounded-lg">${list.length}/${MAX_AKTIVITAS}</span>
+                        <a href="#" onclick="window.bukaSemuaAktivitas(); return false;" class="text-xs text-blue-600 font-bold hover:text-blue-700 bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded-lg transition-colors">Lihat Semua &rarr;</a>
                     </div>
                 </div>
             `;
 
             if (list.length === 0) {
-                html += `<div class="flex flex-col items-center justify-center py-8 text-gray-300">
-                    <i class="fas fa-history text-4xl mb-2"></i>
-                    <p class="text-sm">Belum ada aktivitas</p>
+                html += `<div class="flex flex-col items-center justify-center py-10 bg-gray-50/50 rounded-2xl border border-gray-100 border-dashed">
+                    <div class="w-16 h-16 bg-white rounded-full shadow-sm flex items-center justify-center mb-3">
+                        <i class="fas fa-history text-2xl text-gray-300"></i>
+                    </div>
+                    <p class="text-sm text-gray-400 font-medium">Belum ada aktivitas</p>
                 </div>`;
             } else {
-                html += `<div class="flex flex-col gap-2 mb-3">`;
+                html += `<div class="flex flex-col gap-2.5 mb-1">`;
                 visible.forEach(item => {
                     html += `
-                        <div class="flex items-center gap-3 p-2.5 rounded-xl hover:bg-gray-50 transition group">
-                            <div class="w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${item.iconClass.split(' ').slice(1).join(' ')}">
+                        <div class="flex items-center gap-3.5 p-3 bg-white border border-gray-100/80 rounded-2xl hover:shadow-md hover:border-blue-100 hover:-translate-y-0.5 transition-all duration-300 group">
+                            <div class="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${item.iconClass.split(' ').slice(1).join(' ')} ring-4 ring-gray-50 group-hover:ring-blue-50 transition-all">
                                 <i class="fas ${item.iconClass.split(' ')[0]} text-sm"></i>
                             </div>
                             <div class="flex-1 min-w-0">
-                                <p class="text-sm font-semibold text-gray-800 truncate">${item.deskripsi}</p>
-                                ${item.detail ? `<p class="text-xs text-gray-500 truncate">${item.detail}</p>` : ''}
+                                <p class="text-sm font-bold text-gray-800 truncate group-hover:text-blue-600 transition-colors">${item.deskripsi}</p>
+                                ${item.detail ? `<p class="text-[11px] font-medium text-gray-500 truncate mt-0.5">${item.detail}</p>` : ''}
                             </div>
-                            <div class="flex items-center gap-2 shrink-0">
-                                <span class="text-xs font-mono text-gray-400">${item.jam}</span>
-                                <button onclick="if(confirm('Hapus aktivitas ini?')){ db.aktivitasList = db.aktivitasList.filter(a => a.id !== ${item.id}); saveDB(); const el = document.getElementById('aktivitas-container'); if(el) el.innerHTML = window.renderAktivitasTerbaruUI(); }" class="opacity-0 group-hover:opacity-100 text-red-400 hover:text-red-600 transition text-xs">
-                                    <i class="fas fa-times"></i>
+                            <div class="flex items-center gap-3 shrink-0">
+                                <span class="text-[11px] font-mono font-semibold text-gray-400 bg-gray-50 px-2 py-1 rounded-md">${item.jam}</span>
+                                <button onclick="if(confirm('Hapus aktivitas ini?')){ db.aktivitasList = db.aktivitasList.filter(a => a.id !== ${item.id}); saveDB(); const el = document.getElementById('aktivitas-container'); if(el) el.innerHTML = window.renderAktivitasTerbaruUI(); }" class="opacity-0 group-hover:opacity-100 text-red-400 hover:text-red-600 bg-red-50 hover:bg-red-100 w-7 h-7 rounded-lg flex items-center justify-center transition-all">
+                                    <i class="fas fa-trash-alt text-[10px]"></i>
                                 </button>
                             </div>
                         </div>
@@ -1218,30 +1225,42 @@
                     <!-- Kolom Kiri: Saldo -->
                     <div class="lg:col-span-5 xl:col-span-4 flex flex-col gap-4">
                         <!-- Saldo Pembayaran (Diatas) -->
-                        <div onclick="navigateTo('pembayaran_kelas')" class="cursor-pointer bg-white rounded-2xl p-5 shadow-sm border border-slate-200 hover:border-indigo-400 hover:shadow-md hover:bg-indigo-50/30 transition flex-1 flex flex-col justify-center relative overflow-hidden group">
-                            <div class="absolute -right-6 -top-6 bg-indigo-50 rounded-full w-24 h-24 blur-xl group-hover:bg-indigo-100 transition-colors"></div>
+                        <div onclick="navigateTo('pembayaran_kelas')" class="cursor-pointer bg-gradient-to-br from-indigo-500 via-indigo-600 to-blue-700 rounded-2xl p-6 shadow-lg shadow-indigo-500/20 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex-1 flex flex-col justify-center relative overflow-hidden group">
+                            <!-- Dekorasi -->
+                            <div class="absolute -right-8 -top-8 bg-white/10 rounded-full w-32 h-32 blur-2xl group-hover:bg-white/20 transition-colors"></div>
+                            <div class="absolute -bottom-6 -left-6 bg-blue-400/20 rounded-full w-24 h-24 blur-xl"></div>
+                            
                             <div class="flex justify-between items-start relative z-10">
                                 <div>
-                                    <span class="text-xs font-bold text-slate-500 tracking-wider">PEMBAYARAN KELAS</span>
-                                    <h3 class="text-2xl md:text-3xl font-extrabold text-indigo-700 mt-1">Rp ${saldoPembayaranGlobal.toLocaleString('id-ID')}</h3>
-                                    <p class="text-xs text-red-500 font-bold mt-2"><i class="fas fa-exclamation-circle mr-1"></i>Kurang: Rp ${tunggakanPembayaranGlobal.toLocaleString('id-ID')}</p>
+                                    <span class="text-[10px] font-bold text-indigo-100 tracking-widest uppercase bg-white/10 px-2 py-1 rounded-md">Pembayaran Kelas</span>
+                                    <h3 class="text-2xl md:text-3xl font-extrabold text-white mt-3 drop-shadow-md">Rp ${saldoPembayaranGlobal.toLocaleString('id-ID')}</h3>
+                                    <div class="inline-flex items-center gap-1.5 bg-rose-500/20 border border-rose-400/30 text-rose-100 text-xs font-bold mt-3 px-2.5 py-1 rounded-lg backdrop-blur-sm">
+                                        <i class="fas fa-exclamation-circle text-rose-300"></i>
+                                        <span>Kurang: Rp ${tunggakanPembayaranGlobal.toLocaleString('id-ID')}</span>
+                                    </div>
                                 </div>
-                                <div class="bg-gradient-to-br from-indigo-500 to-indigo-600 text-white p-3 rounded-2xl shadow-indigo-500/30 shadow-md">
+                                <div class="bg-white/15 backdrop-blur-md border border-white/20 text-white w-12 h-12 flex items-center justify-center rounded-2xl shadow-inner group-hover:scale-110 transition-transform">
                                     <i class="fas fa-file-invoice text-xl"></i>
                                 </div>
                             </div>
                         </div>
                         
                         <!-- Saldo Kas Kelas (Dibawah) -->
-                        <div onclick="navigateTo('kas_kelas')" class="cursor-pointer bg-white rounded-2xl p-5 shadow-sm border border-slate-200 hover:border-emerald-400 hover:shadow-md hover:bg-emerald-50/30 transition flex-1 flex flex-col justify-center relative overflow-hidden group">
-                            <div class="absolute -right-6 -top-6 bg-emerald-50 rounded-full w-24 h-24 blur-xl group-hover:bg-emerald-100 transition-colors"></div>
+                        <div onclick="navigateTo('kas_kelas')" class="cursor-pointer bg-gradient-to-br from-emerald-500 via-emerald-600 to-teal-700 rounded-2xl p-6 shadow-lg shadow-emerald-500/20 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex-1 flex flex-col justify-center relative overflow-hidden group">
+                            <!-- Dekorasi -->
+                            <div class="absolute -right-8 -top-8 bg-white/10 rounded-full w-32 h-32 blur-2xl group-hover:bg-white/20 transition-colors"></div>
+                            <div class="absolute -bottom-6 -left-6 bg-teal-400/20 rounded-full w-24 h-24 blur-xl"></div>
+
                             <div class="flex justify-between items-start relative z-10">
                                 <div>
-                                    <span class="text-xs font-bold text-slate-500 tracking-wider">KAS KELAS</span>
-                                    <h3 class="text-2xl md:text-3xl font-extrabold text-emerald-600 mt-1">Rp ${saldoKasGlobal.toLocaleString('id-ID')}</h3>
-                                    <p class="text-xs text-red-500 font-bold mt-2"><i class="fas fa-exclamation-circle mr-1"></i>Kurang: Rp ${tunggakanKasGlobal.toLocaleString('id-ID')}</p>
+                                    <span class="text-[10px] font-bold text-emerald-100 tracking-widest uppercase bg-white/10 px-2 py-1 rounded-md">Kas Kelas</span>
+                                    <h3 class="text-2xl md:text-3xl font-extrabold text-white mt-3 drop-shadow-md">Rp ${saldoKasGlobal.toLocaleString('id-ID')}</h3>
+                                    <div class="inline-flex items-center gap-1.5 bg-orange-500/20 border border-orange-400/30 text-orange-100 text-xs font-bold mt-3 px-2.5 py-1 rounded-lg backdrop-blur-sm">
+                                        <i class="fas fa-exclamation-circle text-orange-300"></i>
+                                        <span>Kurang: Rp ${tunggakanKasGlobal.toLocaleString('id-ID')}</span>
+                                    </div>
                                 </div>
-                                <div class="bg-gradient-to-br from-emerald-400 to-emerald-500 text-white p-3 rounded-2xl shadow-emerald-500/30 shadow-md">
+                                <div class="bg-white/15 backdrop-blur-md border border-white/20 text-white w-12 h-12 flex items-center justify-center rounded-2xl shadow-inner group-hover:scale-110 transition-transform">
                                     <i class="fas fa-wallet text-xl"></i>
                                 </div>
                             </div>
@@ -1250,7 +1269,8 @@
                     
                     <!-- Kolom Kanan: Aktivitas Terbaru -->
                     <div class="lg:col-span-7 xl:col-span-8 flex flex-col">
-                        <div class="bg-white rounded-2xl p-0 shadow-md border border-slate-100 hover:shadow-lg transition-all duration-300 flex-1 h-full overflow-hidden flex flex-col" id="aktivitas-container">
+                        <div class="relative bg-slate-50/30 rounded-2xl p-4 md:p-6 shadow-sm border border-slate-200/60 hover:shadow-md transition-all duration-300 flex-1 h-full overflow-hidden flex flex-col group" id="aktivitas-container">
+                            <div class="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-blue-400 via-indigo-500 to-purple-500 opacity-80 group-hover:opacity-100 transition-opacity"></div>
                             ${window.renderAktivitasTerbaruUI()}
                         </div>
                     </div>
@@ -3971,6 +3991,11 @@ ${formatInstruction}`;
 
             if(!db.attendance[window.currentAbsenDate]) db.attendance[window.currentAbsenDate] = {};
             db.attendance[window.currentAbsenDate][studentId] = status;
+            
+            const siswaAbsen = db.students ? db.students.find(s => String(s.id) === String(studentId)) : null;
+            if (siswaAbsen && status) {
+                window.addAktivitas && window.addAktivitas('presensi', 'Presensi ' + status, siswaAbsen.name);
+            }
             saveDB();
             
             const currentMonthPrefix = window.currentAbsenDate.substring(0, 7);
@@ -5137,9 +5162,9 @@ ${formatInstruction}`;
 
         window.hapusJadwal = async (id) => {
             if(await showConfirm("Hapus jadwal ini?")) {
-                const j = db.jadwal.find(x => x.id === id);
+                const j = db.jadwal.find(x => String(x.id) === String(id));
                 if (j) window.addAktivitas && window.addAktivitas('default', 'Jadwal dihapus', j.mapel + ' (' + j.hari + ')');
-                db.jadwal = db.jadwal.filter(m => m.id !== id); saveDB(); navigateTo('jadwal'); 
+                db.jadwal = db.jadwal.filter(m => String(m.id) !== String(id)); saveDB(); navigateTo('jadwal'); 
             }
         };
 
@@ -6285,9 +6310,10 @@ Terima kasih!`;
         };
 
         window.simpanJurnalGrid = (id, field, value) => {
-            const jurnal = db.jurnal.find(j => j.id === id);
+            const jurnal = db.jurnal.find(j => String(j.id) === String(id));
             if(jurnal) {
                 jurnal[field] = value;
+                window.addAktivitas && window.addAktivitas('jurnal', 'Jurnal diperbarui', jurnal.mapel || 'Mata Pelajaran');
                 saveDB();
             }
         };
@@ -11935,6 +11961,8 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
             const textarea = document.getElementById('manual-prompt-soal');
             textarea.value = promptText;
             
+            window.addAktivitas && window.addAktivitas('tugas', 'Generate Prompt Soal AI', mapel + ' - Bab ' + bab);
+            
             // Copy to clipboard
             textarea.select();
             document.execCommand('copy');
@@ -12000,6 +12028,7 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
             .then(res => res.json())
             .then(res => {
                 if(res.status === 'success') {
+                    window.addAktivitas && window.addAktivitas('tugas', 'Generate Soal AI via API', (document.getElementById('gen-mapel').value || 'Mapel') + ' - Bab ' + (document.getElementById('gen-bab').value || 'Bab'));
                     const mapelVal = document.getElementById('gen-mapel').value || '...';
                     const babVal = document.getElementById('gen-bab').value || '...';
                     
@@ -12506,6 +12535,8 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
             const textarea = document.getElementById('manual-prompt-modul');
             textarea.value = promptText;
             
+            window.addAktivitas && window.addAktivitas('tugas', 'Generate Prompt Modul AI', mapel + ' - Bab ' + bab);
+            
             textarea.select();
             document.execCommand('copy');
             
@@ -12561,6 +12592,7 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
             .then(res => res.json())
             .then(res => {
                 if(res.status === 'success') {
+                    window.addAktivitas && window.addAktivitas('tugas', 'Generate Modul AI via API', (document.getElementById('modul-mapel').value || 'Mapel') + ' - Bab ' + (document.getElementById('modul-bab').value || 'Bab'));
                     let md = res.data;
                     
                     // --- Robust Markdown to HTML Parser ---
