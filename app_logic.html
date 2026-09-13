@@ -145,7 +145,7 @@
         Object.defineProperty(window, 'db', { get: () => db });
 
         // ============================================================
-        // INDEXEDDB HELPER — Storage Utama (MWK_MainDB)
+        // INDEXEDDB HELPER � Storage Utama (MWK_MainDB)
         // LocalStorage hanya sebagai cadangan ringan.
         // ============================================================
         const MWK_IDB_NAME    = 'MWK_MainDB';
@@ -171,7 +171,7 @@
         function saveDB() {
             const jsonStr = JSON.stringify(db);
 
-            // UTAMA — Simpan ke IndexedDB (async, non-blocking, kapasitas besar)
+            // UTAMA � Simpan ke IndexedDB (async, non-blocking, kapasitas besar)
             // LocalStorage TIDAK lagi digunakan untuk data utama.
             _openMWKMainDB().then(idb => {
                 const tx = idb.transaction(MWK_IDB_STORE, 'readwrite');
@@ -211,13 +211,13 @@
             { id: "generator_soal", name: "Generator Soal", icon: "fa-robot", title: "Generator Soal AI", desc: "Buat soal secara otomatis menggunakan AI (Selama Token dan Api Masih aktif).", group: "Asisten (AI Tools)" },
             { id: "modul_ajar_ai", name: "Modul Ajar AI", icon: "fa-chalkboard-teacher", title: "Modul Ajar AI", desc: "Buat Modul Ajar Kurikulum Merdeka yang komprehensif dengan AI.", group: "Asisten (AI Tools)" },
             
-            { id: "extra_game", name: "Extra Time", icon: "fa-gamepad", title: "🎮 Extra Time", desc: "Kumpulan game edukatif dan interaktif untuk kegiatan kelas yang menyenangkan.", group: "Extra Time" },
-            { id: "ekstra", name: "Spinning Wheel", icon: "fa-dharmachakra", title: "🎡 Spinning Wheel", desc: "Permainan Roda Keberuntungan Acak Nama Siswa.", group: "Extra Time", hiddenFromSidebar: true },
-            { id: "memory_run", name: "Memory Run", icon: "fa-brain", title: "🧠 Memory Run", desc: "Game Mengingat Pola (Memory Runner) untuk melatih ingatan siswa.", group: "Extra Time", hiddenFromSidebar: true },
-            { id: "word_search", name: "Cari Kata", icon: "fa-search", title: "🔍 Cari Kata", desc: "Permainan teka-teki silang cari kata interaktif untuk kelas.", group: "Extra Time", hiddenFromSidebar: true },
-            { id: "mind_game", name: "Mind Game", icon: "fa-lightbulb", title: "💡 Mind Game", desc: "Teka-teki logika asah otak menyambung titik untuk anak.", group: "Extra Time", hiddenFromSidebar: true },
-            { id: "lengkapi_kata", name: "Lengkapi Kata/Angka", icon: "fa-font", title: "🔤🔢 Lengkapi Kata & Angka", desc: "Game edukasi offline melengkapi kata dan deret angka anak SD.", group: "Extra Time", hiddenFromSidebar: true },
-            { id: "puzzle", name: "Puzzle Gambar", icon: "fa-puzzle-piece", title: "🧩 Puzzle Gambar", desc: "Game menyusun gambar acak dengan mode pindah dan geser posisi.", group: "Extra Time", hiddenFromSidebar: true },
+            { id: "extra_game", name: "Extra Time", icon: "fa-gamepad", title: "?? Extra Time", desc: "Kumpulan game edukatif dan interaktif untuk kegiatan kelas yang menyenangkan.", group: "Extra Time" },
+            { id: "ekstra", name: "Spinning Wheel", icon: "fa-dharmachakra", title: "?? Spinning Wheel", desc: "Permainan Roda Keberuntungan Acak Nama Siswa.", group: "Extra Time", hiddenFromSidebar: true },
+            { id: "memory_run", name: "Memory Run", icon: "fa-brain", title: "?? Memory Run", desc: "Game Mengingat Pola (Memory Runner) untuk melatih ingatan siswa.", group: "Extra Time", hiddenFromSidebar: true },
+            { id: "word_search", name: "Cari Kata", icon: "fa-search", title: "?? Cari Kata", desc: "Permainan teka-teki silang cari kata interaktif untuk kelas.", group: "Extra Time", hiddenFromSidebar: true },
+            { id: "mind_game", name: "Mind Game", icon: "fa-lightbulb", title: "?? Mind Game", desc: "Teka-teki logika asah otak menyambung titik untuk anak.", group: "Extra Time", hiddenFromSidebar: true },
+            { id: "lengkapi_kata", name: "Lengkapi Kata/Angka", icon: "fa-font", title: "???? Lengkapi Kata & Angka", desc: "Game edukasi offline melengkapi kata dan deret angka anak SD.", group: "Extra Time", hiddenFromSidebar: true },
+            { id: "puzzle", name: "Puzzle Gambar", icon: "fa-puzzle-piece", title: "?? Puzzle Gambar", desc: "Game menyusun gambar acak dengan mode pindah dan geser posisi.", group: "Extra Time", hiddenFromSidebar: true },
             
             { id: "aplikasi_lain", name: "Aplikasi Lain", icon: "fa-th-large", title: "Aplikasi Terintegrasi", desc: "Berbagai aplikasi lain yang dapat diakses.", group: "Sistem & Pengaturan" },
             { id: "sync", name: "Kirim Data (Sync)", icon: "fa-cloud-upload-alt", title: "Sinkronisasi Server", desc: "Kirim data lokal aplikasi ini ke server.", group: "Sistem & Pengaturan" },
@@ -1274,10 +1274,10 @@
                 if(sortedNames.length > 60) {
                     res.push(`... dan ${sortedNames.length - 60} lainnya`);
                     res.push(``);
-                    res.push(`👆 KLIK GRAFIK UNTUK DAFTAR LENGKAP`);
+                    res.push(`?? KLIK GRAFIK UNTUK DAFTAR LENGKAP`);
                 } else if(sortedNames.length > 0) {
                     res.push(``);
-                    res.push(`👆 Klik grafik untuk melihat lebih jelas`);
+                    res.push(`?? Klik grafik untuk melihat lebih jelas`);
                 }
                 return res;
             };
@@ -1614,7 +1614,7 @@
                                         const cur = dataKoreksi[i];
                                         if (prev === null || cur === null || i === 0) return '';
                                         const diff = (cur - prev).toFixed(1);
-                                        return diff > 0 ? `▲ Naik ${diff}` : diff < 0 ? `▼ Turun ${Math.abs(diff)}` : `→ Tetap`;
+                                        return diff > 0 ? `? Naik ${diff}` : diff < 0 ? `? Turun ${Math.abs(diff)}` : `? Tetap`;
                                     }
                                 }
                             }
@@ -1722,7 +1722,7 @@
                                         const cur = dataArr[i];
                                         if (prev === null || cur === null || i === 0) return '';
                                         const diff = (cur - prev).toFixed(1);
-                                        return diff > 0 ? `▲ Naik ${diff}` : diff < 0 ? `▼ Turun ${Math.abs(diff)}` : `→ Tetap`;
+                                        return diff > 0 ? `? Naik ${diff}` : diff < 0 ? `? Turun ${Math.abs(diff)}` : `? Tetap`;
                                     }
                                 }
                             }
@@ -7052,14 +7052,14 @@ Setelah semua baris terisi, tolong berikan kembali kepada saya file Excel terseb
             if(await showConfirm("Hapus tugas ini?")) { db.tugas = db.tugas.filter(m => m.id !== id); saveDB(); navigateTo('tugas'); }
         };
         window.shareTugasWA = (judul, info) => {
-            const defaultMsg = `Assalamualaikum wr. wb.\n\nBapak/Ibu wali murid yang kami hormati, mengingatkan kembali untuk tugas anak-anak kita:\n\n📚 *[tugas]*\n[deadline]\n\nMohon bimbingannya di rumah agar ananda dapat menyelesaikan tugas ini dengan baik. Terima kasih banyak atas perhatian dan kerja samanya. 🙏`;
+            const defaultMsg = `Assalamualaikum wr. wb.\n\nBapak/Ibu wali murid yang kami hormati, mengingatkan kembali untuk tugas anak-anak kita:\n\n?? *[tugas]*\n[deadline]\n\nMohon bimbingannya di rumah agar ananda dapat menyelesaikan tugas ini dengan baik. Terima kasih banyak atas perhatian dan kerja samanya. ??`;
             let template = db.pengaturan?.pesan_wa || defaultMsg;
             let pesan = template.replace(/\[tugas\]/gi, judul).replace(/\[deadline\]/gi, info);
             window.open(`https://wa.me/?text=${encodeURIComponent(pesan)}`, '_blank');
         };
 
         window.openModalSettingWA = () => {
-            const defaultMsg = `Assalamualaikum wr. wb.\n\nBapak/Ibu wali murid yang kami hormati, mengingatkan kembali untuk tugas anak-anak kita:\n\n📚 *[tugas]*\n[deadline]\n\nMohon bimbingannya di rumah agar ananda dapat menyelesaikan tugas ini dengan baik. Terima kasih banyak atas perhatian dan kerja samanya. 🙏`;
+            const defaultMsg = `Assalamualaikum wr. wb.\n\nBapak/Ibu wali murid yang kami hormati, mengingatkan kembali untuk tugas anak-anak kita:\n\n?? *[tugas]*\n[deadline]\n\nMohon bimbingannya di rumah agar ananda dapat menyelesaikan tugas ini dengan baik. Terima kasih banyak atas perhatian dan kerja samanya. ??`;
             const currentMsg = db.pengaturan?.pesan_wa || defaultMsg;
             
             const modal = document.createElement('div');
@@ -10342,7 +10342,7 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                 <div class="bg-white rounded-3xl shadow-2xl w-full max-w-xs overflow-hidden transform scale-100 transition-all border border-slate-100">
                     <div class="p-6 text-center">
                         <div class="w-20 h-20 bg-emerald-50 rounded-full flex items-center justify-center mx-auto mb-4 shadow-inner">
-                            ${iconHtml || '<span class="text-4xl">🤔</span>'}
+                            ${iconHtml || '<span class="text-4xl">??</span>'}
                         </div>
                         <h3 class="text-xl font-black text-slate-800 mb-2">Konfirmasi</h3>
                         <p class="text-slate-600 text-sm mb-6 leading-relaxed">${message}</p>
@@ -11050,7 +11050,7 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
         window.bayarSemuaKas = (dateStr) => {
             window.showModernConfirm(
                 "Gas auto-lunasin uang kas sekelas buat tanggal ini?",
-                '<span class="text-5xl">💸</span>',
+                '<span class="text-5xl">??</span>',
                 () => {
                     const nom = db.kas_kelas.nominal;
                     db.students.forEach(s => {
@@ -11103,7 +11103,7 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
         window.hapusPengeluaranKas = (id) => {
             window.showModernConfirm(
                 "Yakin mau menghapus riwayat pengeluaran kas ini?",
-                '<span class="text-5xl">🗑️</span>',
+                '<span class="text-5xl">???</span>',
                 () => {
                     db.kas_kelas.pengeluaran = db.kas_kelas.pengeluaran.filter(p => p.id !== id);
                     saveDB();
@@ -11171,7 +11171,7 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
         window.hapusPemasukanKas = (id) => {
             window.showModernConfirm(
                 "Yakin mau menghapus riwayat pemasukan ini?",
-                '<span class="text-5xl">🗑️</span>',
+                '<span class="text-5xl">???</span>',
                 () => {
                     db.kas_kelas.pemasukan_lain = db.kas_kelas.pemasukan_lain.filter(p => p.id !== id);
                     saveDB();
@@ -12731,7 +12731,7 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
 
             // -------------------------------------------------------
             // LANGKAH 1: Baca dari IndexedDB UTAMA (MWK_MainDB)
-            //            → Sumber data paling andal & kapasitas besar
+            //            ? Sumber data paling andal & kapasitas besar
             // -------------------------------------------------------
             try {
                 dbJson = await _openMWKMainDB().then(idb => new Promise((resolve, reject) => {
@@ -12747,7 +12747,7 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
 
             // -------------------------------------------------------
             // LANGKAH 2: Fallback ke LocalStorage
-            //            → Bisa berisi data lama atau data kecil
+            //            ? Bisa berisi data lama atau data kecil
             // -------------------------------------------------------
             if (!dbJson) {
                 dbJson = localStorage.getItem(DB_KEY);
@@ -12917,7 +12917,7 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                 const currentUrl = window.location.href.toLowerCase();
                 if (currentUrl.startsWith('file:///') && (currentUrl.includes('/temp/') || currentUrl.includes('/appdata/local/temp/') || currentUrl.includes('rar$') || currentUrl.includes('zip'))) {
                     setTimeout(() => {
-                        alert("⚠️ PERINGATAN PENTING! ⚠️\n\nSepertinya Anda menjalankan aplikasi ini LANGSUNG dari dalam file ZIP tanpa mengekstraknya terlebih dahulu.\n\nAkibatnya, Windows membuat folder sementara (Temp) yang baru setiap kali Anda membukanya, sehingga semua data yang Anda simpan akan SELALU HILANG saat Anda menutup browser!\n\nSOLUSI:\n1. Tutup browser ini.\n2. Klik Kanan pada file ZIP yang Anda unduh.\n3. Pilih 'Extract Here' (Ekstrak di sini) atau 'Extract All'.\n4. Buka file index.html dari folder hasil ekstraksi tersebut.\n\nDengan begitu, data Anda akan tersimpan secara permanen.");
+                        alert("?? PERINGATAN PENTING! ??\n\nSepertinya Anda menjalankan aplikasi ini LANGSUNG dari dalam file ZIP tanpa mengekstraknya terlebih dahulu.\n\nAkibatnya, Windows membuat folder sementara (Temp) yang baru setiap kali Anda membukanya, sehingga semua data yang Anda simpan akan SELALU HILANG saat Anda menutup browser!\n\nSOLUSI:\n1. Tutup browser ini.\n2. Klik Kanan pada file ZIP yang Anda unduh.\n3. Pilih 'Extract Here' (Ekstrak di sini) atau 'Extract All'.\n4. Buka file index.html dari folder hasil ekstraksi tersebut.\n\nDengan begitu, data Anda akan tersimpan secara permanen.");
                     }, 1000);
                 }
             };
@@ -13576,7 +13576,7 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                 totalHarus += nominal;
                 totalBayar += terbayar;
                 
-                let status = kurang < 0 ? `LEBIH Rp ${Math.abs(kurang).toLocaleString('id-ID')} ✅` : (kurang === 0 ? 'LUNAS ✅' : (terbayar > 0 ? 'CICIL ⏳' : 'BELUM BAYAR ❌'));
+                let status = kurang < 0 ? `LEBIH Rp ${Math.abs(kurang).toLocaleString('id-ID')} ?` : (kurang === 0 ? 'LUNAS ?' : (terbayar > 0 ? 'CICIL ?' : 'BELUM BAYAR ?'));
                 
                 let riwayat = (pk.riwayat_bayar && pk.riwayat_bayar[studentId] && pk.riwayat_bayar[studentId][item.id]) ? pk.riwayat_bayar[studentId][item.id] : [];
                 if (riwayat.length === 0 && terbayar > 0) {
@@ -14056,7 +14056,7 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                 {
                     id: 'ekstra',
                     name: 'Spinning Wheel',
-                    emoji: '🎡',
+                    emoji: '??',
                     icon: 'fa-dharmachakra',
                     desc: 'Putar roda keberuntungan untuk acak nama siswa secara adil dan menyenangkan.',
                     color: 'from-orange-500 to-amber-500',
@@ -14069,7 +14069,7 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                 {
                     id: 'memory_run',
                     name: 'Memory Run',
-                    emoji: '🧠',
+                    emoji: '??',
                     icon: 'fa-brain',
                     desc: 'Latih daya ingat siswa dengan game mengingat dan mencocokkan pola warna yang berubah.',
                     color: 'from-purple-500 to-indigo-600',
@@ -14082,7 +14082,7 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                 {
                     id: 'word_search',
                     name: 'Cari Kata',
-                    emoji: '🔍',
+                    emoji: '??',
                     icon: 'fa-search',
                     desc: 'Permainan teka-teki mencari kata tersembunyi di dalam kisi huruf yang menarik.',
                     color: 'from-teal-500 to-cyan-600',
@@ -14095,7 +14095,7 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                 {
                     id: 'mind_game',
                     name: 'Mind Game',
-                    emoji: '💡',
+                    emoji: '??',
                     icon: 'fa-lightbulb',
                     desc: 'Teka-teki logika asah otak dengan cara menyambung titik tanpa mengangkat pena.',
                     color: 'from-yellow-500 to-orange-500',
@@ -14108,7 +14108,7 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                 {
                     id: 'lengkapi_kata',
                     name: 'Lengkapi Kata',
-                    emoji: '🔤',
+                    emoji: '??',
                     icon: 'fa-font',
                     desc: 'Game edukasi melengkapi kata dan deret angka yang hilang, cocok untuk siswa SD.',
                     color: 'from-blue-500 to-indigo-500',
@@ -14121,7 +14121,7 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                 {
                     id: 'puzzle',
                     name: 'Puzzle Gambar',
-                    emoji: '🧩',
+                    emoji: '??',
                     icon: 'fa-puzzle-piece',
                     desc: 'Susun potongan gambar yang diacak menjadi gambar utuh dengan mode geser yang seru.',
                     color: 'from-rose-500 to-pink-500',
@@ -14184,12 +14184,12 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                                     <span class="w-2 h-2 rounded-full bg-green-400 animate-pulse"></span>
                                     <span class="text-white/80 text-xs font-semibold tracking-wide">6 GAME TERSEDIA</span>
                                 </div>
-                                <h1 class="text-white font-extrabold text-2xl md:text-3xl leading-tight">🎮 Extra Time</h1>
+                                <h1 class="text-white font-extrabold text-2xl md:text-3xl leading-tight">?? Extra Time</h1>
                                 <p class="text-white/60 text-sm mt-1 leading-relaxed">Kumpulan game edukatif interaktif untuk membuat kegiatan belajar di kelas lebih seru dan menyenangkan.</p>
                             </div>
                             <div class="hidden md:flex flex-col items-end gap-1 shrink-0">
                                 <div class="text-white/40 text-xs">Pilih game favoritmu</div>
-                                <div class="flex gap-2 text-2xl">🎡 🧠 🧩 💡 🔤 🧩</div>
+                                <div class="flex gap-2 text-2xl">?? ?? ?? ?? ?? ??</div>
                             </div>
                         </div>
                     </div>
@@ -14221,7 +14221,7 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                             <i class="fas fa-arrow-left text-xs"></i> Kembali ke Extra Time
                         </button>
                         <span class="text-white/30 text-xs">|</span>
-                        <span class="text-white/80 text-sm font-semibold">🎡 Spinning Wheel</span>
+                        <span class="text-white/80 text-sm font-semibold">?? Spinning Wheel</span>
                     </div>
                     <iframe src="ekstra?tab=wheel" class="w-full flex-1 border-0 min-h-[80vh] block" title="Spinning Wheel" allowfullscreen></iframe>
                 </div>
@@ -14236,7 +14236,7 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                             <i class="fas fa-arrow-left text-xs"></i> Kembali ke Extra Time
                         </button>
                         <span class="text-white/30 text-xs">|</span>
-                        <span class="text-white/80 text-sm font-semibold">🧠 Memory Run</span>
+                        <span class="text-white/80 text-sm font-semibold">?? Memory Run</span>
                     </div>
                     <iframe src="ekstra?tab=memory" class="w-full flex-1 border-0 min-h-[80vh] block" title="Memory Run" allowfullscreen></iframe>
                 </div>
@@ -14251,7 +14251,7 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                             <i class="fas fa-arrow-left text-xs"></i> Kembali ke Extra Time
                         </button>
                         <span class="text-white/30 text-xs">|</span>
-                        <span class="text-white/80 text-sm font-semibold">🔍 Cari Kata</span>
+                        <span class="text-white/80 text-sm font-semibold">?? Cari Kata</span>
                     </div>
                     <iframe src="word_search" class="w-full flex-1 border-0 min-h-[80vh] block" title="Permainan Cari Kata" allowfullscreen></iframe>
                 </div>
@@ -14266,7 +14266,7 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                             <i class="fas fa-arrow-left text-xs"></i> Kembali ke Extra Time
                         </button>
                         <span class="text-white/30 text-xs">|</span>
-                        <span class="text-white/80 text-sm font-semibold">💡 Mind Game</span>
+                        <span class="text-white/80 text-sm font-semibold">?? Mind Game</span>
                     </div>
                     <iframe src="ekstra?tab=mind" class="w-full flex-1 border-0 min-h-[80vh] block" title="Mind Game" allowfullscreen></iframe>
                 </div>
@@ -14281,7 +14281,7 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                             <i class="fas fa-arrow-left text-xs"></i> Kembali ke Extra Time
                         </button>
                         <span class="text-white/30 text-xs">|</span>
-                        <span class="text-white/80 text-sm font-semibold">🔤 Lengkapi Kata & Angka</span>
+                        <span class="text-white/80 text-sm font-semibold">?? Lengkapi Kata & Angka</span>
                     </div>
                     <iframe src="ekstra?tab=lengkapi" class="w-full flex-1 border-0 min-h-[80vh] block" title="Lengkapi Kata / Angka" allowfullscreen></iframe>
                 </div>
@@ -14296,7 +14296,7 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                             <i class="fas fa-arrow-left text-xs"></i> Kembali ke Extra Time
                         </button>
                         <span class="text-white/30 text-xs">|</span>
-                        <span class="text-white/80 text-sm font-semibold">🧩 Puzzle Gambar</span>
+                        <span class="text-white/80 text-sm font-semibold">?? Puzzle Gambar</span>
                     </div>
                     <iframe src="ekstra?tab=puzzle" class="w-full flex-1 border-0 min-h-[80vh] block" title="Puzzle Gambar" allowfullscreen></iframe>
                 </div>
@@ -14448,7 +14448,7 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
             if (window.koreksiUpdateSemester) window.koreksiUpdateSemester();
             
             // Key format: JenisUjian_Mapel (tanpa semester agar tidak pernah desync)
-            // jenis_ujian sudah UNIK: STS 1, SAS 1, STS 2, SAT — tidak perlu semester sebagai prefix
+            // jenis_ujian sudah UNIK: STS 1, SAS 1, STS 2, SAT � tidak perlu semester sebagai prefix
             const jenSafe  = window.koreksiState.jenis_ujian.replace(/[^a-zA-Z0-9]/g, '_');
             const mapelSafe = window.koreksiState.mapel.replace(/[^a-zA-Z0-9]/g, '_');
             const key = jenSafe + '_' + mapelSafe;
@@ -15299,7 +15299,7 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                 mapelList = defaultMapel.map(name => ({ id: name, nama: name }));
             }
 
-            // Siapkan struktur legerData — simpan nilai mentah (raw float) agar bisa toggle
+            // Siapkan struktur legerData � simpan nilai mentah (raw float) agar bisa toggle
             let legerData = students.map(s => ({ id: s.id, name: s.name, nilaiRaw: {}, total: 0, count: 0, average: 0, rank: 0 }));
 
             const rType = window.koreksiState.rekap_jenis;
@@ -15314,14 +15314,14 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                 jenisList = [rType];
             }
 
-            // Ambil semua mapel — simpan nilai RAW (float, bukan dibulatkan dulu)
+            // Ambil semua mapel � simpan nilai RAW (float, bukan dibulatkan dulu)
             mapelList.forEach(m => {
                 legerData.forEach(sd => {
                     let totalRaw = 0;
                     let validCount = 0;
 
                     jenisList.forEach(jen => {
-                        // Gunakan format key baru: JenisUjian_Mapel (TANPA semester — sesuai initKoreksiDB)
+                        // Gunakan format key baru: JenisUjian_Mapel (TANPA semester � sesuai initKoreksiDB)
                         const jenSafe = jen.replace(/[^a-zA-Z0-9]/g, '_');
                         const mSafe   = m.nama.replace(/[^a-zA-Z0-9]/g, '_');
                         const key = jenSafe + '_' + mSafe;
