@@ -661,6 +661,20 @@
             if (!db.aktivitasList) db.aktivitasList = [];
             const now = new Date();
             const jam = now.getHours().toString().padStart(2,'0') + ':' + now.getMinutes().toString().padStart(2,'0');
+            const todayStr = now.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
+            
+            // Anti-spam: Update jam jika aktivitas persis sama (tipe, deskripsi, detail) di hari yang sama
+            if (db.aktivitasList.length > 0) {
+                const last = db.aktivitasList[0];
+                if (last.tipe === tipe && last.deskripsi === deskripsi && last.detail === detail && last.tanggal === todayStr) {
+                    last.jam = jam;
+                    saveDB();
+                    const el = document.getElementById('aktivitas-container');
+                    if (el) el.innerHTML = window.renderAktivitasTerbaruUI();
+                    return;
+                }
+            }
+
             const icons = {
                 'siswa': 'fa-user-plus text-blue-500 bg-blue-50',
                 'presensi': 'fa-user-check text-green-500 bg-green-50',
@@ -673,13 +687,12 @@
                 'default': 'fa-bell text-gray-500 bg-gray-100'
             };
             const iconClass = icons[tipe] || icons['default'];
-            db.aktivitasList.unshift({ id: Date.now(), tipe, deskripsi, detail, jam, iconClass });
-            // Auto hapus jika lebih dari MAX
+            db.aktivitasList.unshift({ id: Date.now(), tipe, deskripsi, detail, jam, tanggal: todayStr, iconClass });
+            
             if (db.aktivitasList.length > MAX_AKTIVITAS) {
                 db.aktivitasList = db.aktivitasList.slice(0, MAX_AKTIVITAS);
             }
             saveDB();
-            // Refresh widget jika ada
             const el = document.getElementById('aktivitas-container');
             if (el) el.innerHTML = window.renderAktivitasTerbaruUI();
         };
@@ -3310,10 +3323,14 @@ ${formatInstruction}`;
 
             if(editId) {
                 const idx = db.struktur_organisasi.findIndex(x => x.id === editId);
-                if(idx > -1) db.struktur_organisasi[idx] = nodeData;
+                if(idx > -1) {
+                    db.struktur_organisasi[idx] = nodeData;
+                    window.addAktivitas && window.addAktivitas('default', 'Struktur diperbarui', nodeData.name + ' - ' + nodeData.title);
+                }
             } else {
                 db.struktur_organisasi.push(nodeData);
                 if(parentId) window.orgExpandedNodes.add(parentId);
+                window.addAktivitas && window.addAktivitas('default', 'Struktur ditambahkan', nodeData.name + ' - ' + nodeData.title);
             }
             saveDB();
             document.getElementById('modal-struktur').remove();
@@ -3322,6 +3339,9 @@ ${formatInstruction}`;
 
         window.orgHapus = async (id) => {
             if(await showConfirm('Apakah Anda yakin ingin menghapus anggota ini beserta semua bawahannya?')) {
+                const node = db.struktur_organisasi.find(x => x.id === id);
+                if (node) window.addAktivitas && window.addAktivitas('default', 'Struktur dihapus', node.name + ' - ' + node.title);
+
                 const getDescendants = (parentId, data, descendants = []) => {
                     const children = data.filter(item => item.parentId === parentId);
                     children.forEach(child => {
@@ -4949,6 +4969,7 @@ ${formatInstruction}`;
                 const urutan = { 'Senin': 1, 'Selasa': 2, 'Rabu': 3, 'Kamis': 4, 'Jumat': 5, 'Sabtu': 6, 'Minggu': 7 };
                 db.hari_efektif.sort((a,b) => urutan[a] - urutan[b]);
                 
+                window.addAktivitas && window.addAktivitas('default', 'Hari ditambahkan', hariBaru);
                 saveDB();
                 document.getElementById('modal-tambah-hari').remove();
                 navigateTo('jadwal');
@@ -4957,6 +4978,7 @@ ${formatInstruction}`;
 
         window.hapusHari = async (hari) => {
             if(await showConfirm(`Hapus hari ${hari} dari jadwal dan piket?`)) {
+                window.addAktivitas && window.addAktivitas('default', 'Hari dihapus', hari);
                 db.hari_efektif = db.hari_efektif.filter(h => h !== hari);
                 db.jadwal = db.jadwal.filter(j => j.hari !== hari);
                 db.piket = db.piket.filter(p => p.hari !== hari);
@@ -7738,7 +7760,13 @@ Setelah semua baris terisi, tolong berikan kembali kepada saya file Excel terseb
             navigateTo('piket');
         };
         window.hapusPiket = async (id) => {
-            if(await showConfirm("Hapus siswa ini dari piket?")) { db.piket = db.piket.filter(m => m.id !== id); saveDB(); navigateTo('piket'); }
+            if(await showConfirm("Hapus siswa ini dari piket?")) { 
+                const p = db.piket.find(m => m.id === id);
+                if (p) window.addAktivitas && window.addAktivitas('default', 'Piket dihapus', p.siswa + ' (' + p.hari + ')');
+                db.piket = db.piket.filter(m => m.id !== id); 
+                saveDB(); 
+                navigateTo('piket'); 
+            }
         };
 
         window.updatePromptPiket = () => {
@@ -9445,17 +9473,12 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
             db.nilai[dataKey][studentId][field] = num;
             saveDB();
             
-            // Catat aktivitas (debounce - hanya catat sekali per 10 detik per mapel)
-            if (!window._nilaiAktivitasTimer) window._nilaiAktivitasTimer = {};
-            const timerKey = mapelId + '_' + studentId;
-            clearTimeout(window._nilaiAktivitasTimer[timerKey]);
-            window._nilaiAktivitasTimer[timerKey] = setTimeout(() => {
-                const siswa = db.students ? db.students.find(s => String(s.id) === String(studentId)) : null;
-                const mapel = db.mapel ? db.mapel.find(m => String(m.id) === String(mapelId)) : null;
-                const namaSiswa = siswa ? siswa.name : 'Siswa';
-                const namaMapel = mapel ? mapel.name : 'Mapel';
-                window.addAktivitas && window.addAktivitas('nilai', 'Nilai diperbarui', namaSiswa + ' - ' + namaMapel);
-            }, 10000);
+            // Catat aktivitas instan tanpa delay (menggunakan anti-spam di addAktivitas)
+            const siswa = db.students ? db.students.find(s => String(s.id) === String(studentId)) : null;
+            const mapel = db.mapel ? db.mapel.find(m => String(m.id) === String(mapelId)) : null;
+            const namaSiswa = siswa ? siswa.name : 'Siswa';
+            const namaMapel = mapel ? mapel.nama : 'Mapel';
+            window.addAktivitas && window.addAktivitas('nilai', 'Nilai diperbarui', namaSiswa + ' - ' + namaMapel);
             
             // Auto update Rapor cell if recalculation is needed without losing focus
             const n = db.nilai[dataKey][studentId];
