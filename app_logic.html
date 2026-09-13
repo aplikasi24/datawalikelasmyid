@@ -2222,9 +2222,29 @@
                     options: {
                         responsive: true,
                         maintainAspectRatio: false,
+                        layout: { padding: { top: 25, right: 15, left: 15 } },
                         plugins: { legend: { display: false } },
                         scales: { y: { min: 0, max: 100 } }
-                    }
+                    },
+                    plugins: [{
+                        id: 'customLineLabelsTren',
+                        afterDatasetsDraw(chart) {
+                            const { ctx } = chart;
+                            chart.data.datasets.forEach((dataset, i) => {
+                                chart.getDatasetMeta(i).data.forEach((pt, j) => {
+                                    const val = dataset.data[j];
+                                    if (val !== null && val !== undefined && !isNaN(val)) {
+                                        ctx.save();
+                                        ctx.fillStyle = dataset.borderColor || '#374151';
+                                        ctx.font = 'bold 11px sans-serif';
+                                        ctx.textAlign = 'center';
+                                        ctx.fillText(Math.round(val), pt.x, pt.y - 12);
+                                        ctx.restore();
+                                    }
+                                });
+                            });
+                        }
+                    }]
                 });
             }
 
@@ -2317,9 +2337,29 @@
                     options: {
                         responsive: true,
                         maintainAspectRatio: false,
+                        layout: { padding: { top: 25, right: 15, left: 15 } },
                         plugins: { legend: { display: true, position: 'bottom' } },
                         scales: { y: { min: 0, max: 100 } }
-                    }
+                    },
+                    plugins: [{
+                        id: 'customLineLabelsRata',
+                        afterDatasetsDraw(chart) {
+                            const { ctx } = chart;
+                            chart.data.datasets.forEach((dataset, i) => {
+                                chart.getDatasetMeta(i).data.forEach((pt, j) => {
+                                    const val = dataset.data[j];
+                                    if (val !== null && val !== undefined && !isNaN(val)) {
+                                        ctx.save();
+                                        ctx.fillStyle = dataset.borderColor || '#374151';
+                                        ctx.font = 'bold 11px sans-serif';
+                                        ctx.textAlign = 'center';
+                                        ctx.fillText(Math.round(val), pt.x, pt.y - 12);
+                                        ctx.restore();
+                                    }
+                                });
+                            });
+                        }
+                    }]
                 });
             }
         };
