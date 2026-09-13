@@ -13214,9 +13214,9 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                     </div>
                     `;
                 }
-
+                let cardStyle = isLunas ? 'bg-green-50/50 border-green-400 shadow-sm' : 'bg-slate-50 border-slate-200';
                 return `
-                <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 relative">
+                <div class="${cardStyle} p-4 rounded-xl border relative transition-colors duration-300">
                     <div class="absolute -left-2 -top-2 w-6 h-6 bg-indigo-500 text-white font-bold rounded-full flex items-center justify-center text-xs shadow-sm border-2 border-white">${index + 1}</div>
                     <div class="flex justify-between items-center mb-2 ml-3">
                         <div class="font-bold text-slate-700 text-sm">${item.name} <span class="text-xs text-slate-400 font-normal ml-1">(Rp ${parseInt(item.nominal).toLocaleString('id-ID')})</span></div>
