@@ -684,6 +684,51 @@
             if (el) el.innerHTML = window.renderAktivitasTerbaruUI();
         };
 
+        window.bukaSemuaAktivitas = () => {
+            const list = db.aktivitasList || [];
+            const modal = document.createElement('div');
+            modal.id = 'modal-semua-aktivitas';
+            modal.className = 'fixed inset-0 bg-black/60 z-[200] flex items-center justify-center p-4 opacity-0 transition-opacity duration-300';
+            
+            let listHtml = '';
+            if (list.length === 0) {
+                listHtml = '<div class="text-center py-8 text-gray-400"><i class="fas fa-history text-3xl mb-2 block opacity-30"></i>Belum ada aktivitas.</div>';
+            } else {
+                listHtml = list.map(item => `
+                    <div class="flex items-center gap-3 p-3 rounded-xl border border-gray-100 hover:bg-gray-50 transition mb-2">
+                        <div class="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${item.iconClass.split(' ').slice(1).join(' ')}">
+                            <i class="fas ${item.iconClass.split(' ')[0]}"></i>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <p class="text-sm font-bold text-gray-800">${item.deskripsi}</p>
+                            ${item.detail ? `<p class="text-xs text-gray-500 truncate">${item.detail}</p>` : ''}
+                        </div>
+                        <div class="text-[10px] font-mono text-gray-400 shrink-0 flex flex-col items-end">
+                            <span>${item.tanggal || ''}</span>
+                            <span>${item.jam}</span>
+                        </div>
+                    </div>
+                `).join('');
+            }
+            
+            modal.innerHTML = `
+                <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg transform scale-95 transition-transform duration-300 flex flex-col max-h-[85vh]">
+                    <div class="p-5 border-b border-gray-100 flex justify-between items-center bg-gray-50 rounded-t-2xl shrink-0">
+                        <h3 class="font-bold text-gray-800 text-lg"><i class="fas fa-history text-blue-500 mr-2"></i>Semua Aktivitas</h3>
+                        <button onclick="document.getElementById('modal-semua-aktivitas').remove()" class="text-gray-400 hover:text-red-500 transition w-8 h-8 flex items-center justify-center rounded-full hover:bg-red-50"><i class="fas fa-times text-lg"></i></button>
+                    </div>
+                    <div class="p-5 overflow-y-auto custom-scrollbar">
+                        ${listHtml}
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+            requestAnimationFrame(() => {
+                modal.classList.remove('opacity-0');
+                modal.firstElementChild.classList.remove('scale-95');
+            });
+        };
+
         window.renderAktivitasTerbaruUI = () => {
             if (!db.aktivitasList) db.aktivitasList = [];
             const list = db.aktivitasList;
@@ -700,7 +745,7 @@
                     </div>
                     <div class="flex items-center gap-2">
                         <span class="text-xs text-gray-400">${list.length}/${MAX_AKTIVITAS}</span>
-                        <a href="#" onclick="navigateTo('presensi'); return false;" class="text-xs text-blue-500 font-semibold hover:underline">Lihat Semua →</a>
+                        <a href="#" onclick="window.bukaSemuaAktivitas(); return false;" class="text-xs text-blue-500 font-semibold hover:underline">Lihat Semua →</a>
                     </div>
                 </div>
             `;
@@ -764,12 +809,12 @@
 
             // Warna latar ikon berdasarkan urutan
             const bgColors = [
-                'bg-blue-100 text-blue-600',
-                'bg-teal-100 text-teal-600',
-                'bg-purple-100 text-purple-600',
-                'bg-orange-100 text-orange-600',
-                'bg-pink-100 text-pink-600',
-                'bg-green-100 text-green-600',
+                'bg-gradient-to-br from-blue-500 to-blue-600',
+                'bg-gradient-to-br from-emerald-400 to-emerald-500',
+                'bg-gradient-to-br from-purple-400 to-purple-500',
+                'bg-gradient-to-br from-orange-400 to-orange-500',
+                'bg-gradient-to-br from-pink-400 to-pink-500',
+                'bg-gradient-to-br from-cyan-400 to-cyan-500',
             ];
 
             let html = `
@@ -797,7 +842,17 @@
                 html += `<div class="text-center text-gray-400 text-sm mt-6 italic col-span-2 py-8"><i class="fas fa-link text-3xl mb-2 block opacity-30"></i>Belum ada tautan.<br><span class="text-xs">Klik tombol Tambah untuk menambahkan.</span></div>`;
             } else {
                 visibleItems.forEach((item, idx) => {
-                    const colorClass = item.color || bgColors[idx % bgColors.length];
+                    let colorClass = item.color || bgColors[idx % bgColors.length];
+                    if (colorClass.includes('bg-blue-100')) colorClass = 'bg-gradient-to-br from-blue-500 to-blue-600';
+                    else if (colorClass.includes('bg-teal-100')) colorClass = 'bg-gradient-to-br from-teal-400 to-teal-500';
+                    else if (colorClass.includes('bg-purple-100')) colorClass = 'bg-gradient-to-br from-purple-400 to-purple-500';
+                    else if (colorClass.includes('bg-orange-100')) colorClass = 'bg-gradient-to-br from-orange-400 to-orange-500';
+                    else if (colorClass.includes('bg-pink-100')) colorClass = 'bg-gradient-to-br from-pink-400 to-pink-500';
+                    else if (colorClass.includes('bg-green-100')) colorClass = 'bg-gradient-to-br from-emerald-400 to-emerald-500';
+                    else if (colorClass.includes('bg-red-100')) colorClass = 'bg-gradient-to-br from-red-500 to-red-600';
+                    else if (colorClass.includes('bg-yellow-100')) colorClass = 'bg-gradient-to-br from-yellow-400 to-yellow-500';
+                    else if (colorClass.includes('bg-indigo-100')) colorClass = 'bg-gradient-to-br from-indigo-500 to-indigo-600';
+
                     html += `
                         <div class="relative group">
                             <a href="${item.url}" target="_blank" class="flex items-center gap-3 ${colorClass} transition-all duration-200 px-3 py-2.5 rounded-xl w-full shadow-md hover:shadow-lg hover:-translate-y-0.5 border border-white/20">
@@ -1018,27 +1073,27 @@
                     const otherJadwals = todayJadwal.filter((_, idx) => idx !== activeIdx);
 
                     jadwalHtml = `
-                        <div class="flex flex-col gap-1.5" style="min-width:220px; max-width:300px;">
-                            <div class="text-blue-200 text-[11px] font-semibold uppercase tracking-widest"><i class="far fa-calendar-alt mr-1.5"></i>JADWAL SAAT INI</div>
+                        <div class="flex flex-col gap-1" style="min-width:280px; max-width:450px;">
+                            <div class="text-blue-200 text-[10px] font-semibold uppercase tracking-widest"><i class="far fa-calendar-alt mr-1"></i>JADWAL SAAT INI</div>
                         
                         <!-- Box Collapsible -->
-                        <div class="bg-white/15 backdrop-blur-md border border-white/25 rounded-xl shadow-lg cursor-pointer hover:bg-white/25 transition-all duration-300" onclick="document.getElementById('jadwal-dropdown-list').classList.toggle('hidden')">
+                        <div class="bg-white/15 backdrop-blur-md border border-white/25 rounded-lg shadow-lg cursor-pointer hover:bg-white/25 transition-all duration-300" onclick="document.getElementById('jadwal-dropdown-list').classList.toggle('hidden')">
                             
                             <!-- Jadwal Utama (Tampil Default) -->
-                            <div class="flex items-center gap-3 px-3 py-2.5">
-                                <div class="bg-white/25 rounded-md text-[11px] font-bold px-2.5 py-1 text-blue-50 tracking-wide whitespace-nowrap shrink-0">${activeJadwal.jam}</div>
-                                <div class="font-bold text-sm text-white whitespace-normal break-words flex-1" title="${activeJadwal.mapel}">${activeJadwal.mapel}</div>
-                                <i class="fas fa-chevron-down text-white/60 text-xs shrink-0 transition-transform" id="jadwal-chevron"></i>
+                            <div class="flex items-center gap-2 px-2.5 py-1.5">
+                                <div class="bg-white/25 rounded text-[10px] font-bold px-1.5 py-0.5 text-blue-50 tracking-wide whitespace-nowrap shrink-0">${activeJadwal.jam}</div>
+                                <div class="font-bold text-xs text-white whitespace-nowrap overflow-hidden text-ellipsis flex-1" title="${activeJadwal.mapel}">${activeJadwal.mapel}</div>
+                                <i class="fas fa-chevron-down text-white/60 text-[10px] shrink-0 transition-transform" id="jadwal-chevron"></i>
                             </div>
                             
                             <!-- Jadwal Lainnya (Sembunyi Default) -->
-                            <div id="jadwal-dropdown-list" class="hidden border-t border-white/10 bg-black/10 rounded-b-xl px-2 py-2 max-h-[150px] overflow-y-auto">
+                            <div id="jadwal-dropdown-list" class="hidden border-t border-white/10 bg-black/10 rounded-b-lg px-1.5 py-1.5 max-h-[150px] overflow-y-auto custom-scrollbar">
                                 ${otherJadwals.length > 0 ? otherJadwals.map(j => `
-                                    <div class="flex items-center gap-3 py-1.5 px-2 hover:bg-white/10 rounded-lg transition-colors">
-                                        <div class="bg-white/10 border border-white/5 rounded text-[10px] font-semibold px-2 py-0.5 text-blue-100 whitespace-nowrap shrink-0">${j.jam}</div>
-                                        <div class="text-xs font-medium text-blue-50 whitespace-normal break-words flex-1" title="${j.mapel}">${j.mapel}</div>
+                                    <div class="flex items-center gap-2 py-1 px-1.5 hover:bg-white/10 rounded transition-colors">
+                                        <div class="bg-white/10 border border-white/5 rounded text-[9px] font-semibold px-1.5 py-0.5 text-blue-100 whitespace-nowrap shrink-0">${j.jam}</div>
+                                        <div class="text-[11px] font-medium text-blue-50 whitespace-nowrap overflow-hidden text-ellipsis flex-1" title="${j.mapel}">${j.mapel}</div>
                                     </div>
-                                `).join('') : '<div class="text-[11px] text-white/60 text-center py-2">Tidak ada mapel lain hari ini.</div>'}
+                                `).join('') : '<div class="text-[10px] text-white/60 text-center py-1">Tidak ada mapel lain hari ini.</div>'}
                             </div>
                         </div>
                     </div>
@@ -1496,6 +1551,7 @@
                         }]
                     },
                     options: { 
+                        layout: { padding: { top: 25 } },
                         responsive: true, 
                         maintainAspectRatio: false, 
                         plugins: { 
@@ -1844,6 +1900,7 @@
                         }]
                     },
                     options: {
+                        layout: { padding: { top: 25, right: 15, left: 10 } },
                         responsive: true,
                         maintainAspectRatio: false,
                         plugins: {
@@ -1862,7 +1919,26 @@
                             }
                         },
                         scales: { y: { min: 0, max: 100 } }
-                    }
+                    },
+                    plugins: [{ 
+                        id: 'customDataLabels',
+                        afterDatasetsDraw(chart) {
+                            const { ctx, data } = chart;
+                            data.datasets.forEach((dataset, dIndex) => {
+                                chart.getDatasetMeta(dIndex).data.forEach((point, i) => {
+                                    const val = dataset.data[i];
+                                    if (val !== null && val !== undefined) {
+                                        ctx.save();
+                                        ctx.fillStyle = dataset.borderColor;
+                                        ctx.font = 'bold 11px sans-serif';
+                                        ctx.textAlign = 'center';
+                                        ctx.fillText(Number(val).toFixed(1), point.x, point.y - 12);
+                                        ctx.restore();
+                                    }
+                                });
+                            });
+                        }
+                    }]
                 });
             }
 
@@ -1951,6 +2027,7 @@
                         ]
                     },
                     options: {
+                        layout: { padding: { top: 25, right: 15, left: 10 } },
                         responsive: true,
                         maintainAspectRatio: false,
                         plugins: {
@@ -1970,7 +2047,26 @@
                             }
                         },
                         scales: { y: { min: 0, max: 100 } }
-                    }
+                    },
+                    plugins: [{ 
+                        id: 'customDataLabels',
+                        afterDatasetsDraw(chart) {
+                            const { ctx, data } = chart;
+                            data.datasets.forEach((dataset, dIndex) => {
+                                chart.getDatasetMeta(dIndex).data.forEach((point, i) => {
+                                    const val = dataset.data[i];
+                                    if (val !== null && val !== undefined) {
+                                        ctx.save();
+                                        ctx.fillStyle = dataset.borderColor;
+                                        ctx.font = 'bold 11px sans-serif';
+                                        ctx.textAlign = 'center';
+                                        ctx.fillText(Number(val).toFixed(1), point.x, point.y - 12);
+                                        ctx.restore();
+                                    }
+                                });
+                            });
+                        }
+                    }]
                 });
             }
             if (typeof window.updateDashboardSiswaCharts === 'function') {
