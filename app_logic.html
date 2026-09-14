@@ -1225,43 +1225,80 @@
                     <!-- Kolom Kiri: Saldo -->
                     <div class="lg:col-span-5 xl:col-span-4 flex flex-col gap-4">
                         <!-- Saldo Pembayaran (Diatas) -->
-                        <div onclick="navigateTo('pembayaran_kelas')" class="cursor-pointer bg-gradient-to-br from-indigo-500 via-indigo-600 to-blue-700 rounded-2xl p-6 shadow-lg shadow-indigo-500/20 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex-1 flex flex-col justify-center relative overflow-hidden group">
-                            <!-- Dekorasi -->
-                            <div class="absolute -right-8 -top-8 bg-white/10 rounded-full w-32 h-32 blur-2xl group-hover:bg-white/20 transition-colors"></div>
-                            <div class="absolute -bottom-6 -left-6 bg-blue-400/20 rounded-full w-24 h-24 blur-xl"></div>
+                        <div onclick="navigateTo('pembayaran_kelas')" class="cursor-pointer bg-gradient-to-br from-blue-500 to-blue-700 rounded-2xl p-5 md:p-6 shadow-xl hover:-translate-y-1 transition-all duration-300 flex-1 flex flex-col justify-center relative overflow-hidden group border border-blue-400/30">
+                            <!-- Wavy Background Decoration -->
+                            <div class="absolute -right-[20%] -top-[40%] w-[80%] h-[120%] bg-white/10 rounded-full blur-2xl transform rotate-12"></div>
+                            <div class="absolute -left-[10%] -bottom-[30%] w-[60%] h-[80%] bg-black/10 rounded-full blur-xl"></div>
                             
-                            <div class="flex justify-between items-start relative z-10">
-                                <div>
-                                    <span class="text-[10px] font-bold text-indigo-100 tracking-widest uppercase bg-white/10 px-2 py-1 rounded-md">Pembayaran Kelas</span>
-                                    <h3 class="text-2xl md:text-3xl font-extrabold text-white mt-3 drop-shadow-md">Rp ${saldoPembayaranGlobal.toLocaleString('id-ID')}</h3>
-                                    <div class="inline-flex items-center gap-1.5 bg-rose-500/20 border border-rose-400/30 text-rose-100 text-xs font-bold mt-3 px-2.5 py-1 rounded-lg backdrop-blur-sm">
-                                        <i class="fas fa-exclamation-circle text-rose-300"></i>
-                                        <span>Kurang: Rp ${tunggakanPembayaranGlobal.toLocaleString('id-ID')}</span>
+                            <!-- 3D Ornament Simulation -->
+                            <div class="absolute -bottom-2 -right-2 transform group-hover:scale-110 group-hover:-translate-y-2 transition-transform duration-500 origin-bottom-right drop-shadow-2xl opacity-90">
+                                <i class="fas fa-wallet text-8xl text-blue-400/80 mix-blend-screen transform -rotate-12"></i>
+                                <div class="absolute bottom-6 left-2 bg-yellow-400 w-8 h-8 rounded-full border-2 border-yellow-200 flex items-center justify-center shadow-lg transform rotate-12">
+                                    <i class="fas fa-dollar-sign text-yellow-600 text-sm"></i>
+                                </div>
+                            </div>
+
+                            <div class="relative z-10 h-full flex flex-col justify-between gap-4">
+                                <!-- Header -->
+                                <div class="flex justify-between items-start">
+                                    <div class="flex items-center gap-2 text-white">
+                                        <i class="fas fa-wallet text-lg drop-shadow-sm"></i>
+                                        <span class="text-xs font-bold tracking-widest uppercase drop-shadow-sm">Pembayaran Kelas</span>
+                                    </div>
+                                    <div class="w-8 h-8 rounded-lg bg-white/20 border border-white/30 flex items-center justify-center text-white backdrop-blur-md shadow-sm">
+                                        <i class="fas fa-file-invoice text-sm"></i>
                                     </div>
                                 </div>
-                                <div class="bg-white/15 backdrop-blur-md border border-white/20 text-white w-12 h-12 flex items-center justify-center rounded-2xl shadow-inner group-hover:scale-110 transition-transform">
-                                    <i class="fas fa-file-invoice text-xl"></i>
+                                
+                                <!-- Nominal & Badge -->
+                                <div>
+                                    <h3 class="text-3xl md:text-4xl font-extrabold text-white tracking-tight drop-shadow-md">Rp ${saldoPembayaranGlobal.toLocaleString('id-ID')}</h3>
+                                    <div class="inline-flex items-center gap-2 bg-[#d61148] border border-rose-500 text-white text-[11px] font-bold mt-3 px-3 py-1.5 rounded-full shadow-inner">
+                                        <span class="w-4 h-4 rounded-full bg-white flex items-center justify-center shrink-0">
+                                            <i class="fas fa-arrow-down text-[#d61148] text-[9px]"></i>
+                                        </span>
+                                        <span>Kurang: Rp ${tunggakanPembayaranGlobal.toLocaleString('id-ID')}</span>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                         
                         <!-- Saldo Kas Kelas (Dibawah) -->
-                        <div onclick="navigateTo('kas_kelas')" class="cursor-pointer bg-gradient-to-br from-emerald-500 via-emerald-600 to-teal-700 rounded-2xl p-6 shadow-lg shadow-emerald-500/20 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex-1 flex flex-col justify-center relative overflow-hidden group">
-                            <!-- Dekorasi -->
-                            <div class="absolute -right-8 -top-8 bg-white/10 rounded-full w-32 h-32 blur-2xl group-hover:bg-white/20 transition-colors"></div>
-                            <div class="absolute -bottom-6 -left-6 bg-teal-400/20 rounded-full w-24 h-24 blur-xl"></div>
+                        <div onclick="navigateTo('kas_kelas')" class="cursor-pointer bg-gradient-to-br from-emerald-500 to-teal-700 rounded-2xl p-5 md:p-6 shadow-xl hover:-translate-y-1 transition-all duration-300 flex-1 flex flex-col justify-center relative overflow-hidden group border border-emerald-400/30">
+                            <!-- Wavy Background Decoration -->
+                            <div class="absolute -right-[10%] -top-[30%] w-[70%] h-[120%] bg-white/10 rounded-full blur-2xl transform rotate-[20deg]"></div>
+                            <div class="absolute -left-[20%] -bottom-[40%] w-[80%] h-[90%] bg-black/10 rounded-[100%] blur-xl transform -rotate-[15deg]"></div>
 
-                            <div class="flex justify-between items-start relative z-10">
-                                <div>
-                                    <span class="text-[10px] font-bold text-emerald-100 tracking-widest uppercase bg-white/10 px-2 py-1 rounded-md">Kas Kelas</span>
-                                    <h3 class="text-2xl md:text-3xl font-extrabold text-white mt-3 drop-shadow-md">Rp ${saldoKasGlobal.toLocaleString('id-ID')}</h3>
-                                    <div class="inline-flex items-center gap-1.5 bg-orange-500/20 border border-orange-400/30 text-orange-100 text-xs font-bold mt-3 px-2.5 py-1 rounded-lg backdrop-blur-sm">
-                                        <i class="fas fa-exclamation-circle text-orange-300"></i>
-                                        <span>Kurang: Rp ${tunggakanKasGlobal.toLocaleString('id-ID')}</span>
+                            <!-- 3D Ornament Simulation -->
+                            <div class="absolute -bottom-4 -right-1 transform group-hover:scale-110 group-hover:-translate-y-1 transition-transform duration-500 origin-bottom-right drop-shadow-2xl opacity-90">
+                                <i class="fas fa-money-bill-wave text-8xl text-emerald-300/80 mix-blend-screen transform -rotate-6"></i>
+                                <div class="absolute bottom-4 right-10 flex space-x-[-12px]">
+                                    <div class="bg-yellow-400 w-7 h-7 rounded-full border-2 border-yellow-200 flex items-center justify-center shadow-md"><i class="fas fa-rupiah-sign text-yellow-600 text-xs"></i></div>
+                                    <div class="bg-yellow-400 w-7 h-7 rounded-full border-2 border-yellow-200 flex items-center justify-center shadow-lg transform -translate-y-1"><i class="fas fa-rupiah-sign text-yellow-600 text-xs"></i></div>
+                                </div>
+                            </div>
+
+                            <div class="relative z-10 h-full flex flex-col justify-between gap-4">
+                                <!-- Header -->
+                                <div class="flex justify-between items-start">
+                                    <div class="flex items-center gap-2 text-white">
+                                        <i class="fas fa-hand-holding-usd text-lg drop-shadow-sm"></i>
+                                        <span class="text-xs font-bold tracking-widest uppercase drop-shadow-sm">Kas Kelas</span>
+                                    </div>
+                                    <div class="w-8 h-8 rounded-lg bg-white/20 border border-white/30 flex items-center justify-center text-white backdrop-blur-md shadow-sm">
+                                        <i class="fas fa-file-alt text-sm"></i>
                                     </div>
                                 </div>
-                                <div class="bg-white/15 backdrop-blur-md border border-white/20 text-white w-12 h-12 flex items-center justify-center rounded-2xl shadow-inner group-hover:scale-110 transition-transform">
-                                    <i class="fas fa-wallet text-xl"></i>
+                                
+                                <!-- Nominal & Badge -->
+                                <div>
+                                    <h3 class="text-3xl md:text-4xl font-extrabold text-white tracking-tight drop-shadow-md">Rp ${saldoKasGlobal.toLocaleString('id-ID')}</h3>
+                                    <div class="inline-flex items-center gap-2 bg-[#a67a0a] border border-yellow-600 text-white text-[11px] font-bold mt-3 px-3 py-1.5 rounded-full shadow-inner">
+                                        <span class="w-4 h-4 rounded-full bg-white flex items-center justify-center shrink-0">
+                                            <i class="fas fa-arrow-down text-[#a67a0a] text-[9px]"></i>
+                                        </span>
+                                        <span>Kurang: Rp ${tunggakanKasGlobal.toLocaleString('id-ID')}</span>
+                                    </div>
                                 </div>
                             </div>
                         </div>
