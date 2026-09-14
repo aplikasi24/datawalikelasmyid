@@ -3255,7 +3255,7 @@ ${formatInstruction}`;
             document.getElementById('org-name-display').value = names.join(', ');
         };
 
-        window.handleOrgPhotoUpload = (event) => {
+        window.handleOrgPhotoUpload = async (event) => {
             const file = event.target.files[0];
             if (!file) return;
 
@@ -3270,7 +3270,7 @@ ${formatInstruction}`;
             const reader = new FileReader();
             reader.onload = function (e) {
                 const img = new Image();
-                img.onload = function() {
+                img.onload = async function() {
                     const canvas = document.createElement('canvas');
                     const MAX_SIZE = 150; 
                     let width = img.width;
@@ -3291,49 +3291,66 @@ ${formatInstruction}`;
                     canvas.height = height;
                     const ctx = canvas.getContext('2d');
                     ctx.drawImage(img, 0, 0, width, height);
-
                     const dataUrl = canvas.toDataURL('image/jpeg', 0.8);
                     
-                    const photoInput = document.getElementById('org-photo-input');
-                    if (photoInput) {
-                        photoInput.value = dataUrl;
-                        window.updateOrgPhotoPreview(dataUrl);
-                    }
-                    
-                    fetch(APPSCRIPT_URL, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                        body: new URLSearchParams({
-                            action: 'uploadAvatar',
-                            data: JSON.stringify({ 
-                                email: window.currentUser.email, 
-                                nama: window.currentUser.nama,
-                                base64Data: dataUrl 
+                    try {
+                        const res = await fetch(APPSCRIPT_URL, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                            body: new URLSearchParams({
+                                action: 'uploadAvatar',
+                                data: JSON.stringify({ 
+                                    email: window.currentUser.email, 
+                                    nama: window.currentUser.nama,
+                                    prefix: 'struktur',
+                                    base64Data: dataUrl 
+                                })
                             })
-                        })
-                    })
-                    .then(res => res.json())
-                    .then(data => {
+                        });
+                        const data = await res.json();
+                        
                         if(data.status === 'success') {
-                            window.showAlert("Foto berhasil disimpan lokal dan di-backup ke Cloud!");
+                            const photoInput = document.getElementById('org-photo-input');
+                            if (photoInput) {
+                                photoInput.value = data.url;
+                                window.updateOrgPhotoPreview(data.url);
+                            }
+                            window.showAlert("Foto berhasil diunggah ke Cloud!");
                         } else {
                             window.showAlert("Gagal backup ke Cloud: " + data.message);
                         }
-                    })
-                    .catch(err => {
+                    } catch(err) {
                         window.showAlert("Gagal menghubungi server.");
-                    })
-                    .finally(() => {
+                    } finally {
                         if (labelBtn) labelBtn.innerHTML = '<i class="fas fa-upload mr-1"></i> Upload ke Cloud <input type="file" accept="image/*" class="hidden" onchange="window.handleOrgPhotoUpload(event)">';
-                    });
+                    }
                 }
                 img.src = e.target.result;
             }
             reader.readAsDataURL(file);
         };
 
-        window.orgHapusFoto = () => {
+        window.orgHapusFoto = async () => {
             const input = document.getElementById('org-photo-input');
+            const urlToHapus = input.value;
+            
+            if (urlToHapus && (urlToHapus.includes('drive.google.com') || urlToHapus.includes('googleusercontent')) && window.currentUser) {
+                window.showAlert("Sedang menghapus foto dari Server...");
+                try {
+                    await fetch(APPSCRIPT_URL, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                        body: new URLSearchParams({
+                            action: 'deleteAvatar',
+                            data: JSON.stringify({ email: window.currentUser.email, url: urlToHapus })
+                        })
+                    });
+                    window.showAlert("Foto berhasil dihapus.");
+                } catch (e) {
+                    console.error("Gagal hapus dari Drive", e);
+                }
+            }
+
             input.value = '';
             input.readOnly = false;
             input.classList.remove('bg-slate-100', 'text-slate-500');
@@ -8319,12 +8336,17 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
         }
 
         // --- Modul 11: Pengaturan ---
-        window.handleAvatarUpload = (event) => {
+        window.handleAvatarUpload = async (event) => {
             const input = event.target;
             const file = input.files[0];
             if (!file) return;
 
-            // Simpan state form saat ini sebelum reload halaman (agar data yang diketik tidak hilang)
+            if(!window.currentUser) {
+                window.showAlert("Anda harus login untuk dapat mengunggah foto.");
+                input.value = '';
+                return;
+            }
+
             const form = document.getElementById('form-pengaturan');
             let currentFormState = {};
             if (form) {
@@ -8343,7 +8365,7 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
             const reader = new FileReader();
             reader.onload = function (e) {
                 const img = new Image();
-                img.onload = function() {
+                img.onload = async function() {
                     const canvas = document.createElement('canvas');
                     const MAX_SIZE = 256;
                     let width = img.width;
@@ -8360,29 +8382,17 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                             height = MAX_SIZE;
                         }
                     }
-
                     canvas.width = width;
                     canvas.height = height;
                     const ctx = canvas.getContext('2d');
                     ctx.drawImage(img, 0, 0, width, height);
-
                     const dataUrl = canvas.toDataURL('image/jpeg', 0.8);
                     
-                    if(!db.pengaturan) db.pengaturan = {};
-                    db.pengaturan = {
-                        ...db.pengaturan,
-                        ...currentFormState,
-                        foto: dataUrl // Simpan base64 sementara untuk preview
-                    };
-                    saveDB();
-                    window.updateUIIdentitas();
-                    navigateTo('pengaturan');
-                    input.value = ''; 
+                    window.showAlert("Sedang mengunggah foto profil ke Cloud...");
+                    input.value = '';
                     
-                    // Jika login, upload ke Drive via Apps Script
-                    if(window.currentUser) {
-                        window.showAlert("Sedang mengunggah foto ke server...");
-                        fetch(APPSCRIPT_URL, {
+                    try {
+                        const res = await fetch(APPSCRIPT_URL, {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
                             body: new URLSearchParams({
@@ -8390,18 +8400,29 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                                 data: JSON.stringify({ 
                                     email: window.currentUser.email, 
                                     nama: window.currentUser.nama,
+                                    prefix: 'profil',
                                     base64Data: dataUrl 
                                 })
                             })
-                        })
-                        .then(res => res.json())
-                        .then(data => {
-                            if(data.status === 'success') {
-                                // Tetap gunakan Base64 secara lokal agar aman dari error pemuatan gambar Google Drive
-                                console.log("Foto diunggah ke Drive sebagai cadangan: ", data.url);
-                            }
-                        })
-                        .catch(err => console.error("Gagal unggah ke Drive", err));
+                        });
+                        const data = await res.json();
+                        
+                        if(data.status === 'success') {
+                            if(!db.pengaturan) db.pengaturan = {};
+                            db.pengaturan = {
+                                ...db.pengaturan,
+                                ...currentFormState,
+                                foto: data.url // Simpan URL Drive
+                            };
+                            saveDB();
+                            window.updateUIIdentitas();
+                            navigateTo('pengaturan');
+                            window.showAlert("Foto profil berhasil diunggah.");
+                        } else {
+                            window.showAlert("Gagal unggah ke Drive: " + data.message);
+                        }
+                    } catch(err) {
+                        window.showAlert("Gagal menghubungi server.");
                     }
                 }
                 img.onerror = function() {
@@ -8413,10 +8434,16 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
             reader.readAsDataURL(file);
         };
 
-        window.handleFotoSekolahUpload = (event) => {
+        window.handleFotoSekolahUpload = async (event) => {
             const input = event.target;
             const file = input.files[0];
             if (!file) return;
+
+            if(!window.currentUser) {
+                window.showAlert("Anda harus login untuk dapat mengunggah foto sekolah.");
+                input.value = '';
+                return;
+            }
 
             const form = document.getElementById('form-pengaturan');
             let currentFormState = {};
@@ -8436,7 +8463,7 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
             const reader = new FileReader();
             reader.onload = function (e) {
                 const img = new Image();
-                img.onload = function() {
+                img.onload = async function() {
                     const canvas = document.createElement('canvas');
                     const MAX_SIZE = 1024;
                     let width = img.width;
@@ -8453,23 +8480,48 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                             height = MAX_SIZE;
                         }
                     }
-
                     canvas.width = width;
                     canvas.height = height;
                     const ctx = canvas.getContext('2d');
                     ctx.drawImage(img, 0, 0, width, height);
-
                     const dataUrl = canvas.toDataURL('image/jpeg', 0.8);
                     
-                    if(!db.pengaturan) db.pengaturan = {};
-                    db.pengaturan = {
-                        ...db.pengaturan,
-                        ...currentFormState,
-                        fotoSekolah: dataUrl 
-                    };
-                    saveDB();
-                    navigateTo('pengaturan');
-                    input.value = ''; 
+                    window.showAlert("Sedang mengunggah foto sekolah ke Cloud...");
+                    input.value = '';
+                    
+                    try {
+                        const res = await fetch(APPSCRIPT_URL, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                            body: new URLSearchParams({
+                                action: 'uploadAvatar',
+                                data: JSON.stringify({ 
+                                    email: window.currentUser.email, 
+                                    nama: window.currentUser.nama,
+                                    prefix: 'sekolah',
+                                    base64Data: dataUrl 
+                                })
+                            })
+                        });
+                        const data = await res.json();
+                        
+                        if(data.status === 'success') {
+                            if(!db.pengaturan) db.pengaturan = {};
+                            db.pengaturan = {
+                                ...db.pengaturan,
+                                ...currentFormState,
+                                fotoSekolah: data.url // Simpan URL Drive
+                            };
+                            saveDB();
+                            window.updateUIIdentitas();
+                            navigateTo('pengaturan');
+                            window.showAlert("Foto sekolah berhasil diunggah.");
+                        } else {
+                            window.showAlert("Gagal unggah ke Drive: " + data.message);
+                        }
+                    } catch(err) {
+                        window.showAlert("Gagal menghubungi server.");
+                    }
                 }
                 img.onerror = function() {
                     window.showAlert("Format gambar tidak didukung atau rusak.");
@@ -8478,6 +8530,68 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                 img.src = e.target.result;
             }
             reader.readAsDataURL(file);
+        };
+
+        window.handleHapusFoto = async (tipe) => {
+            if(!window.currentUser) {
+                window.showAlert("Anda harus login untuk menghapus foto dari Cloud.");
+                return;
+            }
+            const confirm = await window.showConfirm("Hapus foto " + tipe + "?");
+            if(!confirm) return;
+
+            const form = document.getElementById('form-pengaturan');
+            if(form) {
+                db.pengaturan = {
+                    ...db.pengaturan,
+                    nama: form.nama?.value || '',
+                    nip: form.nip?.value || '',
+                    sekolah: form.sekolah?.value || '',
+                    kelas: form.kelas?.value || '',
+                    kepsek: form.kepsek?.value || '',
+                    nip_kepsek: form.nip_kepsek?.value || '',
+                    tapel: form.tapel?.value || '',
+                    npsn: form.npsn?.value || ''
+                };
+            }
+
+            let urlToHapus = null;
+            if (tipe === 'profil') urlToHapus = db.pengaturan?.foto;
+            else if (tipe === 'sekolah') urlToHapus = db.pengaturan?.fotoSekolah;
+            else if (tipe === 'struktur') urlToHapus = db.struktur_organisasi?.photo;
+
+            window.showAlert("Sedang menghapus foto...");
+
+            if (urlToHapus && (urlToHapus.includes('drive.google.com') || urlToHapus.includes('googleusercontent'))) {
+                try {
+                    const res = await fetch(APPSCRIPT_URL, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                        body: new URLSearchParams({
+                            action: 'deleteAvatar',
+                            data: JSON.stringify({ email: window.currentUser.email, url: urlToHapus })
+                        })
+                    });
+                    await res.json();
+                } catch(err) {
+                    console.error("Gagal panggil delete API", err);
+                }
+            }
+
+            // Hapus lokal apa pun hasilnya
+            if(tipe === 'profil') { if(db.pengaturan) db.pengaturan.foto = null; }
+            if(tipe === 'sekolah') { if(db.pengaturan) db.pengaturan.fotoSekolah = null; }
+            if(tipe === 'struktur') { if(db.struktur_organisasi) db.struktur_organisasi.photo = null; }
+            saveDB();
+            window.updateUIIdentitas();
+            
+            if(tipe === 'struktur') {
+                window.renderStrukturOrganisasi?.(); // Memperbarui tampilan struktur organisasi secara langsung jika ada fungsi ini
+                navigateTo('struktur-organisasi');
+            } else {
+                navigateTo('pengaturan');
+            }
+            window.showAlert("Foto berhasil dihapus.");
         };
 
         window.togglePass = (id, btn) => {
@@ -8599,7 +8713,7 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                                         <input type="file" accept="image/*" class="hidden" onchange="window.handleAvatarUpload(event)">
                                        </label>`
                                 }
-                                ${p.foto ? `<button onclick="window.showConfirm('Hapus foto profil?').then(res => { if(res){ const form = document.getElementById('form-pengaturan'); if(form) { db.pengaturan = { ...db.pengaturan, nama: form.nama.value, nip: form.nip.value, sekolah: form.sekolah.value, kelas: form.kelas.value, kepsek: form.kepsek.value, nip_kepsek: form.nip_kepsek.value, tapel: form.tapel.value, npsn: form.npsn.value }; } db.pengaturan.foto = null; saveDB(); if(window.currentUser){ fetch(APPSCRIPT_URL, {method: 'POST', headers: {'Content-Type': 'application/x-www-form-urlencoded'}, body: new URLSearchParams({action: 'deleteAvatar', data: JSON.stringify({email: window.currentUser.email})})}).catch(e=>console.error(e)); } window.updateUIIdentitas(); navigateTo('pengaturan'); } })" class="text-xs bg-red-50 text-red-600 px-3 py-1.5 rounded-lg hover:bg-red-100 font-medium transition inline-flex items-center gap-1 shadow-sm border border-red-100"><i class="fas fa-trash"></i> Hapus Foto</button>` : ''}
+                                ${p.foto ? `<button onclick="window.handleHapusFoto('profil')" class="text-xs bg-red-50 text-red-600 px-3 py-1.5 rounded-lg hover:bg-red-100 font-medium transition inline-flex items-center gap-1 shadow-sm border border-red-100"><i class="fas fa-trash"></i> Hapus Foto</button>` : ''}
                             </div>
                         </div>
                     </div>
@@ -8631,7 +8745,7 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                                         <input type="file" accept="image/*" class="hidden" onchange="window.handleFotoSekolahUpload(event)">
                                        </label>`
                                 }
-                                ${p.fotoSekolah ? `<button onclick="window.showConfirm('Hapus foto sekolah?').then(res => { if(res){ const form = document.getElementById('form-pengaturan'); if(form) { db.pengaturan = { ...db.pengaturan, nama: form.nama.value, nip: form.nip.value, sekolah: form.sekolah.value, kelas: form.kelas.value, kepsek: form.kepsek.value, nip_kepsek: form.nip_kepsek.value, tapel: form.tapel.value, npsn: form.npsn.value }; } db.pengaturan.fotoSekolah = null; saveDB(); navigateTo('pengaturan'); } })" class="text-xs bg-red-50 text-red-600 px-3 py-1.5 rounded-lg hover:bg-red-100 font-medium transition inline-flex items-center gap-1 shadow-sm border border-red-100"><i class="fas fa-trash"></i> Hapus Foto</button>` : ''}
+                                ${p.fotoSekolah ? `<button onclick="window.handleHapusFoto('sekolah')" class="text-xs bg-red-50 text-red-600 px-3 py-1.5 rounded-lg hover:bg-red-100 font-medium transition inline-flex items-center gap-1 shadow-sm border border-red-100"><i class="fas fa-trash"></i> Hapus Foto</button>` : ''}
                             </div>
                         </div>
                     </div>
