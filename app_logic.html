@@ -676,15 +676,15 @@
             }
 
             const icons = {
-                'siswa': 'fa-user-plus text-blue-500 bg-blue-50',
-                'presensi': 'fa-user-check text-green-500 bg-green-50',
-                'nilai': 'fa-chart-bar text-purple-500 bg-purple-50',
-                'kas': 'fa-money-bill-wave text-emerald-500 bg-emerald-50',
-                'pembayaran': 'fa-file-invoice text-indigo-500 bg-indigo-50',
-                'catatan': 'fa-sticky-note text-yellow-500 bg-yellow-50',
-                'laporan': 'fa-file-alt text-orange-500 bg-orange-50',
-                'tugas': 'fa-tasks text-pink-500 bg-pink-50',
-                'default': 'fa-bell text-gray-500 bg-gray-100'
+                'siswa': 'fa-user-plus text-blue-600 bg-blue-200',
+                'presensi': 'fa-user-check text-green-600 bg-green-200',
+                'nilai': 'fa-chart-bar text-purple-600 bg-purple-200',
+                'kas': 'fa-money-bill-wave text-emerald-600 bg-emerald-200',
+                'pembayaran': 'fa-file-invoice text-indigo-600 bg-indigo-200',
+                'catatan': 'fa-sticky-note text-yellow-600 bg-yellow-200',
+                'laporan': 'fa-file-alt text-orange-600 bg-orange-200',
+                'tugas': 'fa-tasks text-pink-600 bg-pink-200',
+                'default': 'fa-bell text-gray-600 bg-gray-200'
             };
             const iconClass = icons[tipe] || icons['default'];
             db.aktivitasList.unshift({ id: Date.now(), tipe, deskripsi, detail, jam, tanggal: todayStr, iconClass });
@@ -751,37 +751,46 @@
             const visible = list.slice(start, start + AKTIVITAS_PER_PAGE);
 
             let html = `
-                <div class="flex items-center justify-between mb-3 mt-1">
-                    <div class="flex items-center gap-2.5">
-                        <div class="w-8 h-8 rounded-lg bg-blue-100 flex items-center justify-center text-blue-600">
-                            <i class="fas fa-history text-sm"></i>
+                <div class="flex items-center justify-between mb-3">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 text-white flex items-center justify-center shadow-md shadow-blue-500/20">
+                            <i class="fas fa-history"></i>
                         </div>
-                        <h3 class="font-bold text-gray-800 text-base">Aktivitas Terbaru</h3>
+                        <div>
+                            <p class="text-[10px] text-gray-400 uppercase font-bold tracking-wider">Aktivitas</p>
+                            <h4 class="font-bold text-gray-800 text-base leading-tight">Aktivitas Terbaru</h4>
+                        </div>
                     </div>
                     <div class="flex items-center gap-2">
-                        <a href="#" onclick="window.bukaSemuaAktivitas(); return false;" class="text-xs text-blue-600 font-semibold hover:text-blue-700">Lihat Semua</a>
+                        <span class="text-xs font-semibold text-gray-400">${list.length}/${MAX_AKTIVITAS}</span>
+                        <a href="#" onclick="window.bukaSemuaAktivitas(); return false;" class="text-[11px] text-white font-semibold bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 px-3 py-1.5 rounded-full transition-all shadow-sm">Lihat Semua &rarr;</a>
                     </div>
                 </div>
             `;
 
             if (list.length === 0) {
-                html += `<div class="text-center py-8 text-gray-400 text-sm bg-white rounded-xl border border-gray-100"><i class="fas fa-history text-3xl mb-2 block opacity-30"></i>Belum ada aktivitas.</div>`;
+                html += `<div class="flex flex-col items-center justify-center py-10 bg-gray-50/50 rounded-2xl border border-gray-100 border-dashed">
+                    <div class="w-14 h-14 bg-white rounded-full shadow-sm flex items-center justify-center mb-3">
+                        <i class="fas fa-history text-2xl text-gray-300"></i>
+                    </div>
+                    <p class="text-sm text-gray-400 font-medium">Belum ada aktivitas</p>
+                </div>`;
             } else {
-                html += `<div class="bg-white rounded-xl border border-gray-100 overflow-hidden mb-2">`;
+                html += `<div class="flex flex-col">`;
                 visible.forEach((item, idx) => {
                     html += `
-                        <div class="flex items-center gap-3 px-3.5 py-2.5 border-b border-gray-100 last:border-b-0 hover:bg-gray-50/50 transition group">
-                            <div class="w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${item.iconClass.split(' ').slice(1).join(' ')}">
+                        <div class="flex items-center gap-3 py-3 ${idx < visible.length - 1 ? 'border-b border-gray-100' : ''} group">
+                            <div class="w-9 h-9 rounded-full flex items-center justify-center shrink-0 ${item.iconClass.split(' ').slice(1).join(' ')} shadow-sm">
                                 <i class="fas ${item.iconClass.split(' ')[0]} text-xs"></i>
                             </div>
                             <div class="flex-1 min-w-0">
-                                <p class="text-sm font-semibold text-gray-800 truncate">${item.deskripsi}</p>
-                                ${item.detail ? `<p class="text-xs text-gray-500 truncate">${item.detail}</p>` : ''}
+                                <p class="text-[13px] font-bold text-gray-800 truncate">${item.deskripsi}</p>
+                                ${item.detail ? `<p class="text-[11px] text-gray-400 truncate">${item.detail}</p>` : ''}
                             </div>
                             <div class="flex items-center gap-2 shrink-0">
-                                <span class="text-xs font-medium text-gray-500 bg-gray-100 px-2 py-0.5 rounded">${item.jam}</span>
+                                <span class="text-[11px] font-medium text-gray-500 bg-gray-100 px-2.5 py-1 rounded-lg">${item.jam}</span>
                                 <button onclick="if(confirm('Hapus aktivitas ini?')){ db.aktivitasList = db.aktivitasList.filter(a => a.id !== ${item.id}); saveDB(); const el = document.getElementById('aktivitas-container'); if(el) el.innerHTML = window.renderAktivitasTerbaruUI(); }" class="opacity-0 group-hover:opacity-100 text-gray-400 hover:text-red-500 transition p-1">
-                                    <i class="fas fa-trash text-xs"></i>
+                                    <i class="fas fa-trash text-[10px]"></i>
                                 </button>
                             </div>
                         </div>
@@ -792,13 +801,13 @@
                 // Pagination
                 if (list.length > AKTIVITAS_PER_PAGE) {
                     html += `
-                        <div class="flex items-center justify-between text-xs px-1">
-                            <button onclick="window._aktivitasPage = Math.max(0, ${page} - 1); document.getElementById('aktivitas-container').innerHTML = window.renderAktivitasTerbaruUI();" class="text-gray-600 hover:text-blue-600 font-semibold transition disabled:opacity-40" ${page === 0 ? 'disabled' : ''}>
-                                Sebelumnya
+                        <div class="flex items-center justify-between pt-3 mt-1 border-t border-gray-100">
+                            <button onclick="window._aktivitasPage = Math.max(0, ${page} - 1); document.getElementById('aktivitas-container').innerHTML = window.renderAktivitasTerbaruUI();" class="flex items-center gap-1 text-xs font-semibold text-gray-500 hover:text-blue-600 transition disabled:opacity-30" ${page === 0 ? 'disabled' : ''}>
+                                <i class="fas fa-chevron-left text-[9px]"></i> Sebelumnya
                             </button>
-                            <span class="text-gray-400">${page + 1} / ${totalPage + 1}</span>
-                            <button onclick="window._aktivitasPage = Math.min(${totalPage}, ${page} + 1); document.getElementById('aktivitas-container').innerHTML = window.renderAktivitasTerbaruUI();" class="text-gray-600 hover:text-blue-600 font-semibold transition disabled:opacity-40" ${page >= totalPage ? 'disabled' : ''}>
-                                Selanjutnya &gt;
+                            <span class="text-xs font-semibold text-blue-500">${page + 1} / ${totalPage + 1}</span>
+                            <button onclick="window._aktivitasPage = Math.min(${totalPage}, ${page} + 1); document.getElementById('aktivitas-container').innerHTML = window.renderAktivitasTerbaruUI();" class="flex items-center gap-1 text-xs font-semibold text-gray-500 hover:text-blue-600 transition disabled:opacity-30" ${page >= totalPage ? 'disabled' : ''}>
+                                Selanjutnya <i class="fas fa-chevron-right text-[9px]"></i>
                             </button>
                         </div>
                     `;
