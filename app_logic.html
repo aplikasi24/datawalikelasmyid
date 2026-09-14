@@ -3293,6 +3293,9 @@ ${formatInstruction}`;
                     ctx.drawImage(img, 0, 0, width, height);
                     const dataUrl = canvas.toDataURL('image/jpeg', 0.8);
                     
+                    const loader = window.showLoading("Sedang mengunggah foto ke Cloud...");
+                    loader.updateProgress(50);
+                    
                     try {
                         const res = await fetch(APPSCRIPT_URL, {
                             method: 'POST',
@@ -3315,12 +3318,12 @@ ${formatInstruction}`;
                                 photoInput.value = data.url;
                                 window.updateOrgPhotoPreview(data.url);
                             }
-                            window.showAlert("Foto berhasil diunggah ke Cloud!");
+                            loader.update('success', 'Berhasil', 'Foto berhasil diunggah ke Cloud!');
                         } else {
-                            window.showAlert("Gagal backup ke Cloud: " + data.message);
+                            loader.update('error', 'Gagal', "Gagal backup ke Cloud: " + data.message);
                         }
                     } catch(err) {
-                        window.showAlert("Gagal menghubungi server.");
+                        loader.update('error', 'Gagal', "Gagal menghubungi server.");
                     } finally {
                         if (labelBtn) labelBtn.innerHTML = '<i class="fas fa-upload mr-1"></i> Upload ke Cloud <input type="file" accept="image/*" class="hidden" onchange="window.handleOrgPhotoUpload(event)">';
                     }
@@ -3335,7 +3338,7 @@ ${formatInstruction}`;
             const urlToHapus = input.value;
             
             if (urlToHapus && (urlToHapus.includes('drive.google.com') || urlToHapus.includes('googleusercontent')) && window.currentUser) {
-                window.showAlert("Sedang menghapus foto dari Server...");
+                const loader = window.showLoading("Sedang menghapus foto dari Server...");
                 try {
                     await fetch(APPSCRIPT_URL, {
                         method: 'POST',
@@ -3345,9 +3348,9 @@ ${formatInstruction}`;
                             data: JSON.stringify({ email: window.currentUser.email, url: urlToHapus })
                         })
                     });
-                    window.showAlert("Foto berhasil dihapus.");
+                    loader.update('success', 'Berhasil', 'Foto berhasil dihapus.');
                 } catch (e) {
-                    console.error("Gagal hapus dari Drive", e);
+                    loader.update('error', 'Gagal', 'Gagal hapus dari Drive: ' + e.message);
                 }
             }
 
@@ -8388,7 +8391,8 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                     ctx.drawImage(img, 0, 0, width, height);
                     const dataUrl = canvas.toDataURL('image/jpeg', 0.8);
                     
-                    window.showAlert("Sedang mengunggah foto profil ke Cloud...");
+                    const loader = window.showLoading("Sedang mengunggah foto profil ke Cloud...");
+                    loader.updateProgress(50);
                     input.value = '';
                     
                     try {
@@ -8412,17 +8416,18 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                             db.pengaturan = {
                                 ...db.pengaturan,
                                 ...currentFormState,
-                                foto: data.url // Simpan URL Drive
+                                foto: data.url 
                             };
                             saveDB();
                             window.updateUIIdentitas();
-                            navigateTo('pengaturan');
-                            window.showAlert("Foto profil berhasil diunggah.");
+                            loader.update('success', 'Berhasil', 'Foto profil berhasil diunggah.').then(() => {
+                                navigateTo('pengaturan');
+                            });
                         } else {
-                            window.showAlert("Gagal unggah ke Drive: " + data.message);
+                            loader.update('error', 'Gagal', "Gagal unggah ke Drive: " + data.message);
                         }
                     } catch(err) {
-                        window.showAlert("Gagal menghubungi server.");
+                        loader.update('error', 'Gagal', "Gagal menghubungi server.");
                     }
                 }
                 img.onerror = function() {
@@ -8486,7 +8491,8 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                     ctx.drawImage(img, 0, 0, width, height);
                     const dataUrl = canvas.toDataURL('image/jpeg', 0.8);
                     
-                    window.showAlert("Sedang mengunggah foto sekolah ke Cloud...");
+                    const loader = window.showLoading("Sedang mengunggah foto sekolah ke Cloud...");
+                    loader.updateProgress(50);
                     input.value = '';
                     
                     try {
@@ -8510,17 +8516,18 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                             db.pengaturan = {
                                 ...db.pengaturan,
                                 ...currentFormState,
-                                fotoSekolah: data.url // Simpan URL Drive
+                                fotoSekolah: data.url
                             };
                             saveDB();
                             window.updateUIIdentitas();
-                            navigateTo('pengaturan');
-                            window.showAlert("Foto sekolah berhasil diunggah.");
+                            loader.update('success', 'Berhasil', 'Foto sekolah berhasil diunggah.').then(() => {
+                                navigateTo('pengaturan');
+                            });
                         } else {
-                            window.showAlert("Gagal unggah ke Drive: " + data.message);
+                            loader.update('error', 'Gagal', "Gagal unggah ke Drive: " + data.message);
                         }
                     } catch(err) {
-                        window.showAlert("Gagal menghubungi server.");
+                        loader.update('error', 'Gagal', "Gagal menghubungi server.");
                     }
                 }
                 img.onerror = function() {
@@ -8560,7 +8567,7 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
             else if (tipe === 'sekolah') urlToHapus = db.pengaturan?.fotoSekolah;
             else if (tipe === 'struktur') urlToHapus = db.struktur_organisasi?.photo;
 
-            window.showAlert("Sedang menghapus foto...");
+            const loader = window.showLoading("Sedang menghapus foto dari Server...");
 
             if (urlToHapus && (urlToHapus.includes('drive.google.com') || urlToHapus.includes('googleusercontent'))) {
                 try {
@@ -8585,13 +8592,14 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
             saveDB();
             window.updateUIIdentitas();
             
-            if(tipe === 'struktur') {
-                window.renderStrukturOrganisasi?.(); // Memperbarui tampilan struktur organisasi secara langsung jika ada fungsi ini
-                navigateTo('struktur-organisasi');
-            } else {
-                navigateTo('pengaturan');
-            }
-            window.showAlert("Foto berhasil dihapus.");
+            loader.update('success', 'Berhasil', 'Foto berhasil dihapus.').then(() => {
+                if(tipe === 'struktur') {
+                    window.renderStrukturOrganisasi?.();
+                    navigateTo('struktur-organisasi');
+                } else {
+                    navigateTo('pengaturan');
+                }
+            });
         };
 
         window.togglePass = (id, btn) => {
