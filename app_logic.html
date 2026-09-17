@@ -2611,19 +2611,24 @@
                 const res = await fetch(APPSCRIPT_URL + '?action=getMessages&email=' + encodeURIComponent(window.currentUser.email));
                 const data = await res.json();
                 if(data.status === 'success' && data.data) {
-                    db.pesan_info = data.data;
-                    saveDB();
-                    if(window.currentPage === 'pesan') {
-                        // Re-render UI
-                        const chatContainer = document.getElementById('chat-container');
-                        if (chatContainer) {
-                            window.navigateTo('pesan', true);
+                    const oldHash = JSON.stringify(db.pesan_info || []);
+                    const newHash = JSON.stringify(data.data);
+                    
+                    if (oldHash !== newHash) {
+                        db.pesan_info = data.data;
+                        saveDB();
+                        if(window.currentPage === 'pesan') {
+                            // Re-render UI
+                            const chatContainer = document.getElementById('chat-container');
+                            if (chatContainer) {
+                                window.navigateTo('pesan', true);
+                            }
+                        } else {
+                            window.renderSidebar();
                         }
-                    } else {
-                        window.renderSidebar();
+                        if(typeof window.renderPrivateChat === 'function') window.renderPrivateChat();
+                        if(typeof window.updateUnreadChatBadge === 'function') window.updateUnreadChatBadge();
                     }
-                    if(typeof window.renderPrivateChat === 'function') window.renderPrivateChat();
-                    if(typeof window.updateUnreadChatBadge === 'function') window.updateUnreadChatBadge();
                 }
             } catch(e) {
                 console.error("Gagal sync pesan:", e);
