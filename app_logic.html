@@ -14333,7 +14333,7 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                 totalHarus += nominal;
                 totalBayar += terbayar;
                 
-                let status = kurang < 0 ? `LEBIH Rp ${Math.abs(kurang).toLocaleString('id-ID')} ` + String.fromCodePoint(0x2705) : (kurang === 0 ? 'LUNAS ' + String.fromCodePoint(0x2705) : (terbayar > 0 ? 'CICIL ' + String.fromCodePoint(0x23F3) : 'BELUM BAYAR ' + String.fromCodePoint(0x274C)));
+                let status = kurang < 0 ? `LEBIH Rp ${Math.abs(kurang).toLocaleString('id-ID')} ✅` : (kurang === 0 ? 'LUNAS ✅' : (terbayar > 0 ? 'CICIL ⏳' : 'BELUM BAYAR ❌'));
                 
                 let riwayat = (pk.riwayat_bayar && pk.riwayat_bayar[studentId] && pk.riwayat_bayar[studentId][item.id]) ? pk.riwayat_bayar[studentId][item.id] : [];
                 if (riwayat.length === 0 && terbayar > 0) {
