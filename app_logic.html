@@ -13805,15 +13805,19 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
             if (!input || !badge) return;
             let val = parseInt(input.value.replace(/\./g, '')) || 0;
             let sisaBaru = sisaAwal - val;
+            let card = badge.closest('.rounded-xl');
             if (sisaBaru < 0) {
-                badge.className = 'text-xs bg-green-100 text-green-700 px-2 py-1 rounded font-bold';
+                badge.className = 'text-xs bg-green-200 text-green-800 px-2 py-1 rounded font-bold';
                 badge.innerHTML = 'Lebih: Rp ' + Math.abs(sisaBaru).toLocaleString('id-ID');
+                if (card) card.className = 'p-4 rounded-xl border relative transition-colors duration-300 bg-green-100 border-green-500 shadow-md';
             } else if (sisaBaru === 0) {
-                badge.className = 'text-xs bg-green-100 text-green-700 px-2 py-1 rounded font-bold';
+                badge.className = 'text-xs bg-green-200 text-green-800 px-2 py-1 rounded font-bold';
                 badge.innerHTML = 'LUNAS';
+                if (card) card.className = 'p-4 rounded-xl border relative transition-colors duration-300 bg-green-100 border-green-500 shadow-md';
             } else {
                 badge.className = 'text-xs bg-red-100 text-red-700 px-2 py-1 rounded font-bold';
                 badge.innerHTML = 'Kurang: Rp ' + sisaBaru.toLocaleString('id-ID');
+                if (card) card.className = 'p-4 rounded-xl border relative transition-colors duration-300 bg-slate-50 border-slate-200';
             }
         };
 
@@ -13965,7 +13969,7 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                     </div>
                     `;
                 }
-                let cardStyle = isLunas ? 'bg-green-50/50 border-green-400 shadow-sm' : 'bg-slate-50 border-slate-200';
+                let cardStyle = isLunas ? 'bg-green-100 border-green-500 shadow-md' : 'bg-slate-50 border-slate-200';
                 return `
                 <div class="${cardStyle} p-4 rounded-xl border relative transition-colors duration-300">
                     <div class="absolute -left-2 -top-2 w-6 h-6 bg-indigo-500 text-white font-bold rounded-full flex items-center justify-center text-xs shadow-sm border-2 border-white">${index + 1}</div>
