@@ -16438,7 +16438,7 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                     <!-- P1 Keyboard -->
                     <div class="mt-auto bg-slate-100 p-3 sm:p-4 rounded-2xl border border-slate-200 shadow-inner max-w-sm mx-auto w-full shrink-0">
                         <div class="grid grid-cols-3 gap-2">
-                            ${[1,2,3,4,5,6,7,8,9].map(n => \`<button onclick="window.mathGame.input(1, '\${n}')" class="h-10 sm:h-12 bg-white text-slate-800 font-bold text-lg sm:text-xl rounded-xl shadow-sm hover:bg-blue-50 active:scale-95 transition">\${n}</button>\`).join('')}
+                            ${[1,2,3,4,5,6,7,8,9].map(n => `<button onclick="window.mathGame.input(1, '${n}')" class="h-10 sm:h-12 bg-white text-slate-800 font-bold text-lg sm:text-xl rounded-xl shadow-sm hover:bg-blue-50 active:scale-95 transition">${n}</button>`).join('')}
                             <button onclick="window.mathGame.clear(1)" class="h-10 sm:h-12 bg-rose-100 text-rose-600 font-bold text-xs sm:text-sm rounded-xl shadow-sm hover:bg-rose-200 active:scale-95 transition uppercase">Hapus</button>
                             <button onclick="window.mathGame.input(1, '0')" class="h-10 sm:h-12 bg-white text-slate-800 font-bold text-lg sm:text-xl rounded-xl shadow-sm hover:bg-blue-50 active:scale-95 transition">0</button>
                             <button onclick="window.mathGame.answer(1)" class="h-10 sm:h-12 bg-emerald-500 text-white font-bold text-xs sm:text-sm rounded-xl shadow-sm hover:bg-emerald-600 active:scale-95 transition uppercase">Jawab</button>
@@ -16480,7 +16480,7 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                     <!-- P2 Keyboard -->
                     <div class="mt-auto bg-slate-100 p-3 sm:p-4 rounded-2xl border border-slate-200 shadow-inner max-w-sm mx-auto w-full shrink-0">
                         <div class="grid grid-cols-3 gap-2">
-                            ${[1,2,3,4,5,6,7,8,9].map(n => \`<button onclick="window.mathGame.input(2, '\${n}')" class="h-10 sm:h-12 bg-white text-slate-800 font-bold text-lg sm:text-xl rounded-xl shadow-sm hover:bg-rose-50 active:scale-95 transition">\${n}</button>\`).join('')}
+                            ${[1,2,3,4,5,6,7,8,9].map(n => `<button onclick="window.mathGame.input(2, '${n}')" class="h-10 sm:h-12 bg-white text-slate-800 font-bold text-lg sm:text-xl rounded-xl shadow-sm hover:bg-rose-50 active:scale-95 transition">${n}</button>`).join('')}
                             <button onclick="window.mathGame.clear(2)" class="h-10 sm:h-12 bg-rose-100 text-rose-600 font-bold text-xs sm:text-sm rounded-xl shadow-sm hover:bg-rose-200 active:scale-95 transition uppercase">Hapus</button>
                             <button onclick="window.mathGame.input(2, '0')" class="h-10 sm:h-12 bg-white text-slate-800 font-bold text-lg sm:text-xl rounded-xl shadow-sm hover:bg-rose-50 active:scale-95 transition">0</button>
                             <button onclick="window.mathGame.answer(2)" class="h-10 sm:h-12 bg-emerald-500 text-white font-bold text-xs sm:text-sm rounded-xl shadow-sm hover:bg-emerald-600 active:scale-95 transition uppercase">Jawab</button>
