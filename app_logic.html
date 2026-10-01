@@ -13233,6 +13233,7 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                     case 'puzzle': contentHtml += renderPuzzle(); break;
                     case 'extra_game': contentHtml += renderExtraGame(); break;
                     case 'math_game': contentHtml += renderMathGame(); break;
+                    case 'kuisgerak': contentHtml += renderKuisgerak(); break;
                     case 'aplikasi_lain': contentHtml += renderAplikasiLain(); break;
                     case 'sync': contentHtml += renderSync(); break;
                     case 'pengaturan': contentHtml += renderPengaturan(); break;
@@ -15085,6 +15086,21 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                         <span class="text-white/80 text-sm font-semibold">🧮 Adu Pintar Matematika</span>
                     </div>
                     <iframe src="ekstra?tab=math" class="w-full flex-1 border-0 min-h-[80vh] block" title="Adu Pintar Matematika" allowfullscreen></iframe>
+                </div>
+            `;
+        }
+
+        function renderKuisgerak() {
+            return `
+                <div class="bg-slate-50/50 overflow-hidden w-full h-full min-h-[85vh] flex flex-col p-0">
+                    <div class="flex items-center gap-3 bg-slate-800 px-4 py-2.5 shrink-0">
+                        <button onclick="window.navigateTo('extra_game')" class="flex items-center gap-2 text-white/70 hover:text-white text-sm font-medium transition-colors">
+                            <i class="fas fa-arrow-left text-xs"></i> Kembali ke Extra Time
+                        </button>
+                        <span class="text-white/30 text-xs">|</span>
+                        <span class="text-white/80 text-sm font-semibold">🏃 Kuis Gerak</span>
+                    </div>
+                    <iframe src="kuisgerak.html" class="w-full flex-1 border-0 min-h-[80vh] block" title="Kuis Gerak" allowfullscreen></iframe>
                 </div>
             `;
         }
