@@ -8733,9 +8733,14 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
             return `
                 <div class="flex justify-end mb-4">
                     <!-- TIMER MASA AKTIF DI SINI -->
-                    <div id="active-timer-container" class="bg-orange-50 border border-orange-200 px-3 py-1.5 rounded-lg flex flex-col items-end shadow-sm">
-                        <div class="text-[9px] font-bold text-orange-500 uppercase tracking-wider mb-0.5"><i class="fas fa-clock mr-1"></i> Telah Aktif Selama</div>
-                        <div id="settings-active-countdown" class="text-[11px] font-mono font-bold text-orange-700">Memuat...</div>
+                    <div id="dashboard-timer-container" class="hidden cursor-pointer bg-slate-800 border border-slate-700 rounded-xl px-4 py-2 flex items-center shadow-md shadow-orange-500/10 w-auto transition-all duration-300 hover:bg-slate-700">
+                        <div class="bg-slate-700 text-orange-400 w-9 h-9 rounded-lg flex items-center justify-center shrink-0 shadow-sm mr-3">
+                            <i class="fas fa-hourglass-half text-sm"></i>
+                        </div>
+                        <div class="flex flex-col text-left justify-center overflow-hidden whitespace-nowrap">
+                            <span class="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-0.5">Masa Aktif | 20 Rb/ Thn</span>
+                            <span id="dashboard-active-countdown" class="text-sm font-bold text-orange-400 leading-none font-mono tracking-wide">Memuat...</span>
+                        </div>
                     </div>
                 </div>
                 <div class="bg-white rounded-2xl p-8 border shadow-sm w-full relative">
@@ -13118,16 +13123,7 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                             </button>
                         </div>
                         <div class="flex flex-row gap-1.5 sm:gap-2 w-full sm:w-auto items-stretch sm:items-center">
-                            <div id="dashboard-timer-container" class="hidden cursor-pointer bg-slate-800 border border-slate-700 rounded-xl px-2 sm:px-3 h-10 sm:h-11 flex items-center shadow-inner flex-1 sm:flex-none w-auto transition-all duration-300 group" onclick="window.toggleMasaAktif()">
-                                <div class="bg-slate-700 text-orange-400 w-7 h-7 sm:w-8 sm:h-8 rounded-lg flex items-center justify-center shrink-0">
-                                    <i class="fas fa-hourglass-half text-[10px] sm:text-xs"></i>
-                                </div>
-                                <div id="masa-aktif-content" style="${window.isMasaAktifClosed ? 'max-width: 0px; opacity: 0; margin-left: 0px;' : 'max-width: 300px; opacity: 1; margin-left: 0.5rem;'}" class="flex flex-col text-left justify-center overflow-hidden transition-all duration-300 whitespace-nowrap">
-                                    <span class="text-[7px] sm:text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-0.5 truncate">Masa Aktif | 20 Rb/ Thn</span>
-                                    <span id="dashboard-active-countdown" class="text-[10px] sm:text-[13px] font-bold text-orange-400 leading-none font-mono tracking-wide truncate">Memuat...</span>
-                                </div>
-                                <div id="masa-aktif-chevron" class="text-slate-500 transition-transform duration-300 shrink-0 opacity-50 group-hover:opacity-100 ml-auto" style="${window.isMasaAktifClosed ? 'transform: rotate(180deg); margin-left: 0.25rem;' : 'transform: rotate(0deg); margin-left: 0.25rem;'}"><i class="fas fa-chevron-left text-[10px] sm:text-xs"></i></div>
-                            </div>
+
                             <div class="bg-indigo-50 border border-indigo-100 rounded-xl px-2 sm:px-4 h-10 sm:h-11 flex items-center gap-1.5 sm:gap-3 shadow-sm min-w-[120px] flex-1 sm:flex-none sm:w-auto">
                                 <div class="bg-indigo-100 text-indigo-600 w-7 h-7 sm:w-8 sm:h-8 rounded-lg flex items-center justify-center shrink-0">
                                     <i class="fas fa-clock text-[10px] sm:text-xs"></i>
