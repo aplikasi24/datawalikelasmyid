@@ -8731,16 +8731,29 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
             const avatarSrc = p.foto ? window.getReliableImageUrl(p.foto) : `https://ui-avatars.com/api/?name=${encodeURIComponent(p.nama || 'Guru')}&background=f97316&color=fff&size=150`;
 
             return `
-                <div class="flex justify-end mb-4">
-                    <!-- TIMER MASA AKTIF DI SINI -->
-                    <div id="dashboard-timer-container" class="hidden cursor-pointer bg-slate-800 border border-slate-700 rounded-xl px-4 py-2 flex items-center shadow-md shadow-orange-500/10 w-auto transition-all duration-300 hover:bg-slate-700">
-                        <div class="bg-slate-700 text-orange-400 w-9 h-9 rounded-lg flex items-center justify-center shrink-0 shadow-sm mr-3">
-                            <i class="fas fa-hourglass-half text-sm"></i>
+                <div class="flex flex-row justify-between sm:justify-end gap-2 sm:gap-3 mb-4 w-full">
+                    <!-- TIMER MASA AKTIF SISA WAKTU -->
+                    <div id="dashboard-timer-container" class="hidden cursor-pointer bg-slate-800 border border-slate-700 rounded-xl px-2 py-1.5 sm:px-3 sm:py-2 flex items-center shadow-md shadow-orange-500/10 flex-1 sm:flex-none w-auto transition-all duration-300 hover:bg-slate-700 group overflow-hidden" onclick="window.toggleTimerStatus('masa-aktif')">
+                        <div class="bg-slate-700 text-orange-400 w-6 h-6 sm:w-8 sm:h-8 rounded-lg flex items-center justify-center shrink-0 shadow-sm">
+                            <i class="fas fa-hourglass-half text-[10px] sm:text-xs"></i>
                         </div>
-                        <div class="flex flex-col text-left justify-center overflow-hidden whitespace-nowrap">
-                            <span class="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-0.5">Masa Aktif | 20 Rb/ Thn</span>
-                            <span id="dashboard-active-countdown" class="text-sm font-bold text-orange-400 leading-none font-mono tracking-wide">Memuat...</span>
+                        <div id="masa-aktif-content" style="${window.isMasaAktifClosed ? 'max-width: 0px; opacity: 0; margin-left: 0px;' : 'max-width: 300px; opacity: 1; margin-left: 0.5rem;'}" class="flex flex-col text-left justify-center overflow-hidden transition-all duration-300 whitespace-nowrap">
+                            <span class="text-[7px] sm:text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-0.5 truncate">Masa Aktif | 20 Rb/ Thn</span>
+                            <span id="dashboard-active-countdown" class="text-[9px] sm:text-[13px] font-bold text-orange-400 leading-none font-mono tracking-wide truncate">Memuat...</span>
                         </div>
+                        <div id="masa-aktif-chevron" class="text-slate-500 transition-transform duration-300 shrink-0 opacity-50 group-hover:opacity-100 ml-auto" style="${window.isMasaAktifClosed ? 'transform: rotate(180deg); margin-left: 0.25rem;' : 'transform: rotate(0deg); margin-left: 0.25rem;'}"><i class="fas fa-chevron-left text-[8px] sm:text-[10px]"></i></div>
+                    </div>
+
+                    <!-- TIMER TELAH AKTIF SELAMA -->
+                    <div id="active-timer-container" class="cursor-pointer bg-orange-50 border border-orange-200 rounded-xl px-2 py-1.5 sm:px-3 sm:py-2 flex items-center shadow-sm flex-1 sm:flex-none w-auto transition-all duration-300 hover:bg-orange-100 group overflow-hidden" onclick="window.toggleTimerStatus('telah-aktif')">
+                        <div class="bg-orange-200 text-orange-600 w-6 h-6 sm:w-8 sm:h-8 rounded-lg flex items-center justify-center shrink-0 shadow-sm">
+                            <i class="fas fa-clock text-[10px] sm:text-xs"></i>
+                        </div>
+                        <div id="telah-aktif-content" style="${window.isTelahAktifClosed ? 'max-width: 0px; opacity: 0; margin-left: 0px;' : 'max-width: 300px; opacity: 1; margin-left: 0.5rem;'}" class="flex flex-col text-left justify-center overflow-hidden transition-all duration-300 whitespace-nowrap">
+                            <span class="text-[7px] sm:text-[9px] font-bold text-orange-500 uppercase tracking-widest mb-0.5 truncate">Telah Aktif Selama</span>
+                            <span id="settings-active-countdown" class="text-[9px] sm:text-[13px] font-bold text-orange-700 leading-none font-mono tracking-wide truncate">Memuat...</span>
+                        </div>
+                        <div id="telah-aktif-chevron" class="text-orange-400 transition-transform duration-300 shrink-0 opacity-50 group-hover:opacity-100 ml-auto" style="${window.isTelahAktifClosed ? 'transform: rotate(180deg); margin-left: 0.25rem;' : 'transform: rotate(0deg); margin-left: 0.25rem;'}"><i class="fas fa-chevron-left text-[8px] sm:text-[10px]"></i></div>
                     </div>
                 </div>
                 <div class="bg-white rounded-2xl p-8 border shadow-sm w-full relative">
@@ -12444,20 +12457,30 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
         };
 
         window.isMasaAktifClosed = localStorage.getItem('isMasaAktifClosed') === 'true';
-        window.toggleMasaAktif = () => {
-            const content = document.getElementById('masa-aktif-content');
-            const chevron = document.getElementById('masa-aktif-chevron');
+        window.isTelahAktifClosed = localStorage.getItem('isTelahAktifClosed') === 'true';
+        
+        window.toggleTimerStatus = (type) => {
+            const isClosed = type === 'masa-aktif' ? window.isMasaAktifClosed : window.isTelahAktifClosed;
+            const newClosed = !isClosed;
+            
+            if (type === 'masa-aktif') {
+                window.isMasaAktifClosed = newClosed;
+                localStorage.setItem('isMasaAktifClosed', newClosed);
+            } else {
+                window.isTelahAktifClosed = newClosed;
+                localStorage.setItem('isTelahAktifClosed', newClosed);
+            }
+            
+            const content = document.getElementById(type + '-content');
+            const chevron = document.getElementById(type + '-chevron');
             if (!content || !chevron) return;
             
-            window.isMasaAktifClosed = !window.isMasaAktifClosed;
-            localStorage.setItem('isMasaAktifClosed', window.isMasaAktifClosed);
-            
-            if (!window.isMasaAktifClosed) {
+            if (!newClosed) {
                 content.style.maxWidth = '300px';
                 content.style.opacity = '1';
-                content.style.marginLeft = '0.75rem';
+                content.style.marginLeft = '0.5rem';
                 chevron.style.transform = 'rotate(0deg)';
-                chevron.style.marginLeft = '0.5rem';
+                chevron.style.marginLeft = '0.25rem';
             } else {
                 content.style.maxWidth = '0px';
                 content.style.opacity = '0';
