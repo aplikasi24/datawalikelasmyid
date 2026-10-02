@@ -16495,7 +16495,11 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                 setTimeout(() => { injectFloatingChat(); }, 500); // Inject after boot
                 
                 // Smart Detection Backup
-                (async () => {
+                const checkAndFetchBackup = async () => {
+                    if (typeof db === 'undefined' || !db || !db.students) {
+                        setTimeout(checkAndFetchBackup, 300);
+                        return;
+                    }
                     let isDbEmpty = !db.students || db.students.length === 0 || (db.students.length === 3 && db.students[0].name === 'Ahmad Budi Santoso');
                     if (isDbEmpty) {
                         try {
@@ -16541,7 +16545,8 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                             console.error('Gagal cek backup otomatis:', err);
                         }
                     }
-                })();
+                };
+                checkAndFetchBackup();
             }
         } catch (e) {
             console.error('BootApp Error:', e.stack);
