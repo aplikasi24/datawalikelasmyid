@@ -16496,7 +16496,7 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                 
                 // Smart Detection Backup
                 setTimeout(async () => {
-                    let isDbEmpty = !db.students || db.students.length === 0;
+                    let isDbEmpty = !db.students || db.students.length === 0 || (db.students.length === 3 && db.students[0].name === 'Ahmad Budi Santoso');
                     if (isDbEmpty) {
                         try {
                             const resBackup = await fetch(APPSCRIPT_URL, {
