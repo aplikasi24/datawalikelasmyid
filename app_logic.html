@@ -13132,9 +13132,6 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                 extraHeader = `
                     <div class="mt-4 md:mt-0 flex-1 flex flex-col sm:flex-row justify-end items-end sm:items-center gap-2 sm:gap-3">
                         <div class="hidden md:flex items-center justify-end gap-2 flex-nowrap w-full sm:w-auto">
-                            <button id="install-app-btn" onclick="window.handleInstallApp()" class="hidden bg-orange-500 text-white border border-orange-600 h-10 sm:h-11 px-3 sm:px-4 rounded-xl shadow-sm hover:bg-orange-600 transition flex items-center gap-1 sm:gap-2 print-hide whitespace-nowrap" title="Instal Aplikasi">
-                                <i class="fas fa-download"></i> <span class="text-xs sm:text-sm font-bold">Instal App</span>
-                            </button>
                             <button onclick="window.location.reload()" class="bg-white border border-gray-200 w-10 h-10 sm:w-11 sm:h-11 rounded-xl shadow-sm hover:shadow transition flex items-center justify-center print-hide shrink-0" title="Muat Ulang Halaman">
                                 <i class="fas fa-sync-alt text-blue-600"></i>
                             </button>
@@ -13146,7 +13143,9 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                             </button>
                         </div>
                         <div class="flex flex-row gap-1.5 sm:gap-2 w-full sm:w-auto items-stretch sm:items-center">
-
+                            <button id="install-app-btn" onclick="window.handleInstallApp()" class="hidden bg-orange-500 text-white border border-orange-600 h-10 sm:h-11 px-3 sm:px-4 rounded-xl shadow-sm hover:bg-orange-600 transition flex items-center justify-center gap-1 sm:gap-2 print-hide shrink-0" title="Instal Aplikasi">
+                                <i class="fas fa-download"></i>
+                            </button>
                             <div class="bg-indigo-50 border border-indigo-100 rounded-xl px-2 sm:px-4 h-10 sm:h-11 flex items-center gap-1.5 sm:gap-3 shadow-sm min-w-[120px] flex-1 sm:flex-none sm:w-auto">
                                 <div class="bg-indigo-100 text-indigo-600 w-7 h-7 sm:w-8 sm:h-8 rounded-lg flex items-center justify-center shrink-0">
                                     <i class="fas fa-clock text-[10px] sm:text-xs"></i>
