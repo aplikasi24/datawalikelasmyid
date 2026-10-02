@@ -15138,9 +15138,10 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
         }
 
         function renderRapor() {
+            const t = new Date().getTime();
             return `
                 <div class="absolute inset-0 bg-slate-50 overflow-hidden flex flex-col z-10">
-                    <iframe id="rapor-iframe" src="./raporv3/index.html" class="w-full h-full border-0 block" title="Aplikasi Rapor" allowfullscreen></iframe>
+                    <iframe id="rapor-iframe" src="./raporv3/index.html?t=${t}" class="w-full h-full border-0 block" title="Aplikasi Rapor" allowfullscreen></iframe>
                 </div>
             `;
         }
