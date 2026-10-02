@@ -15170,7 +15170,13 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                 }
             }
 
-            if (pageId === 'koreksi_ujian') {
+            if (pageId === 'rapor') {
+                window.open('./raporv3/index.html', '_blank');
+                return;
+            } else if (pageId === 'kuisgerak') {
+                window.open('./kuisgerak.html', '_blank');
+                return;
+            } else if (pageId === 'koreksi_ujian') {
                 if (!isInternal) {
                     window.koreksiState.view = 'input';
                 }
