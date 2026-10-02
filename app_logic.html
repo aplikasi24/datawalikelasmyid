@@ -16495,7 +16495,7 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                 setTimeout(() => { injectFloatingChat(); }, 500); // Inject after boot
                 
                 // Smart Detection Backup
-                setTimeout(async () => {
+                (async () => {
                     let isDbEmpty = !db.students || db.students.length === 0 || (db.students.length === 3 && db.students[0].name === 'Ahmad Budi Santoso');
                     if (isDbEmpty) {
                         try {
@@ -16519,7 +16519,7 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                                 
                                 Swal.fire({
                                     title: 'Data Backup Ditemukan!',
-                                    html: 'Sistem mendeteksi Anda memiliki data backup terakhir pada:<br><b>' + tglBackup + '</b><br><br>Apakah Anda ingin memulihkan (restore) data tersebut sekarang?',
+                                    html: 'Sistem mendeteksi Anda memiliki data backup terakhir pada:<br><b>' + tglBackup + '</b><br>Nama File: <b class="text-blue-600">' + latestBackup.filename + '</b><br><br>Apakah Anda ingin memulihkan (restore) data tersebut sekarang?',
                                     icon: 'info',
                                     showCancelButton: true,
                                     confirmButtonText: '<i class="fas fa-download"></i> Ya, Pulihkan Data',
@@ -16541,7 +16541,7 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                             console.error('Gagal cek backup otomatis:', err);
                         }
                     }
-                }, 2000);
+                })();
             }
         } catch (e) {
             console.error('BootApp Error:', e.stack);
