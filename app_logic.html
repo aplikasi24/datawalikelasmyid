@@ -15122,10 +15122,6 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
         }
 
         function renderKuisgerak() {
-            setTimeout(() => {
-                const iframe = document.getElementById('kuisgerak-iframe');
-                if (iframe && !iframe.src) iframe.src = 'kuisgerak.html';
-            }, 50);
             return `
                 <div class="bg-slate-50/50 overflow-hidden w-full h-full min-h-[85vh] flex flex-col p-0">
                     <div class="flex items-center gap-3 bg-slate-800 px-4 py-2.5 shrink-0">
@@ -15135,7 +15131,7 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                         <span class="text-white/30 text-xs">|</span>
                         <span class="text-white/80 text-sm font-semibold">🏃 Kuis Gerak</span>
                     </div>
-                    <iframe id="kuisgerak-iframe" class="w-full flex-1 border-0 min-h-[80vh] block" title="Kuis Gerak" allowfullscreen></iframe>
+                    <iframe id="kuisgerak-iframe" src="./kuisgerak.html" class="w-full flex-1 border-0 min-h-[80vh] block" title="Kuis Gerak" allowfullscreen></iframe>
                 </div>
             `;
         }
