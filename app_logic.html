@@ -875,14 +875,11 @@
                     else if (colorClass.includes('bg-yellow-100')) colorClass = 'bg-gradient-to-br from-yellow-400 to-yellow-500';
                     else if (colorClass.includes('bg-indigo-100')) colorClass = 'bg-gradient-to-br from-indigo-500 to-indigo-600';
 
-                    let domain = item.url;
-                    try { domain = new URL(item.url.startsWith('http') ? item.url : 'https://' + item.url).hostname; } catch(e) {}
-
                     html += `
                         <div class="relative group">
                             <a href="${item.url}" target="_blank" class="flex items-center gap-3 ${colorClass} transition-all duration-200 px-3 py-2.5 rounded-xl w-full shadow-md hover:shadow-lg hover:-translate-y-0.5 border border-white/20">
                                 <div class="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 overflow-hidden bg-white/20 backdrop-blur-sm border border-white/30 shadow-inner">
-                                    <img src="https://icons.duckduckgo.com/ip3/${domain}.ico" class="w-5 h-5 object-contain" alt="" onerror="this.style.display='none'; this.parentElement.innerHTML='<i class=\'fas fa-link text-white text-sm\'></i>';">
+                                    <img src="https://www.google.com/s2/favicons?domain=${item.url}&sz=64" class="w-5 h-5 object-contain" alt="" onerror="this.style.display='none'; this.parentElement.innerHTML='<i class=\'fas fa-link text-white text-sm\'></i>';">
                                 </div>
                                 <span class="font-semibold text-sm text-white truncate flex-1">${item.name}</span>
                             </a>
