@@ -5486,7 +5486,22 @@ Terima kasih!`;
         };
 
         function renderJadwal() {
-            let hariHtml = db.hari_efektif.map(hari => {
+        let hariHtml = db.hari_efektif.map((hari, hariIdx) => {
+                const hariColors = {
+                    'Senin':   { bg: 'bg-gradient-to-r from-blue-500 to-blue-600', text: 'text-white', border: 'border-blue-400', icon: '🌙' },
+                    'Selasa':  { bg: 'bg-gradient-to-r from-emerald-500 to-green-600', text: 'text-white', border: 'border-emerald-400', icon: '🌿' },
+                    'Rabu':    { bg: 'bg-gradient-to-r from-purple-500 to-violet-600', text: 'text-white', border: 'border-purple-400', icon: '⭐' },
+                    'Kamis':   { bg: 'bg-gradient-to-r from-orange-500 to-amber-500', text: 'text-white', border: 'border-orange-400', icon: '🔥' },
+                    'Jumat':   { bg: 'bg-gradient-to-r from-pink-500 to-rose-500', text: 'text-white', border: 'border-pink-400', icon: '🌸' },
+                    'Sabtu':   { bg: 'bg-gradient-to-r from-cyan-500 to-teal-500', text: 'text-white', border: 'border-cyan-400', icon: '💧' },
+                    'Minggu':  { bg: 'bg-gradient-to-r from-red-500 to-rose-600', text: 'text-white', border: 'border-red-400', icon: '☀️' },
+                };
+                const fallbackColors = [
+                    { bg: 'bg-gradient-to-r from-indigo-500 to-blue-500', text: 'text-white', border: 'border-indigo-400', icon: '💎' },
+                    { bg: 'bg-gradient-to-r from-teal-500 to-cyan-500', text: 'text-white', border: 'border-teal-400', icon: '🌊' },
+                ];
+                const hc = hariColors[hari] || fallbackColors[hariIdx % fallbackColors.length];
+
                 let jadwalHariIni = db.jadwal.filter(j => j.hari === hari).sort((a,b) => a.jam.localeCompare(b.jam));
                 let items = jadwalHariIni.map(j => `
                     <div class="bg-${j.warna}-100 p-3 rounded-lg border-l-4 border-${j.warna}-500 text-sm relative group pr-16">
@@ -5502,8 +5517,11 @@ Terima kasih!`;
                 return `
                     <div class="flex-1 min-w-0 bg-gray-50 rounded-xl p-3 border border-gray-200 shadow-sm relative group/col">
                         <div class="flex justify-between items-center border-b pb-2 mb-4">
-                            <h3 class="font-bold text-center flex-1 text-gray-700">${hari}</h3>
-                            <button onclick="openModalJadwal('${hari}')" class="text-blue-500 hover:bg-blue-100 w-8 h-8 rounded-full text-sm font-bold flex items-center justify-center transition" title="Tambah Mapel"><i class="fas fa-plus"></i></button>
+                            <div class="${hc.bg} ${hc.text} flex-1 mr-2 px-3 py-1.5 rounded-xl shadow-sm flex items-center justify-center gap-1.5 font-bold text-sm">
+                                <span>${hc.icon}</span>
+                                <span>${hari}</span>
+                            </div>
+                            <button onclick="openModalJadwal('${hari}')" class="text-blue-500 hover:bg-blue-100 w-8 h-8 rounded-full text-sm font-bold flex items-center justify-center transition shrink-0" title="Tambah Mapel"><i class="fas fa-plus"></i></button>
                         </div>
                         <button onclick="hapusHari('${hari}')" class="absolute -top-3 -right-3 bg-red-500 text-white w-6 h-6 rounded-full text-xs shadow hover:bg-red-600 opacity-0 group-hover/col:opacity-100 transition" title="Hapus Hari ini"><i class="fas fa-times"></i></button>
                         <div class="space-y-3">${items || '<p class="text-xs text-center text-gray-400 italic mt-6">Belum ada jadwal</p>'}</div>
