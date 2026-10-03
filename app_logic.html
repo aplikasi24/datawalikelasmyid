@@ -7517,7 +7517,20 @@ Setelah semua baris terisi, tolong berikan kembali kepada saya file Excel terseb
                                 </tr>
                             </thead>
                             <tbody>
-                                ${trs || '<tr><td colspan="10" class="text-center p-8 text-gray-500 bg-gray-50">Belum ada jurnal mengajar. Silakan buat jadwal terlebih dahulu".</td></tr>'}
+                                ${trs || (() => {
+                                    const namaHari = currentDateObj.toLocaleDateString('id-ID', { weekday: 'long' });
+                                    const isHariLibur = !db.hari_efektif.includes(namaHari);
+                                    if (isHariLibur) {
+                                        return `<tr><td colspan="11" class="text-center p-10 bg-gradient-to-br from-emerald-50 to-teal-50">
+                                            <div class="flex flex-col items-center gap-3">
+                                                <div class="text-5xl">🎉</div>
+                                                <p class="text-xl font-bold text-emerald-700">${namaHari} adalah hari libur Anda</p>
+                                                <p class="text-sm text-gray-500">Nikmati hari Anda, tidak ada jadwal mengajar hari ini.</p>
+                                            </div>
+                                        </td></tr>`;
+                                    }
+                                    return `<tr><td colspan="11" class="text-center p-8 text-gray-500 bg-gray-50"><i class="fas fa-book-open text-3xl text-gray-300 block mb-2"></i>Belum ada jurnal mengajar hari ini.<br><span class="text-xs text-gray-400">Klik <b>"Tarik Jadwal"</b> untuk mengisi otomatis dari jadwal mengajar.</span></td></tr>`;
+                                })()}
                             </tbody>
                         </table>
                     </div>
