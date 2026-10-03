@@ -1887,8 +1887,8 @@
             return '#f59e0b'; // orange
         };
 
-        const pointColor = (dataArr) => dataArr.map((v, i) => {
-            if (i === 0 || dataArr[i - 1] === null || v === null) return '#6366f1';
+        const pointColor = (dataArr, defaultColor = '#6366f1') => dataArr.map((v, i) => {
+            if (i === 0 || dataArr[i - 1] === null || v === null) return defaultColor;
             const TOLERANCE = 0.01;
             if (v > dataArr[i - 1] + TOLERANCE) return '#10b981';
             if (v < dataArr[i - 1] - TOLERANCE) return '#ef4444';
@@ -1966,8 +1966,8 @@
                             data: dataKoreksi,
                             borderColor: '#6366f1',
                             backgroundColor: 'transparent',
-                            pointBackgroundColor: pointColor(dataKoreksi),
-                            pointBorderColor: pointColor(dataKoreksi),
+                            pointBackgroundColor: pointColor(dataKoreksi, '#6366f1'),
+                            pointBorderColor: pointColor(dataKoreksi, '#6366f1'),
                             pointRadius: 6,
                             pointHoverRadius: 8,
                             tension: 0.3,
@@ -2082,7 +2082,7 @@
                                 borderColor: '#6366f1',
                                 backgroundColor: 'transparent',
                                 borderWidth: 3,
-                                pointBackgroundColor: pointColor(dataSmt1),
+                                pointBackgroundColor: pointColor(dataSmt1, '#6366f1'),
                                 pointBorderColor: '#fff',
                                 pointBorderWidth: 2,
                                 pointRadius: 6,
@@ -2097,7 +2097,7 @@
                                 borderColor: '#ec4899',
                                 backgroundColor: 'transparent',
                                 borderWidth: 3,
-                                pointBackgroundColor: pointColor(dataSmt2),
+                                pointBackgroundColor: pointColor(dataSmt2, '#ec4899'),
                                 pointBorderColor: '#fff',
                                 pointBorderWidth: 2,
                                 pointRadius: 6,
@@ -2262,7 +2262,7 @@
                             borderColor: '#f97316',
                             backgroundColor: '#ffedd5',
                             borderWidth: 3,
-                            pointBackgroundColor: pointColor(dataTren),
+                            pointBackgroundColor: pointColor(dataTren, '#f97316'),
                             pointBorderColor: '#fff',
                             pointBorderWidth: 2,
                             pointRadius: 6,
@@ -2361,7 +2361,7 @@
                                 borderColor: '#a855f7',
                                 backgroundColor: 'transparent',
                                 borderWidth: 3,
-                                pointBackgroundColor: pointColor(dataSmt1),
+                                pointBackgroundColor: pointColor(dataSmt1, '#6366f1'),
                                 pointBorderColor: '#fff',
                                 pointBorderWidth: 2,
                                 pointRadius: 6,
@@ -2376,7 +2376,7 @@
                                 borderColor: '#10b981',
                                 backgroundColor: 'transparent',
                                 borderWidth: 3,
-                                pointBackgroundColor: pointColor(dataSmt2),
+                                pointBackgroundColor: pointColor(dataSmt2, '#ec4899'),
                                 pointBorderColor: '#fff',
                                 pointBorderWidth: 2,
                                 pointRadius: 6,
