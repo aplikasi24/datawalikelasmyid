@@ -12614,9 +12614,10 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
         };
 
         function renderModulAjarAI() {
-            const defaultGuru = window.currentUser && window.currentUser.nama ? window.currentUser.nama : '';
-            const defaultSekolah = window.currentUser && window.currentUser.sekolah ? window.currentUser.sekolah : '';
-            const defaultKepsek = window.currentUser && window.currentUser.kepsek ? window.currentUser.kepsek : '';
+            const p = window.db && window.db.profil ? window.db.profil : {};
+            const defaultGuru = p.nama || (window.currentUser && window.currentUser.nama ? window.currentUser.nama : '');
+            const defaultSekolah = p.sekolah || (window.currentUser && window.currentUser.sekolah ? window.currentUser.sekolah : '');
+            const defaultKepsek = p.kepsek || '';
 
             return `
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -12771,9 +12772,10 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
 
             if(!mapel || !bab || !materi) return Swal.fire('Perhatian', 'Harap lengkapi Mata Pelajaran, Bab, dan Materi Pokok terlebih dahulu.', 'warning');
             
-            const guruNamaInput = document.getElementById('modul-guru').value || (window.currentUser && window.currentUser.nama ? window.currentUser.nama : '.......................');
-            const instansiInput = document.getElementById('modul-sekolah').value || (window.currentUser && window.currentUser.sekolah ? window.currentUser.sekolah : '.......................');
-            const kepsekInput = document.getElementById('modul-kepsek').value || (window.currentUser && window.currentUser.kepsek ? window.currentUser.kepsek : '.......................');
+            const p = window.db && window.db.profil ? window.db.profil : {};
+            const guruNamaInput = document.getElementById('modul-guru').value || p.nama || (window.currentUser && window.currentUser.nama ? window.currentUser.nama : '.......................');
+            const instansiInput = document.getElementById('modul-sekolah').value || p.sekolah || (window.currentUser && window.currentUser.sekolah ? window.currentUser.sekolah : '.......................');
+            const kepsekInput = document.getElementById('modul-kepsek').value || p.kepsek || '.......................';
 
             let promptText = `Tolong buatkan Modul Ajar Kurikulum Merdeka yang SANGAT LENGKAP dan KOMPREHENSIF dengan kriteria berikut:\n\n` +
                                `- Penyusun: ${guruNamaInput}\n` +
@@ -12836,9 +12838,10 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
             
             if(!mapel || !bab || !materi) return Swal.fire('Perhatian', 'Harap lengkapi Mata Pelajaran, Bab, dan Materi Pokok.', 'warning');
             
-            const guruNamaInput = document.getElementById('modul-guru').value || (window.currentUser && window.currentUser.nama ? window.currentUser.nama : '.......................');
-            let instansiInput = document.getElementById('modul-sekolah').value || (window.currentUser && window.currentUser.sekolah ? window.currentUser.sekolah : '.......................');
-            const kepsekInput = document.getElementById('modul-kepsek').value || (window.currentUser && window.currentUser.kepsek ? window.currentUser.kepsek : '');
+            const p = window.db && window.db.profil ? window.db.profil : {};
+            const guruNamaInput = document.getElementById('modul-guru').value || p.nama || (window.currentUser && window.currentUser.nama ? window.currentUser.nama : '.......................');
+            let instansiInput = document.getElementById('modul-sekolah').value || p.sekolah || (window.currentUser && window.currentUser.sekolah ? window.currentUser.sekolah : '.......................');
+            const kepsekInput = document.getElementById('modul-kepsek').value || p.kepsek || '';
             
             // Markdown injection to add Kepala Sekolah to the table in the backend
             if (kepsekInput) {
