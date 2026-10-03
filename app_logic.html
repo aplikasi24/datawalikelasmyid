@@ -466,21 +466,34 @@
             }, { passive: false });
 
             const gridMenus = appMenus.filter(m => !['dashboard', 'presensi', 'siswa', 'nilai'].includes(m.id));
-            const gridHtml = gridMenus.map(m => {
+            
+            const menuColors = [
+                { bg: 'bg-blue-100', text: 'text-blue-600' },
+                { bg: 'bg-emerald-100', text: 'text-emerald-600' },
+                { bg: 'bg-purple-100', text: 'text-purple-600' },
+                { bg: 'bg-amber-100', text: 'text-amber-600' },
+                { bg: 'bg-rose-100', text: 'text-rose-600' },
+                { bg: 'bg-cyan-100', text: 'text-cyan-600' },
+                { bg: 'bg-indigo-100', text: 'text-indigo-600' },
+                { bg: 'bg-teal-100', text: 'text-teal-600' }
+            ];
+
+            const gridHtml = gridMenus.map((m, index) => {
                 let badgeHtml = '';
                 if (m.id === 'pesan') {
                     const unreadCount = Math.max(0, (db.pesan_info ? db.pesan_info.length : 0) - (db.pengaturan && db.pengaturan.read_pesan_count ? db.pengaturan.read_pesan_count : 0));
                     if (unreadCount > 0) {
-                        badgeHtml = `<span class="absolute -top-1 -right-2 bg-amber-400 text-slate-900 text-[10px] font-bold w-4 h-4 flex items-center justify-center rounded-full shadow-sm">${unreadCount}</span>`;
+                        badgeHtml = `<span class="absolute -top-1 -right-1 bg-red-500 text-white text-[9px] font-bold w-4 h-4 flex items-center justify-center rounded-full shadow-sm z-10">${unreadCount}</span>`;
                     }
                 }
+                const color = menuColors[index % menuColors.length];
                 return `
-                    <div data-nav-target="${m.id}" class="flex flex-col items-center gap-3 cursor-pointer group py-2">
-                        <div class="relative flex items-center justify-center transition-transform transform group-hover:scale-110">
-                            <i class="fas ${m.icon} text-3xl text-primary-500"></i>
+                    <div data-nav-target="${m.id}" class="flex flex-col items-center gap-2 cursor-pointer group py-1">
+                        <div class="relative flex items-center justify-center w-12 h-12 rounded-2xl ${color.bg} ${color.text} transition-transform transform group-hover:scale-110 shadow-sm">
+                            <i class="fas ${m.icon} text-xl"></i>
                             ${badgeHtml}
                         </div>
-                        <span class="text-[11px] font-medium text-slate-700 text-center leading-tight w-full">${m.name}</span>
+                        <span class="text-[9px] font-medium text-slate-700 text-center leading-tight w-full px-1">${m.name}</span>
                     </div>
                 `;
             }).join('');
@@ -497,7 +510,7 @@
                   </button>
                 </div>
                 <div class="p-6 pt-4 overflow-y-auto custom-scrollbar flex-1 pb-12">
-                   <div class="grid grid-cols-3 gap-y-8 gap-x-2" id="menuLainnyaGrid">
+                   <div class="grid grid-cols-4 gap-y-6 gap-x-2" id="menuLainnyaGrid">
                       ${gridHtml}
                    </div>
                 </div>
@@ -4603,7 +4616,7 @@ ${formatInstruction}`;
             let optionsKelas = `<option value="">Semua Kelas</option>` + uniqueClasses.map(k => `<option value="${k}" ${window.currentFilterKelasPresensi === k ? 'selected' : ''}>Kelas ${k}</option>`).join('');
             
             let filterKelasHtml = uniqueClasses.length > 0 ? `
-                <select onchange="window.currentFilterKelasPresensi = this.value; navigateTo('presensi');" class="bg-white border border-blue-200 text-blue-900 font-bold rounded-lg px-3 py-1.5 outline-none focus:ring-2 focus:ring-blue-500 ml-2">
+                <select onchange="window.currentFilterKelasPresensi = this.value; navigateTo('presensi');" class="bg-white border border-blue-200 text-blue-900 font-bold rounded-lg px-2 h-full outline-none focus:ring-2 focus:ring-blue-500 text-xs w-28">
                     ${optionsKelas}
                 </select>
             ` : '';
@@ -4651,51 +4664,49 @@ ${formatInstruction}`;
             
             if (isLiburManual) {
                 const ket = db.libur_dates[window.currentAbsenDate];
-                statusBadge = `<span class="bg-red-100 text-red-800 text-xs px-3 py-1.5 rounded-full font-bold shadow-sm whitespace-nowrap inline-flex items-center"><i class="fas fa-umbrella-beach mr-1"></i> ${ket}</span>`;
-                btnLiburText = '<i class="fas fa-calendar-times"></i> Batalkan Libur';
-                btnLiburClass = 'bg-gray-200 text-gray-700 hover:bg-gray-300';
+                statusBadge = `<span class="text-red-600 text-[10px] font-bold inline-flex items-center"><i class="fas fa-umbrella-beach mr-1"></i> ${ket}</span>`;
+                btnLiburText = '<i class="fas fa-calendar-times"></i><span class="hidden sm:inline ml-1">Batal Libur</span>';
+                btnLiburClass = 'bg-gray-100 text-gray-700 hover:bg-gray-200 border border-gray-200';
             } else if (!db.hari_efektif.includes(namaHariIni)) {
-                statusBadge = '<span class="bg-gray-200 text-gray-800 text-xs px-3 py-1.5 rounded-full font-bold shadow-sm whitespace-nowrap inline-flex items-center"><i class="fas fa-bed mr-1"></i> Libur (Jadwal)</span>';
-                btnLiburText = '<i class="fas fa-umbrella-beach"></i> Set Jadi Libur';
-                btnLiburClass = 'bg-orange-100 text-orange-600 hover:bg-orange-200 border border-orange-200';
+                statusBadge = `<span class="text-gray-500 text-[10px] font-bold inline-flex items-center"><i class="fas fa-bed mr-1"></i> Libur (Jadwal)</span>`;
+                btnLiburText = '<i class="fas fa-umbrella-beach"></i><span class="hidden sm:inline ml-1">Set Libur</span>';
+                btnLiburClass = 'bg-orange-50 text-orange-600 hover:bg-orange-100 border border-orange-200';
             } else {
                 statusBadge = '';
-                btnLiburText = '<i class="fas fa-umbrella-beach"></i> Set Jadi Libur';
-                btnLiburClass = 'bg-orange-100 text-orange-600 hover:bg-orange-200 border border-orange-200';
+                btnLiburText = '<i class="fas fa-umbrella-beach"></i><span class="hidden sm:inline ml-1">Set Libur</span>';
+                btnLiburClass = 'bg-orange-50 text-orange-600 hover:bg-orange-100 border border-orange-200';
             }
             
-            const btnLibur = `<button onclick="window.toggleLibur()" class="${btnLiburClass} px-3 py-1.5 rounded-lg font-bold shadow-sm transition text-sm flex items-center gap-2 whitespace-nowrap">${btnLiburText}</button>`;
+            const btnLibur = `<button onclick="window.toggleLibur()" class="${btnLiburClass} h-9 px-2.5 rounded-lg shadow-sm transition text-xs flex items-center font-bold">${btnLiburText}</button>`;
 
             return `
-                <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden mb-6">
-                    <!-- Baris 1: Navigasi Tanggal -->
-                    <div class="px-3 py-2.5 bg-blue-50 border-b border-blue-100 flex flex-wrap items-center gap-2">
-                        <!-- Navigasi kiri -->
-                        <div class="flex items-center gap-1.5">
-                            <button onclick="ubahTanggalAbsen(-1)" class="bg-white text-blue-600 hover:bg-blue-100 px-2.5 py-1.5 rounded-lg shadow-sm border border-blue-200 transition font-bold text-sm"><i class="fas fa-chevron-left"></i></button>
-                            <input type="date" value="${window.currentAbsenDate}" onchange="setTanggalAbsen(event)" class="bg-white border border-blue-200 text-blue-900 font-bold rounded-lg px-2.5 py-1.5 outline-none focus:ring-2 focus:ring-blue-500 text-sm">
-                            <button onclick="ubahTanggalAbsen(1)" class="bg-white text-blue-600 hover:bg-blue-100 px-2.5 py-1.5 rounded-lg shadow-sm border border-blue-200 transition font-bold text-sm"><i class="fas fa-chevron-right"></i></button>
-                            <button onclick="kembaliKeHariIni()" title="Kembali ke Tanggal Hari Ini" class="bg-red-100 text-red-600 hover:bg-red-200 px-2.5 py-1.5 rounded-lg shadow-sm border border-red-200 transition font-bold text-xs flex items-center gap-1"><i class="fas fa-calendar-day"></i> <span class="hidden sm:inline">Hari Ini</span></button>
+                <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden mb-4">
+                    <div class="p-2.5 bg-blue-50/50 flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3 border-b border-blue-100">
+                        <div class="flex flex-wrap items-center gap-2">
+                            <div class="flex items-center gap-0 bg-white border border-blue-200 rounded-lg p-0.5 shadow-sm">
+                                <button onclick="ubahTanggalAbsen(-1)" class="text-blue-600 hover:bg-blue-50 w-8 h-8 flex items-center justify-center rounded-md font-bold text-sm transition"><i class="fas fa-chevron-left"></i></button>
+                                <input type="date" value="${window.currentAbsenDate}" onchange="setTanggalAbsen(event)" class="bg-transparent text-blue-900 font-bold outline-none text-xs w-[105px] text-center border-x border-blue-100 px-1">
+                                <button onclick="ubahTanggalAbsen(1)" class="text-blue-600 hover:bg-blue-50 w-8 h-8 flex items-center justify-center rounded-md font-bold text-sm transition"><i class="fas fa-chevron-right"></i></button>
+                            </div>
+                            <button onclick="kembaliKeHariIni()" title="Kembali ke Tanggal Hari Ini" class="bg-red-50 text-red-600 hover:bg-red-100 h-9 px-2.5 rounded-lg shadow-sm border border-red-200 transition font-bold text-xs flex items-center gap-1.5"><i class="fas fa-calendar-day"></i><span class="hidden sm:inline">Hari Ini</span></button>
+                            ${filterKelasHtml ? `<div class="h-9">${filterKelasHtml}</div>` : ''}
                         </div>
-                        <!-- Filter Kelas (jika ada) -->
-                        <div class="flex items-center gap-1.5 ml-0">
-                            ${filterKelasHtml}
+                        
+                        <div class="flex items-center justify-between md:justify-end gap-2 flex-wrap">
+                            <div class="flex flex-col items-start md:items-end mr-auto md:mr-2">
+                                <div class="font-bold text-blue-900 text-xs">${displayDateStr} ${!isHariEfektif ? '<i class="fas fa-ban text-red-500 ml-1"></i>' : ''}</div>
+                                <div class="mt-0.5">${statusBadge}</div>
+                            </div>
+                            <div class="flex items-center gap-1.5 shrink-0">
+                                ${btnLibur}
+                                <button onclick="window.cetakRekapExcelBulanIni()" title="Unduh Excel" class="bg-green-600 text-white w-9 h-9 flex items-center justify-center rounded-lg shadow hover:bg-green-700 transition text-sm">
+                                    <i class="fas fa-file-excel"></i>
+                                </button>
+                                <button onclick="openModalCetakAbsen()" title="Unduh Rekap" class="bg-red-600 text-white w-9 h-9 flex items-center justify-center rounded-lg shadow hover:bg-red-700 transition text-sm">
+                                    <i class="fas fa-file-pdf"></i>
+                                </button>
+                            </div>
                         </div>
-                        <!-- Label Tanggal + Status -->
-                        <div class="flex items-center gap-2 flex-1 justify-end flex-wrap">
-                            <span class="font-bold text-blue-900 text-sm whitespace-nowrap">${displayDateStr} ${!isHariEfektif ? '<i class="fas fa-ban text-red-500 text-xs" title="Tidak ada di jadwal atau Libur"></i>' : ''}</span>
-                            ${statusBadge}
-                        </div>
-                    </div>
-                    <!-- Baris 2: Tombol Aksi -->
-                    <div class="px-3 py-2 bg-blue-50/60 border-b border-blue-100 flex items-center gap-2 flex-wrap justify-end">
-                        ${btnLibur}
-                        <button onclick="window.cetakRekapExcelBulanIni()" class="bg-green-600 text-white px-3 py-1.5 rounded-lg font-bold shadow hover:bg-green-700 transition text-xs flex items-center gap-1.5 whitespace-nowrap">
-                            <i class="fas fa-file-excel"></i> <span>Unduh Excel</span>
-                        </button>
-                        <button onclick="openModalCetakAbsen()" class="bg-red-600 text-white px-3 py-1.5 rounded-lg font-bold shadow hover:bg-red-700 transition text-xs flex items-center gap-1.5 whitespace-nowrap">
-                            <i class="fas fa-file-pdf"></i> <span>Unduh Rekap</span>
-                        </button>
                     </div>
                     <div class="overflow-x-auto">
                         <table class="w-full text-left border-collapse whitespace-nowrap border-t border-gray-200">
@@ -13246,10 +13257,10 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                 `;
             } else if (menuId === 'presensi') {
                 extraHeader = `
-                    <div class="mt-4 md:mt-0 md:ml-6 flex-1 flex justify-start md:justify-end">
-                        <div class="bg-white border border-gray-200 shadow-sm rounded-xl px-4 py-2 flex items-center gap-3 w-full md:w-auto overflow-x-auto">
-                            <label class="text-sm font-bold text-gray-700 whitespace-nowrap"><i class="fas fa-calendar-alt text-blue-500 mr-2"></i>Mulai Presensi:</label>
-                            <input id="input-tgl-presensi" type="date" value="${db.tglMulaiPresensi || '2026-07-13'}" onchange="window.simpanTglMulaiPresensi(event)" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm font-bold rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-1.5 cursor-pointer outline-none">
+                    <div class="mt-3 md:mt-0 md:ml-6 flex-1 flex justify-start md:justify-end">
+                        <div class="bg-white border border-gray-200 shadow-sm rounded-lg px-3 py-1.5 flex items-center gap-2 w-full md:w-auto overflow-x-auto">
+                            <label class="text-xs font-bold text-gray-700 whitespace-nowrap"><i class="fas fa-calendar-alt text-blue-500 mr-1.5"></i>Mulai Presensi:</label>
+                            <input id="input-tgl-presensi" type="date" value="${db.tglMulaiPresensi || '2026-07-13'}" onchange="window.simpanTglMulaiPresensi(event)" class="bg-gray-50 border border-gray-200 text-gray-900 text-xs font-bold rounded-md px-1.5 py-1 cursor-pointer outline-none w-[110px]">
                         </div>
                     </div>
                 `;
