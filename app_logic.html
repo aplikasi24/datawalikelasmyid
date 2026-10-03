@@ -1998,7 +1998,7 @@
                                         const cur = dataKoreksi[i];
                                         if (prev === null || cur === null || i === 0) return '';
                                         const diff = (cur - prev).toFixed(1);
-                                        return diff > 0 ? `\\u25B2 Naik ${diff}` : diff < 0 ? `\\u25BC Turun ${Math.abs(diff)}` : `\\u2192 Tetap`;
+                                        return diff > 0 ? `↗️ Naik ${diff}` : diff < 0 ? `↘️ Turun ${Math.abs(diff)}` : `➡️ Tetap`;
                                     }
                                 }
                             }
@@ -2126,7 +2126,7 @@
                                         const cur = dataArr[i];
                                         if (prev === null || cur === null || i === 0) return '';
                                         const diff = (cur - prev).toFixed(1);
-                                        return diff > 0 ? `\\u25B2 Naik ${diff}` : diff < 0 ? `\\u25BC Turun ${Math.abs(diff)}` : `\\u2192 Tetap`;
+                                        return diff > 0 ? `↗️ Naik ${diff}` : diff < 0 ? `↘️ Turun ${Math.abs(diff)}` : `➡️ Tetap`;
                                     }
                                 }
                             }
