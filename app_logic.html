@@ -5621,12 +5621,16 @@ Terima kasih!`;
                 
                 return `
                     <div class="flex-1 min-w-0 bg-gray-50 rounded-xl p-3 border border-gray-200 shadow-sm relative group/col">
-                        <div class="flex justify-between items-center border-b pb-2 mb-4">
-                            <div class="${hc.bg} ${hc.text} flex-1 mr-2 px-3 py-1.5 rounded-xl shadow-sm flex items-center justify-center gap-1.5 font-bold text-sm">
-                                <span>${hc.icon}</span>
-                                <span>${hari}</span>
+                        <div class="border-b pb-2 mb-4">
+                            <div class="${hc.bg} ${hc.text} w-full px-3 py-1.5 rounded-xl shadow-sm flex items-center justify-between font-bold text-sm">
+                                <div class="flex items-center justify-center gap-1.5 flex-1 pl-7">
+                                    <span>${hc.icon}</span>
+                                    <span>${hari}</span>
+                                </div>
+                                <button onclick="openModalJadwal('${hari}')" class="text-white hover:bg-white/20 w-7 h-7 rounded-full text-sm font-bold flex items-center justify-center transition shrink-0" title="Tambah Mapel">
+                                    <i class="fas fa-plus"></i>
+                                </button>
                             </div>
-                            <button onclick="openModalJadwal('${hari}')" class="text-blue-500 hover:bg-blue-100 w-8 h-8 rounded-full text-sm font-bold flex items-center justify-center transition shrink-0" title="Tambah Mapel"><i class="fas fa-plus"></i></button>
                         </div>
                         <button onclick="hapusHari('${hari}')" class="absolute -top-3 -right-3 bg-red-500 text-white w-6 h-6 rounded-full text-xs shadow hover:bg-red-600 opacity-0 group-hover/col:opacity-100 transition" title="Hapus Hari ini"><i class="fas fa-times"></i></button>
                         <div class="space-y-3">${items || '<p class="text-xs text-center text-gray-400 italic mt-6">Belum ada jadwal</p>'}</div>
