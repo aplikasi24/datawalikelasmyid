@@ -12614,7 +12614,7 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
         };
 
         function renderModulAjarAI() {
-            const p = window.db && window.db.profil ? window.db.profil : {};
+            const p = window.db && window.db.pengaturan ? window.db.pengaturan : {};
             const defaultGuru = p.nama || (window.currentUser && window.currentUser.nama ? window.currentUser.nama : '');
             const defaultSekolah = p.sekolah || (window.currentUser && window.currentUser.sekolah ? window.currentUser.sekolah : '');
             const defaultKepsek = p.kepsek || '';
@@ -12772,7 +12772,7 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
 
             if(!mapel || !bab || !materi) return Swal.fire('Perhatian', 'Harap lengkapi Mata Pelajaran, Bab, dan Materi Pokok terlebih dahulu.', 'warning');
             
-            const p = window.db && window.db.profil ? window.db.profil : {};
+            const p = window.db && window.db.pengaturan ? window.db.pengaturan : {};
             const guruNamaInput = document.getElementById('modul-guru').value || p.nama || (window.currentUser && window.currentUser.nama ? window.currentUser.nama : '.......................');
             const instansiInput = document.getElementById('modul-sekolah').value || p.sekolah || (window.currentUser && window.currentUser.sekolah ? window.currentUser.sekolah : '.......................');
             const kepsekInput = document.getElementById('modul-kepsek').value || p.kepsek || '.......................';
@@ -12838,7 +12838,7 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
             
             if(!mapel || !bab || !materi) return Swal.fire('Perhatian', 'Harap lengkapi Mata Pelajaran, Bab, dan Materi Pokok.', 'warning');
             
-            const p = window.db && window.db.profil ? window.db.profil : {};
+            const p = window.db && window.db.pengaturan ? window.db.pengaturan : {};
             const guruNamaInput = document.getElementById('modul-guru').value || p.nama || (window.currentUser && window.currentUser.nama ? window.currentUser.nama : '.......................');
             let instansiInput = document.getElementById('modul-sekolah').value || p.sekolah || (window.currentUser && window.currentUser.sekolah ? window.currentUser.sekolah : '.......................');
             const kepsekInput = document.getElementById('modul-kepsek').value || p.kepsek || '';
