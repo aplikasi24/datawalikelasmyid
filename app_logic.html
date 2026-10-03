@@ -4649,8 +4649,10 @@ ${formatInstruction}`;
                     `;
                 } else {
                     absenColsHtml = `
-                    <td colspan="4" class="py-2 px-3 text-center border border-gray-200 bg-gray-50 text-gray-400 font-bold tracking-widest uppercase text-xs">
-                        <i class="fas fa-bed mr-1"></i> Libur
+                    <td colspan="4" class="py-1.5 px-2 text-center border border-gray-200 bg-gradient-to-r from-rose-50 via-orange-50 to-amber-50">
+                        <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/80 backdrop-blur border border-orange-200 shadow-sm text-orange-600 font-extrabold tracking-[0.2em] uppercase text-[10px]">
+                            <i class="fas fa-umbrella-beach"></i> Libur
+                        </span>
                     </td>
                     `;
                 }
@@ -5221,6 +5223,11 @@ ${formatInstruction}`;
                                         <option value="yellow" ${j && j.warna === 'yellow' ? 'selected' : ''}>Kuning</option>
                                         <option value="red" ${j && j.warna === 'red' ? 'selected' : ''}>Merah</option>
                                         <option value="purple" ${j && j.warna === 'purple' ? 'selected' : ''}>Ungu</option>
+                                        <option value="indigo" ${j && j.warna === 'indigo' ? 'selected' : ''}>Indigo</option>
+                                        <option value="pink" ${j && j.warna === 'pink' ? 'selected' : ''}>Merah Muda</option>
+                                        <option value="orange" ${j && j.warna === 'orange' ? 'selected' : ''}>Oranye</option>
+                                        <option value="teal" ${j && j.warna === 'teal' ? 'selected' : ''}>Teal</option>
+                                        <option value="cyan" ${j && j.warna === 'cyan' ? 'selected' : ''}>Cyan</option>
                                     </select>
                                 </div>
                             </div>
@@ -5478,6 +5485,80 @@ Terima kasih!`;
             XLSX.writeFile(wb, "Jadwal_Mengajar.xlsx");
         };
 
+        window.downloadJadwalPDF = () => {
+            let trs = '';
+            let totalJp = 0;
+            
+            db.hari_efektif.forEach(hari => {
+                let jadwalHariIni = db.jadwal.filter(j => j.hari === hari).sort((a,b) => a.jam.localeCompare(b.jam));
+                if (jadwalHariIni.length > 0) {
+                    jadwalHariIni.forEach((j, i) => {
+                        totalJp += parseInt(j.jp || 2);
+                        trs += `
+                            <tr>
+                                ${i === 0 ? `<td rowspan="${jadwalHariIni.length}" style="border: 1px solid #ccc; padding: 8px; font-weight: bold; text-align: center; vertical-align: top;">${hari}</td>` : ''}
+                                <td style="border: 1px solid #ccc; padding: 8px; text-align: center;">${j.jam}</td>
+                                <td style="border: 1px solid #ccc; padding: 8px;">${j.mapel}</td>
+                                <td style="border: 1px solid #ccc; padding: 8px; text-align: center;">${j.jp || 2} JP</td>
+                            </tr>
+                        `;
+                    });
+                } else {
+                    trs += `
+                        <tr>
+                            <td style="border: 1px solid #ccc; padding: 8px; font-weight: bold; text-align: center;">${hari}</td>
+                            <td colspan="3" style="border: 1px solid #ccc; padding: 8px; text-align: center; font-style: italic; color: #888;">Libur / Tidak ada jadwal</td>
+                        </tr>
+                    `;
+                }
+            });
+
+            const html = `
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <title>Jadwal Mengajar</title>
+                    <style>
+                        @page { size: portrait; margin: 15mm; }
+                        body { font-family: Arial, sans-serif; padding: 0; color: #333; }
+                        h2 { text-align: center; margin-bottom: 20px; font-size: 20px; text-transform: uppercase; }
+                        table { width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 14px; }
+                        th { background: #f4f4f4; border: 1px solid #ccc; padding: 10px; font-weight: bold; text-align: center; }
+                        .total-row td { background: #e8f5e9; font-weight: bold; }
+                    </style>
+                </head>
+                <body>
+                    <h2>Jadwal Mengajar Wali Kelas</h2>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th style="width: 20%;">Hari</th>
+                                <th style="width: 25%;">Jam</th>
+                                <th style="width: 40%;">Mata Pelajaran</th>
+                                <th style="width: 15%;">JP</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${trs}
+                            <tr class="total-row">
+                                <td colspan="3" style="border: 1px solid #ccc; padding: 8px; text-align: right;">Total Jam Pelajaran</td>
+                                <td style="border: 1px solid #ccc; padding: 8px; text-align: center;">${totalJp} JP</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <script>
+                        window.onload = () => { setTimeout(() => { window.print(); }, 500); }
+                    <\/script>
+                </body>
+                </html>
+            `;
+
+            const printWin = window.open('', '_blank');
+            printWin.document.open();
+            printWin.document.write(html);
+            printWin.document.close();
+        };
+
         window.importJadwal = (e) => {
             const file = e.target.files[0];
             if(!file) return;
@@ -5566,6 +5647,9 @@ Terima kasih!`;
                             </button>
                             <button onclick="window.exportJadwal()" class="bg-green-600 text-white px-3 py-2 rounded-xl hover:bg-green-700 transition shadow font-medium text-xs md:text-sm flex items-center gap-2 whitespace-nowrap">
                                 <i class="fas fa-file-excel"></i> Export
+                            </button>
+                            <button onclick="window.downloadJadwalPDF()" class="bg-red-600 text-white px-3 py-2 rounded-xl hover:bg-red-700 transition shadow font-medium text-xs md:text-sm flex items-center gap-2 whitespace-nowrap">
+                                <i class="fas fa-file-pdf"></i> PDF
                             </button>
                             <label class="bg-yellow-500 text-white px-3 py-2 rounded-xl hover:bg-yellow-600 transition shadow font-medium text-xs md:text-sm flex items-center gap-2 cursor-pointer whitespace-nowrap">
                                 <i class="fas fa-upload"></i> Import
@@ -10961,9 +11045,14 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                                 ${cbHari}
                             </div>
                         </div>
-                            </div>
+                        </div>
+                        <div class="mt-4 pt-4 border-t border-slate-100 flex justify-end">
+                            <button onclick="window.hapusSemuaDataKas()" class="bg-red-50 text-red-600 border border-red-200 hover:bg-red-100 px-4 py-2 rounded-xl text-sm font-bold shadow-sm transition flex items-center gap-2">
+                                <i class="fas fa-trash-alt"></i> Hapus Semua Data Kas
+                            </button>
                         </div>
                     </div>
+                </div>
                 </div>
 
                 <!-- Tabel Pembayaran -->
@@ -11288,6 +11377,22 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
             saveDB();
             // Retain the current date index across re-renders
             navigateTo('kas_kelas');
+        };
+
+        window.hapusSemuaDataKas = () => {
+            const input = prompt("Peringatan: Aksi ini akan menghapus semua data pembayaran, pengeluaran, dan pemasukan lain kas kelas secara permanen. Ketik 'hapus' untuk melanjutkan:");
+            if (input === 'hapus') {
+                if (db.kas_kelas) {
+                    db.kas_kelas.pembayaran = {};
+                    db.kas_kelas.pengeluaran = [];
+                    db.kas_kelas.pemasukan_lain = [];
+                    saveDB();
+                    window.showAlert("Semua data kas kelas berhasil dihapus.");
+                    navigateTo('kas_kelas');
+                }
+            } else if (input !== null) {
+                window.showAlert("Konfirmasi gagal. Kata kunci salah.");
+            }
         };
 
         window.navigasiHariKas = (dir) => {
@@ -12906,16 +13011,12 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
             let instansiInput = document.getElementById('modul-sekolah').value || p.sekolah || (window.currentUser && window.currentUser.sekolah ? window.currentUser.sekolah : '.......................');
             const kepsekInput = document.getElementById('modul-kepsek').value || p.kepsek || '';
             
-            // Markdown injection to add Kepala Sekolah to the table in the backend
-            if (kepsekInput) {
-                instansiInput += ` |\n| **Kepala Sekolah** | ${kepsekInput}`;
-            }
-
             const payload = {
                 email: window.currentUser.email,
                 mapel, fase, kelas, bab, cp, materi, waktu, model, aiEngine,
                 guruNama: guruNamaInput,
-                instansi: instansiInput
+                instansi: instansiInput,
+                kepsek: kepsekInput
             };
 
             const btn = document.getElementById('btn-generate-modul');
