@@ -12346,7 +12346,17 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                     }, 300);
                     Swal.fire('Sukses', 'Soal berhasil dibuat!', 'success');
                 } else {
-                    Swal.fire('Gagal', res.message || 'Terjadi kesalahan.', 'error');
+                    let errMsg = res.message || 'Terjadi kesalahan.';
+                    // Hapus tulisan "Available Groq Models" jika yang dipilih bukan groq (karena dari backend di hardcode)
+                    if (apiProvider !== 'groq' && errMsg.includes('Available Groq Models:')) {
+                        errMsg = errMsg.split('\\n\\nAvailable Groq Models:')[0];
+                        errMsg = errMsg.split('\n\nAvailable Groq Models:')[0];
+                    }
+                    // Pesan yang lebih ramah jika API sedang error 503 / High Demand
+                    if (errMsg.includes('503') || errMsg.includes('experiencing high demand')) {
+                        errMsg = 'Layanan ' + (apiProvider === 'gemini' ? 'Google Gemini' : (apiProvider === 'mistral' ? 'Mistral AI' : 'AI')) + ' sedang penuh (High Demand). Silakan coba lagi beberapa saat lagi atau ganti pilihan Model API Anda.';
+                    }
+                    Swal.fire('Gagal', errMsg, 'error');
                 }
             })
             .catch(err => {
