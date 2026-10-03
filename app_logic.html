@@ -4630,24 +4630,36 @@ ${formatInstruction}`;
             let trs = filteredStudents.map((s, index) => {
                 const status = isHariEfektif ? (currentData[s.id] || '') : '';
                 const recap = monthlyRecap[s.id];
-                const dAttr = isHariEfektif ? '' : 'disabled title="Libur/Tidak ada Jadwal"';
-                const cCls = isHariEfektif ? 'cursor-pointer' : 'cursor-not-allowed opacity-40';
+                
+                let absenColsHtml = '';
+                if (isHariEfektif) {
+                    absenColsHtml = `
+                    <td class="py-2 px-3 text-center border border-gray-200">
+                        <input type="radio" name="absen_${s.id}" value="Hadir" onchange="simpanAbsen(${s.id}, 'Hadir')" ${status === 'Hadir' ? 'checked' : ''} class="w-4 h-4 cursor-pointer">
+                    </td>
+                    <td class="py-2 px-3 text-center border border-gray-200">
+                        <input type="radio" name="absen_${s.id}" value="Sakit" onchange="simpanAbsen(${s.id}, 'Sakit')" ${status === 'Sakit' ? 'checked' : ''} class="w-4 h-4 cursor-pointer">
+                    </td>
+                    <td class="py-2 px-3 text-center border border-gray-200">
+                        <input type="radio" name="absen_${s.id}" value="Izin" onchange="simpanAbsen(${s.id}, 'Izin')" ${status === 'Izin' ? 'checked' : ''} class="w-4 h-4 cursor-pointer">
+                    </td>
+                    <td class="py-2 px-3 text-center border border-gray-200">
+                        <input type="radio" name="absen_${s.id}" value="Alpa" onchange="simpanAbsen(${s.id}, 'Alpa')" ${status === 'Alpa' ? 'checked' : ''} class="w-4 h-4 cursor-pointer">
+                    </td>
+                    `;
+                } else {
+                    absenColsHtml = `
+                    <td colspan="4" class="py-2 px-3 text-center border border-gray-200 bg-gray-50 text-gray-400 font-bold tracking-widest uppercase text-xs">
+                        <i class="fas fa-bed mr-1"></i> Libur
+                    </td>
+                    `;
+                }
+
                 return `
                 <tr class="hover:bg-blue-50 transition-colors">
                     <td class="py-2 px-3 text-center border border-gray-200">${index + 1}</td>
                     <td class="py-2 px-3 font-medium border border-gray-200 text-gray-800">${s.name}</td>
-                    <td class="py-2 px-3 text-center border border-gray-200">
-                        <input type="radio" name="absen_${s.id}" value="Hadir" onchange="simpanAbsen(${s.id}, 'Hadir')" ${status === 'Hadir' ? 'checked' : ''} ${dAttr} class="w-4 h-4 ${cCls}">
-                    </td>
-                    <td class="py-2 px-3 text-center border border-gray-200">
-                        <input type="radio" name="absen_${s.id}" value="Sakit" onchange="simpanAbsen(${s.id}, 'Sakit')" ${status === 'Sakit' ? 'checked' : ''} ${dAttr} class="w-4 h-4 ${cCls}">
-                    </td>
-                    <td class="py-2 px-3 text-center border border-gray-200">
-                        <input type="radio" name="absen_${s.id}" value="Izin" onchange="simpanAbsen(${s.id}, 'Izin')" ${status === 'Izin' ? 'checked' : ''} ${dAttr} class="w-4 h-4 ${cCls}">
-                    </td>
-                    <td class="py-2 px-3 text-center border border-gray-200">
-                        <input type="radio" name="absen_${s.id}" value="Alpa" onchange="simpanAbsen(${s.id}, 'Alpa')" ${status === 'Alpa' ? 'checked' : ''} ${dAttr} class="w-4 h-4 ${cCls}">
-                    </td>
+                    ${absenColsHtml}
                     <td id="recap-hadir-${s.id}" class="py-2 px-3 text-center border border-gray-200 text-green-700 font-bold bg-green-50">${recap.Hadir}</td>
                     <td id="recap-sakit-${s.id}" class="py-2 px-3 text-center border border-gray-200 text-yellow-700 font-bold bg-yellow-50">${recap.Sakit}</td>
                     <td id="recap-izin-${s.id}" class="py-2 px-3 text-center border border-gray-200 text-orange-700 font-bold bg-orange-50">${recap.Izin}</td>
