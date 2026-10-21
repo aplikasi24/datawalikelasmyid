@@ -8922,9 +8922,10 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
         window.autoSavePengaturan = () => {
             const form = document.getElementById('form-pengaturan');
             if (!form) return;
+            const newNama = form.nama.value;
             db.pengaturan = {
                 ...db.pengaturan,
-                nama: form.nama.value,
+                nama: newNama,
                 nip: form.nip.value,
                 sekolah: form.sekolah.value,
                 kelas: form.kelas.value,
@@ -8935,8 +8936,8 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                 npsn: form.npsn.value
             };
             if (window.currentUser) {
-                window.currentUser.nama = form.nama.value;
-                window.currentUser.name = form.nama.value;
+                window.currentUser.nama = newNama;
+                window.currentUser.name = newNama;
                 try {
                     localStorage.setItem('currentUser', JSON.stringify(window.currentUser));
                     localStorage.setItem('auth_user', JSON.stringify(window.currentUser));
@@ -8946,6 +8947,105 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
             window.addAktivitas && window.addAktivitas('pengaturan', 'Pengaturan diperbarui', 'Profil/Identitas');
             saveDB();
             window.updateUIIdentitas();
+
+            // Debounce kirim perubahan nama ke database server
+            if (window.currentUser && window.currentUser.email && newNama && newNama.trim() && typeof APPSCRIPT_URL !== 'undefined') {
+                const trimmed = newNama.trim();
+                if (trimmed !== (window._lastSyncedNama || '')) {
+                    clearTimeout(window._debounceUpdateNamaTimer);
+                    window._debounceUpdateNamaTimer = setTimeout(() => {
+                        window._lastSyncedNama = trimmed;
+                        fetch(APPSCRIPT_URL, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                            body: new URLSearchParams({
+                                action: 'updateNama',
+                                data: JSON.stringify({ email: window.currentUser.email, nama: trimmed })
+                            })
+                        }).catch(e => console.log('Autosave nama to server offline:', e));
+                    }, 1200);
+                }
+            }
+        };
+
+        window.editNamaLengkap = async () => {
+            const curNama = (db.pengaturan && db.pengaturan.nama) || (window.currentUser && window.currentUser.nama) || '';
+            const { value: newNama } = await Swal.fire({
+                title: 'Edit Nama Lengkap',
+                input: 'text',
+                inputLabel: 'Masukkan Nama Lengkap Anda beserta Gelar:',
+                inputValue: curNama,
+                placeholder: 'Contoh: Ahmad Budi Santoso, S.Pd.',
+                showCancelButton: true,
+                confirmButtonText: '<i class="fas fa-save mr-1"></i> Simpan Perubahan',
+                cancelButtonText: 'Batal',
+                confirmButtonColor: '#2563eb',
+                cancelButtonColor: '#64748b',
+                customClass: {
+                    popup: 'rounded-2xl',
+                    confirmButton: 'rounded-xl px-5 py-2.5 font-bold',
+                    cancelButton: 'rounded-xl px-4 py-2.5 font-medium'
+                },
+                inputValidator: (val) => {
+                    if (!val || !val.trim()) return 'Nama lengkap tidak boleh kosong!';
+                }
+            });
+
+            if (newNama !== undefined && newNama.trim()) {
+                const trimmed = newNama.trim();
+                if (!db.pengaturan) db.pengaturan = {};
+                db.pengaturan.nama = trimmed;
+                
+                const inputForm = document.querySelector('#form-pengaturan input[name="nama"]');
+                if (inputForm) inputForm.value = trimmed;
+                const profileNama = document.getElementById('pengaturan-profile-nama');
+                if (profileNama) profileNama.innerText = trimmed;
+
+                if (window.currentUser) {
+                    window.currentUser.nama = trimmed;
+                    window.currentUser.name = trimmed;
+                    try {
+                        localStorage.setItem('currentUser', JSON.stringify(window.currentUser));
+                        localStorage.setItem('auth_user', JSON.stringify(window.currentUser));
+                        document.cookie = "auth_user=" + encodeURIComponent(JSON.stringify(window.currentUser)) + "; max-age=31536000; path=/";
+                    } catch(e) {}
+                }
+                
+                saveDB();
+                window.updateUIIdentitas();
+                window.addAktivitas && window.addAktivitas('pengaturan', 'Nama guru diperbarui menjadi ' + trimmed, 'Profil/Identitas');
+
+                // Sinkronkan nama ke database server (code.gs)
+                window._lastSyncedNama = trimmed;
+                if (window.currentUser && window.currentUser.email && typeof APPSCRIPT_URL !== 'undefined') {
+                    fetch(APPSCRIPT_URL, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                        body: new URLSearchParams({
+                            action: 'updateNama',
+                            data: JSON.stringify({ email: window.currentUser.email, nama: trimmed })
+                        })
+                    })
+                    .then(r => r.json())
+                    .then(res => {
+                        if (res.status === 'success') {
+                            console.log('Nama berhasil diperbarui di server database:', res.nama);
+                        } else {
+                            console.warn('Gagal sinkron nama ke server:', res.message);
+                        }
+                    })
+                    .catch(e => console.log('Update nama server offline:', e));
+                }
+                
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Berhasil Disimpan',
+                    text: 'Nama Lengkap berhasil diperbarui menjadi: ' + trimmed,
+                    timer: 1600,
+                    showConfirmButton: false,
+                    customClass: { popup: 'rounded-2xl' }
+                });
+            }
         };
 
         function renderPengaturan() {
@@ -8993,19 +9093,27 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                             }
                         </div>
                         <div class="flex-1">
-                            <p id="pengaturan-profile-nama" class="font-bold text-gray-800 text-xl mb-1">${p.nama || 'Wali Kelas'}</p>
+                            <div class="flex items-center gap-2 mb-1 flex-wrap">
+                                <p id="pengaturan-profile-nama" class="font-bold text-gray-800 text-xl">${p.nama || 'Wali Kelas'}</p>
+                                <button type="button" onclick="window.editNamaLengkap()" class="text-xs bg-blue-50 text-blue-600 hover:bg-blue-100 hover:text-blue-700 px-2.5 py-1 rounded-md font-medium transition inline-flex items-center gap-1 border border-blue-200 shadow-sm cursor-pointer" title="Edit nama guru">
+                                    <i class="fas fa-edit"></i> Edit Nama
+                                </button>
+                            </div>
                             <p id="pengaturan-profile-nip" class="text-sm text-gray-500 mb-3">NIP. ${p.nip || '-'}</p>
                             <div class="flex flex-wrap gap-2">
                                 ${p.foto 
                                     ? `<div class="text-xs bg-gray-100 text-gray-400 px-3 py-1.5 rounded-lg cursor-not-allowed font-medium inline-flex items-center gap-1 shadow-sm border border-gray-200" title="Hapus foto lama terlebih dahulu">
                                         <i class="fas fa-upload"></i> Unggah Foto
                                        </div>` 
-                                    : `<label class="text-xs bg-blue-50 text-blue-600 px-3 py-1.5 rounded-lg cursor-pointer hover:bg-blue-100 font-medium transition inline-flex items-center gap-1 shadow-sm border border-blue-100">
+                                    : `<label class="text-xs bg-blue-50 text-blue-600 px-3 py-1.5 rounded-lg cursor-pointer hover:bg-blue-100 font-medium transition inline-flex items-center gap-1 shadow-sm border border-blue-100 cursor-pointer">
                                         <i class="fas fa-upload"></i> Unggah Foto
                                         <input type="file" accept="image/*" class="hidden" onchange="window.handleAvatarUpload(event)">
                                        </label>`
                                 }
                                 ${p.foto ? `<button onclick="window.handleHapusFoto('profil')" class="text-xs bg-red-50 text-red-600 px-3 py-1.5 rounded-lg hover:bg-red-100 font-medium transition inline-flex items-center gap-1 shadow-sm border border-red-100"><i class="fas fa-trash"></i> Hapus Foto</button>` : ''}
+                                <button type="button" onclick="window.editNamaLengkap()" class="text-xs bg-indigo-50 text-indigo-600 px-3 py-1.5 rounded-lg hover:bg-indigo-100 font-medium transition inline-flex items-center gap-1 shadow-sm border border-indigo-100 cursor-pointer">
+                                    <i class="fas fa-user-edit"></i> Ubah Nama
+                                </button>
                             </div>
                         </div>
                     </div>
@@ -9044,12 +9152,22 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                     <form id="form-pengaturan" onsubmit="event.preventDefault()" oninput="window.autoSavePengaturan()" class="space-y-5">
                         <div class="grid grid-cols-2 gap-4">
                             <div>
-                                <label class="text-sm font-medium text-gray-600">Nama Lengkap</label>
-                                <input type="text" name="nama" value="${p.nama || ''}" placeholder="Nama Lengkap Guru" class="w-full mt-1 border p-2 rounded-lg bg-gray-50 focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none transition" />
+                                <div class="flex items-center justify-between mb-1">
+                                    <label class="text-sm font-medium text-gray-600">Nama Lengkap</label>
+                                    <button type="button" onclick="window.editNamaLengkap()" class="text-xs text-blue-600 hover:text-blue-700 bg-blue-50 hover:bg-blue-100 border border-blue-200 px-2 py-0.5 rounded font-semibold flex items-center gap-1 shadow-sm transition cursor-pointer">
+                                        <i class="fas fa-edit text-[11px]"></i> Edit
+                                    </button>
+                                </div>
+                                <div class="relative flex items-center">
+                                    <input type="text" id="input-pengaturan-nama" name="nama" value="${p.nama || ''}" placeholder="Nama Lengkap Guru" class="w-full border p-2 pr-20 rounded-lg bg-gray-50 focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none transition" />
+                                    <button type="button" onclick="window.editNamaLengkap()" class="absolute right-1.5 px-3 py-1 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-md text-xs font-semibold flex items-center gap-1 shadow-sm transition-all cursor-pointer" title="Klik untuk edit nama">
+                                        <i class="fas fa-pen text-[10px]"></i> Edit
+                                    </button>
+                                </div>
                             </div>
                             <div>
-                                <label class="text-sm font-medium text-gray-600">NIP Wali Kelas</label>
-                                <input type="text" name="nip" value="${p.nip || ''}" class="w-full mt-1 border p-2 rounded-lg bg-gray-50 focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none transition" />
+                                <label class="text-sm font-medium text-gray-600 block mb-1">NIP Wali Kelas</label>
+                                <input type="text" name="nip" value="${p.nip || ''}" class="w-full border p-2 rounded-lg bg-gray-50 focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none transition" />
                             </div>
                         </div>
                         <div class="grid grid-cols-2 gap-4">
@@ -9299,10 +9417,10 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                         if(await showConfirm("PERINGATAN: Semua data saat ini akan ditimpa dengan data dari file backup. Lanjutkan?")) {
                             db = importedDb;
                             
-                            // Mencegah perubahan nama/identitas dari file backup yang dimodifikasi manual
-                            if (window.currentUser) {
+                            // Menjaga agar nama aktif saat ini tidak tertimpa nama lama dari file backup
+                            if (window.currentUser && window.currentUser.nama) {
                                 if (!db.pengaturan) db.pengaturan = {};
-                                if (!db.pengaturan.nama) db.pengaturan.nama = window.currentUser.nama;
+                                db.pengaturan.nama = window.currentUser.nama;
                                 if (window.currentUser.npsn) db.pengaturan.npsn = window.currentUser.npsn;
                             }
                             
@@ -9544,10 +9662,10 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                     if (importedDb && importedDb.students) {
                         db = importedDb;
                         
-                        // Mencegah perubahan nama/identitas dari file backup yang dimodifikasi manual
-                        if (window.currentUser) {
+                        // Menjaga agar nama aktif saat ini tidak tertimpa nama lama dari file backup
+                        if (window.currentUser && window.currentUser.nama) {
                             if (!db.pengaturan) db.pengaturan = {};
-                            if (!db.pengaturan.nama) db.pengaturan.nama = window.currentUser.nama;
+                            db.pengaturan.nama = window.currentUser.nama;
                             if (window.currentUser.npsn) db.pengaturan.npsn = window.currentUser.npsn;
                         }
                         
@@ -14915,6 +15033,20 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                     }
                     if (res.hasOwnProperty('isAutoApprove')) {
                         window.currentUser.isAutoApprove = res.isAutoApprove;
+                    }
+                    // Otomatis sinkronkan jika nama guru telah diubah di database Sheets server
+                    if (res.nama && window.currentUser && window.currentUser.nama !== res.nama) {
+                        window.currentUser.nama = res.nama;
+                        window.currentUser.name = res.nama;
+                        if (typeof db !== 'undefined' && db && db.pengaturan) {
+                            db.pengaturan.nama = res.nama;
+                            saveDB();
+                        }
+                        if (typeof window.updateUIIdentitas === 'function') window.updateUIIdentitas();
+                        const inpNama = document.querySelector('#form-pengaturan input[name="nama"]');
+                        if (inpNama) inpNama.value = res.nama;
+                        const profNama = document.getElementById('pengaturan-profile-nama');
+                        if (profNama) profNama.innerText = res.nama;
                     }
                     localStorage.setItem('currentUser', JSON.stringify(window.currentUser)); localStorage.setItem('auth_user', JSON.stringify(window.currentUser)); document.cookie = "auth_user=" + encodeURIComponent(JSON.stringify(window.currentUser)) + "; max-age=31536000; path=/";
                     updateExpireCountdown();
