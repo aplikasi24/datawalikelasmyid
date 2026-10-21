@@ -23,10 +23,76 @@
             };
         })();
 
+        // Handler Pesan Fullscreen Lintas Iframe untuk Kuis Gerak & Ekstra Game
+        (function() {
+            function ensureIframeFsStyle() {
+                if (!document.getElementById('iframe-pseudo-fs-style')) {
+                    const style = document.createElement('style');
+                    style.id = 'iframe-pseudo-fs-style';
+                    style.textContent = `
+                        .iframe-pseudo-fullscreen {
+                            position: fixed !important;
+                            top: 0 !important;
+                            left: 0 !important;
+                            width: 100vw !important;
+                            height: 100vh !important;
+                            height: 100dvh !important;
+                            z-index: 9999999 !important;
+                            border: none !important;
+                            margin: 0 !important;
+                            padding: 0 !important;
+                            background: #000 !important;
+                        }
+                    `;
+                    document.head.appendChild(style);
+                }
+            }
+
+            window.addEventListener('message', (e) => {
+                if (e.data && e.data.type === 'KUIRGERAK_FULLSCREEN_TOGGLE') {
+                    ensureIframeFsStyle();
+                    const iframes = document.querySelectorAll('#kuisgerak-iframe, iframe[src*="kuisgerak"], iframe[src*="ekstra"]');
+                    if (e.data.fullscreen) {
+                        iframes.forEach(iframe => iframe.classList.add('iframe-pseudo-fullscreen'));
+                        try {
+                            if (!document.fullscreenElement) {
+                                const req = document.documentElement.requestFullscreen || document.documentElement.webkitRequestFullscreen;
+                                if (req) req.call(document.documentElement).catch(() => {});
+                            }
+                        } catch(err) {}
+                    } else {
+                        iframes.forEach(iframe => iframe.classList.remove('iframe-pseudo-fullscreen'));
+                        try {
+                            if (document.fullscreenElement) {
+                                const ex = document.exitFullscreen || document.webkitExitFullscreen;
+                                if (ex) ex.call(document).catch(() => {});
+                            }
+                        } catch(err) {}
+                    }
+                }
+            });
+
+            // Sinkronisasi tombol ESC di window parent ke iframe game
+            ['fullscreenchange', 'webkitfullscreenchange', 'mozfullscreenchange', 'MSFullscreenChange'].forEach(evt => {
+                document.addEventListener(evt, () => {
+                    const isParentFS = !!(document.fullscreenElement || document.webkitFullscreenElement);
+                    if (!isParentFS) {
+                        const iframes = document.querySelectorAll('#kuisgerak-iframe, iframe[src*="kuisgerak"], iframe[src*="ekstra"]');
+                        iframes.forEach(iframe => {
+                            iframe.classList.remove('iframe-pseudo-fullscreen');
+                            try {
+                                iframe.contentWindow.postMessage({ type: 'KUIRGERAK_FULLSCREEN_CHANGE', fullscreen: false }, '*');
+                            } catch(e) {}
+                        });
+                    }
+                });
+            });
+        })();
+
         // --- 1. PWA Service Worker Registration ---
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
-                navigator.serviceWorker.register('./sw.js?update=1')
+                navigator.serviceWorker.register('./sw.js?update=2')
                     .then(reg => console.log('Service Worker terdaftar!', reg.scope))
                     .catch(err => console.log('Service Worker gagal mendaftar', err));
             });
@@ -8868,6 +8934,15 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                 semester: form.semester.value,
                 npsn: form.npsn.value
             };
+            if (window.currentUser) {
+                window.currentUser.nama = form.nama.value;
+                window.currentUser.name = form.nama.value;
+                try {
+                    localStorage.setItem('currentUser', JSON.stringify(window.currentUser));
+                    localStorage.setItem('auth_user', JSON.stringify(window.currentUser));
+                    document.cookie = "auth_user=" + encodeURIComponent(JSON.stringify(window.currentUser)) + "; max-age=31536000; path=/";
+                } catch(e) {}
+            }
             window.addAktivitas && window.addAktivitas('pengaturan', 'Pengaturan diperbarui', 'Profil/Identitas');
             saveDB();
             window.updateUIIdentitas();
@@ -8906,7 +8981,7 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                 <div class="bg-white rounded-2xl p-8 border shadow-sm w-full relative">
                     <div class="flex items-center gap-6 mb-8 border-b pb-6">
                         <div class="relative group shrink-0">
-                            <img src="${avatarSrc}" onerror="this.onerror=null;this.src='https://ui-avatars.com/api/?name=${encodeURIComponent(p.nama)}&background=f97316&color=fff&size=150';" class="w-24 h-24 rounded-full shadow-md object-cover border-4 border-white z-10 relative bg-gray-50" />
+                            <img id="pengaturan-profile-avatar" src="${avatarSrc}" onerror="this.onerror=null;this.src='https://ui-avatars.com/api/?name=${encodeURIComponent(p.nama)}&background=f97316&color=fff&size=150';" class="w-24 h-24 rounded-full shadow-md object-cover border-4 border-white z-10 relative bg-gray-50" />
                             ${p.foto 
                                 ? `<div class="absolute inset-0 flex items-center justify-center bg-black bg-opacity-60 text-white rounded-full opacity-0 group-hover:opacity-100 cursor-not-allowed transition z-20" title="Hapus foto lama terlebih dahulu">
                                     <i class="fas fa-lock text-xl"></i>
@@ -8918,8 +8993,8 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                             }
                         </div>
                         <div class="flex-1">
-                            <p class="font-bold text-gray-800 text-xl mb-1">${p.nama}</p>
-                            <p class="text-sm text-gray-500 mb-3">NIP. ${p.nip}</p>
+                            <p id="pengaturan-profile-nama" class="font-bold text-gray-800 text-xl mb-1">${p.nama || 'Wali Kelas'}</p>
+                            <p id="pengaturan-profile-nip" class="text-sm text-gray-500 mb-3">NIP. ${p.nip || '-'}</p>
                             <div class="flex flex-wrap gap-2">
                                 ${p.foto 
                                     ? `<div class="text-xs bg-gray-100 text-gray-400 px-3 py-1.5 rounded-lg cursor-not-allowed font-medium inline-flex items-center gap-1 shadow-sm border border-gray-200" title="Hapus foto lama terlebih dahulu">
@@ -8969,8 +9044,8 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                     <form id="form-pengaturan" onsubmit="event.preventDefault()" oninput="window.autoSavePengaturan()" class="space-y-5">
                         <div class="grid grid-cols-2 gap-4">
                             <div>
-                                <label class="text-sm font-medium text-gray-600">Nama Lengkap ${window.currentUser ? '<i class="fas fa-lock text-xs text-gray-400" title="Dikunci dari akun"></i>' : ''}</label>
-                                <input type="text" name="nama" value="${p.nama || ''}" ${window.currentUser ? 'readonly' : ''} class="w-full mt-1 border p-2 rounded-lg ${window.currentUser ? 'bg-gray-100 text-gray-500 cursor-not-allowed' : 'bg-gray-50 focus:bg-white focus:ring-2 focus:ring-blue-500'} outline-none transition" />
+                                <label class="text-sm font-medium text-gray-600">Nama Lengkap</label>
+                                <input type="text" name="nama" value="${p.nama || ''}" placeholder="Nama Lengkap Guru" class="w-full mt-1 border p-2 rounded-lg bg-gray-50 focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none transition" />
                             </div>
                             <div>
                                 <label class="text-sm font-medium text-gray-600">NIP Wali Kelas</label>
@@ -9227,7 +9302,7 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                             // Mencegah perubahan nama/identitas dari file backup yang dimodifikasi manual
                             if (window.currentUser) {
                                 if (!db.pengaturan) db.pengaturan = {};
-                                db.pengaturan.nama = window.currentUser.nama;
+                                if (!db.pengaturan.nama) db.pengaturan.nama = window.currentUser.nama;
                                 if (window.currentUser.npsn) db.pengaturan.npsn = window.currentUser.npsn;
                             }
                             
@@ -9472,7 +9547,7 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                         // Mencegah perubahan nama/identitas dari file backup yang dimodifikasi manual
                         if (window.currentUser) {
                             if (!db.pengaturan) db.pengaturan = {};
-                            db.pengaturan.nama = window.currentUser.nama;
+                            if (!db.pengaturan.nama) db.pengaturan.nama = window.currentUser.nama;
                             if (window.currentUser.npsn) db.pengaturan.npsn = window.currentUser.npsn;
                         }
                         
@@ -13569,6 +13644,15 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                 const sidebarNama = document.getElementById('sidebar-nama');
                 const sidebarSekolah = document.getElementById('sidebar-sekolah');
                 const sidebarAvatar = document.getElementById('sidebar-avatar');
+                const settingNama = document.getElementById('pengaturan-profile-nama');
+                const settingNip = document.getElementById('pengaturan-profile-nip');
+                const settingAvatar = document.getElementById('pengaturan-profile-avatar');
+
+                if (settingNama) settingNama.textContent = p.nama || 'Wali Kelas';
+                if (settingNip) settingNip.textContent = 'NIP. ' + (p.nip || '-');
+                if (settingAvatar && !p.foto) {
+                    settingAvatar.src = "https://ui-avatars.com/api/?name=" + encodeURIComponent(p.nama || 'Guru') + "&background=f97316&color=fff&size=150";
+                }
                 
                 if (mobileSekolah) mobileSekolah.textContent = p.sekolah || 'Sekolah';
                 if (sidebarNama) sidebarNama.textContent = p.nama || 'Wali Kelas';
@@ -15328,7 +15412,7 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                         <span class="text-white/30 text-xs">|</span>
                         <span class="text-white/80 text-sm font-semibold">🧮 Adu Pintar Matematika</span>
                     </div>
-                    <iframe src="ekstra?tab=math" class="w-full flex-1 border-0 min-h-[80vh] block" title="Adu Pintar Matematika" allowfullscreen></iframe>
+                    <iframe src="ekstra?tab=math" class="w-full flex-1 border-0 min-h-[80vh] block transition-all duration-200" title="Adu Pintar Matematika" allow="fullscreen; camera; microphone; display-capture" allowfullscreen></iframe>
                 </div>
             `;
         }
@@ -15343,7 +15427,7 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                         <span class="text-white/30 text-xs">|</span>
                         <span class="text-white/80 text-sm font-semibold flex items-center gap-1"><i class="fas fa-running text-orange-400"></i> Kuis Gerak</span>
                     </div>
-                    <iframe id="kuisgerak-iframe" src="kuisgerak" class="w-full flex-1 border-0 min-h-[80vh] block" title="Kuis Gerak" allowfullscreen></iframe>
+                    <iframe id="kuisgerak-iframe" src="kuisgerak" class="w-full flex-1 border-0 min-h-[80vh] block transition-all duration-200" title="Kuis Gerak" allow="fullscreen; camera; microphone; display-capture" allowfullscreen></iframe>
                 </div>
             `;
         }
