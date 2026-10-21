@@ -8830,15 +8830,23 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                 j.doa_nama = j.barisan_nama;
             }
 
-            // Sinkronkan ke jadwal mingguan
-            const tglBasis = new Date(d.tanggal_denah || new Date());
-            const dayOfWeek = tglBasis.getDay();
-            const diffToMonday = (dayOfWeek === 0 ? -6 : 1 - dayOfWeek);
-            const seninDate = new Date(tglBasis);
-            seninDate.setDate(tglBasis.getDate() + diffToMonday + ((d.minggu_offset || 0) * 7));
-            const weekKey = seninDate.toISOString().split('T')[0];
+            // Sinkronkan ke jadwal mingguan menggunakan tanggal Senin jadwal
+            const weekKey = (d.jadwal_pemimpin[0] && d.jadwal_pemimpin[0].tanggalISO) 
+                ? d.jadwal_pemimpin[0].tanggalISO 
+                : (function() {
+                    const tglBasis = new Date(d.tanggal_denah || new Date());
+                    tglBasis.setHours(12, 0, 0, 0);
+                    const dayOfWeek = tglBasis.getDay();
+                    const diffToMonday = (dayOfWeek === 0 ? -6 : 1 - dayOfWeek);
+                    tglBasis.setDate(tglBasis.getDate() + diffToMonday + ((d.minggu_offset || 0) * 7));
+                    const y = tglBasis.getFullYear();
+                    const m = String(tglBasis.getMonth() + 1).padStart(2, '0');
+                    const day = String(tglBasis.getDate()).padStart(2, '0');
+                    return `${y}-${m}-${day}`;
+                })();
+
             if (!d.jadwal_mingguan) d.jadwal_mingguan = {};
-            d.jadwal_mingguan[weekKey] = d.jadwal_pemimpin;
+            d.jadwal_mingguan[weekKey] = JSON.parse(JSON.stringify(d.jadwal_pemimpin));
 
             saveDB();
             navigateTo('denah_duduk');
@@ -8964,6 +8972,7 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
             if (totalSiswa === 0) return;
 
             const tglBasis = new Date(d.tanggal_denah || new Date());
+            tglBasis.setHours(12, 0, 0, 0);
             const dayOfWeek = tglBasis.getDay();
             const diffToMonday = (dayOfWeek === 0 ? -6 : 1 - dayOfWeek);
             const seninBasis = new Date(tglBasis);
@@ -8972,12 +8981,15 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
             const seninDate = new Date(seninBasis);
             seninDate.setDate(seninBasis.getDate() + ((d.minggu_offset || 0) * 7));
 
-            const weekKey = seninDate.toISOString().split('T')[0];
+            const ySenin = seninDate.getFullYear();
+            const mSenin = String(seninDate.getMonth() + 1).padStart(2, '0');
+            const dSenin = String(seninDate.getDate()).padStart(2, '0');
+            const weekKey = `${ySenin}-${mSenin}-${dSenin}`;
             if (!d.jadwal_mingguan) d.jadwal_mingguan = {};
 
             // Jika jadwal untuk minggu ini sudah pernah diubah manual dan tidak force regenerasi
             if (!forceRegen && Array.isArray(d.jadwal_mingguan[weekKey]) && d.jadwal_mingguan[weekKey].length === hariList.length) {
-                d.jadwal_pemimpin = d.jadwal_mingguan[weekKey];
+                d.jadwal_pemimpin = JSON.parse(JSON.stringify(d.jadwal_mingguan[weekKey]));
             } else {
                 const siswaPerHari = (d.tipe_petugas === 'sama' ? 1 : 2);
 
@@ -9085,27 +9097,36 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
             if (!d || !d.jadwal_pemimpin || !d.jadwal_pemimpin[hariIdx]) return;
             const item = d.jadwal_pemimpin[hariIdx];
 
-            const sid = studentId ? parseInt(studentId) : null;
-            const student = (db.students || []).find(s => s.id === sid);
+            const cleanId = (studentId !== undefined && studentId !== null && String(studentId).trim() !== '') ? studentId : null;
+            const student = (db.students || []).find(s => String(s.id) === String(cleanId));
+            const actualId = student ? student.id : cleanId;
 
             const targetKey = (role === 'doa' || role === 'doa_id') ? 'doa' : 'barisan';
             if (targetKey === 'doa') {
-                item.doa_id = sid;
+                item.doa_id = actualId;
                 item.doa_nama = student ? student.name : '';
             } else {
-                item.barisan_id = sid;
+                item.barisan_id = actualId;
                 item.barisan_nama = student ? student.name : '';
             }
 
-            // Sinkronkan ke jadwal mingguan
-            const tglBasis = new Date(d.tanggal_denah || new Date());
-            const dayOfWeek = tglBasis.getDay();
-            const diffToMonday = (dayOfWeek === 0 ? -6 : 1 - dayOfWeek);
-            const seninDate = new Date(tglBasis);
-            seninDate.setDate(tglBasis.getDate() + diffToMonday + ((d.minggu_offset || 0) * 7));
-            const weekKey = seninDate.toISOString().split('T')[0];
+            // Sinkronkan ke jadwal mingguan menggunakan tanggal Senin jadwal
+            const weekKey = (d.jadwal_pemimpin[0] && d.jadwal_pemimpin[0].tanggalISO) 
+                ? d.jadwal_pemimpin[0].tanggalISO 
+                : (function() {
+                    const tglBasis = new Date(d.tanggal_denah || new Date());
+                    tglBasis.setHours(12, 0, 0, 0);
+                    const dayOfWeek = tglBasis.getDay();
+                    const diffToMonday = (dayOfWeek === 0 ? -6 : 1 - dayOfWeek);
+                    tglBasis.setDate(tglBasis.getDate() + diffToMonday + ((d.minggu_offset || 0) * 7));
+                    const y = tglBasis.getFullYear();
+                    const m = String(tglBasis.getMonth() + 1).padStart(2, '0');
+                    const day = String(tglBasis.getDate()).padStart(2, '0');
+                    return `${y}-${m}-${day}`;
+                })();
+
             if (!d.jadwal_mingguan) d.jadwal_mingguan = {};
-            d.jadwal_mingguan[weekKey] = d.jadwal_pemimpin;
+            d.jadwal_mingguan[weekKey] = JSON.parse(JSON.stringify(d.jadwal_pemimpin));
 
             saveDB();
             navigateTo('denah_duduk');
@@ -9233,8 +9254,20 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
             const ketLiburToday = isLiburManToday ? db.libur_dates[nowISO] : '';
             const isLiburHariIni = (now.getDay() === 0 || now.getDay() === 6) || isLiburManToday; // Hari Sabtu, Minggu, atau diset libur
 
-            // Cari jadwal pemimpin hari ini (otomatis mendeteksi nama manual atau siswa)
-            const jadwalHariIni = (d.jadwal_pemimpin || []).find(j => j.hari && j.hari.toLowerCase() === namaHariIni.toLowerCase() && !j.is_libur);
+            // Cari jadwal pemimpin hari ini di kalender nyata (deteksi dinamis)
+            let jadwalHariIni = (d.jadwal_pemimpin || []).find(j => j.tanggalISO === nowISO && !j.is_libur);
+            if (!jadwalHariIni && d.jadwal_mingguan) {
+                for (const wKey in d.jadwal_mingguan) {
+                    const found = (d.jadwal_mingguan[wKey] || []).find(j => j.tanggalISO === nowISO && !j.is_libur);
+                    if (found) {
+                        jadwalHariIni = found;
+                        break;
+                    }
+                }
+            }
+            if (!jadwalHariIni && isMingguIni) {
+                jadwalHariIni = (d.jadwal_pemimpin || []).find(j => j.hari && j.hari.toLowerCase() === namaHariIni.toLowerCase() && !j.is_libur);
+            }
             const sDoaHariIni = jadwalHariIni && jadwalHariIni.doa_id ? studentMap[jadwalHariIni.doa_id] : null;
             const sBarisanHariIni = jadwalHariIni && jadwalHariIni.barisan_id ? studentMap[jadwalHariIni.barisan_id] : null;
 
@@ -9466,7 +9499,8 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                 const sBarisan = studentMap[j.barisan_id];
                 const namaDoaDisp = j.doa_nama || (sDoa ? `${sDoa.noAbsen}. ${sDoa.name}` : '');
                 const namaBarisanDisp = j.barisan_nama || (sBarisan ? `${sBarisan.noAbsen}. ${sBarisan.name}` : '');
-                const isHariIni = (j.hari && j.hari.toLowerCase() === namaHariIni.toLowerCase());
+                // Hanya hari ini jika tanggalISO sama persis dengan tanggal hari ini di kalender nyata
+                const isHariIni = (j.tanggalISO === nowISO);
                 const isSama = (namaDoaDisp && namaBarisanDisp && namaDoaDisp === namaBarisanDisp);
                 const isLibur = !!j.is_libur;
 
@@ -9529,7 +9563,7 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                                             title="Pilih Siswa Pemimpin Doa">
                                         <option value="">-- Pilih Siswa --</option>
                                         ${students.map(s => `
-                                            <option value="${s.id}" ${j.doa_id === s.id ? 'selected' : ''}>
+                                            <option value="${s.id}" ${(j.doa_id != null && String(j.doa_id) === String(s.id)) ? 'selected' : ''}>
                                                 ${studentMap[s.id].noAbsen}. ${s.name}
                                             </option>
                                         `).join('')}
@@ -9547,7 +9581,7 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                                             title="Pilih Siswa Pemimpin Barisan">
                                         <option value="">-- Pilih Siswa --</option>
                                         ${students.map(s => `
-                                            <option value="${s.id}" ${j.barisan_id === s.id ? 'selected' : ''}>
+                                            <option value="${s.id}" ${(j.barisan_id != null && String(j.barisan_id) === String(s.id)) ? 'selected' : ''}>
                                                 ${studentMap[s.id].noAbsen}. ${s.name}
                                             </option>
                                         `).join('')}
