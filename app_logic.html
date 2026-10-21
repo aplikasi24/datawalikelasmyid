@@ -8354,6 +8354,7 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
             if (typeof d.minggu_offset !== 'number') d.minggu_offset = 0;
             if (!d.interval_hari || typeof d.interval_hari !== 'number' || d.interval_hari < 1) d.interval_hari = 1;
             if (!d.tanggal_mulai_rotasi) d.tanggal_mulai_rotasi = d.tanggal_denah;
+            if (typeof d.rotasi_hanya_hari_efektif === 'undefined') d.rotasi_hanya_hari_efektif = true;
             if (!d.jadwal_mingguan) d.jadwal_mingguan = {};
             if (!Array.isArray(d.susunan)) d.susunan = [];
             if (!Array.isArray(d.jadwal_pemimpin)) d.jadwal_pemimpin = [];
@@ -8751,12 +8752,60 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
             }
 
             const anchorDateStr = d.tanggal_mulai_rotasi || d.tanggal_denah || new Date().toISOString().split('T')[0];
-            const tAnchor = new Date(anchorDateStr + 'T00:00:00').getTime();
-            const tTarget = new Date((targetDateStr || d.tanggal_denah) + 'T00:00:00').getTime();
-            const diffDays = Math.round((tTarget - tAnchor) / (1000 * 60 * 60 * 24));
-
             const interval = Math.max(1, parseInt(d.interval_hari) || 1);
-            const steps = Math.floor(diffDays / interval);
+            const hariEfektifList = (db.hari_efektif && db.hari_efektif.length) ? db.hari_efektif : ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat'];
+
+            let steps = 0;
+            const hanyaHariEfektif = (d.rotasi_hanya_hari_efektif !== false);
+
+            if (hanyaHariEfektif) {
+                // HANYA HARI EFEKTIF SEKOLAH: Hari libur & akhir pekan TIDAK menggeser posisi tempat duduk (tetap sama saat libur)
+                const tAnchor = new Date(anchorDateStr + 'T00:00:00');
+                const tTarget = new Date((targetDateStr || d.tanggal_denah) + 'T00:00:00');
+
+                let effectiveDaysCount = 0;
+                if (tTarget.getTime() >= tAnchor.getTime()) {
+                    let cur = new Date(tAnchor);
+                    cur.setDate(cur.getDate() + 1);
+                    while (cur <= tTarget) {
+                        const y = cur.getFullYear();
+                        const m = String(cur.getMonth() + 1).padStart(2, '0');
+                        const day = String(cur.getDate()).padStart(2, '0');
+                        const iso = `${y}-${m}-${day}`;
+                        const nHari = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'][cur.getDay()];
+                        const isEfektifDb = hariEfektifList.includes(nHari);
+                        const isLiburMan = db.libur_dates && !!db.libur_dates[iso];
+                        if (isEfektifDb && !isLiburMan) {
+                            effectiveDaysCount++;
+                        }
+                        cur.setDate(cur.getDate() + 1);
+                    }
+                    steps = Math.floor(effectiveDaysCount / interval);
+                } else {
+                    let cur = new Date(tTarget);
+                    cur.setDate(cur.getDate() + 1);
+                    while (cur <= tAnchor) {
+                        const y = cur.getFullYear();
+                        const m = String(cur.getMonth() + 1).padStart(2, '0');
+                        const day = String(cur.getDate()).padStart(2, '0');
+                        const iso = `${y}-${m}-${day}`;
+                        const nHari = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'][cur.getDay()];
+                        const isEfektifDb = hariEfektifList.includes(nHari);
+                        const isLiburMan = db.libur_dates && !!db.libur_dates[iso];
+                        if (isEfektifDb && !isLiburMan) {
+                            effectiveDaysCount--;
+                        }
+                        cur.setDate(cur.getDate() + 1);
+                    }
+                    steps = Math.floor(effectiveDaysCount / interval);
+                }
+            } else {
+                // KALENDER MURNI: Hari libur juga tetap dihitung bergeser
+                const tAnchor = new Date(anchorDateStr + 'T00:00:00').getTime();
+                const tTarget = new Date((targetDateStr || d.tanggal_denah) + 'T00:00:00').getTime();
+                const diffDays = Math.round((tTarget - tAnchor) / (1000 * 60 * 60 * 24));
+                steps = Math.floor(diffDays / interval);
+            }
 
             if (steps === 0) {
                 return [...d.susunan_dasar];
@@ -8890,6 +8939,22 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
 
             // Perbarui susunan tempat duduk secara dinamis mengikuti tanggal baru dan interval_hari!
             d.susunan = window.getSusunanUntukTanggal(val);
+
+            if (d.metode_pemimpin === 'tempat_duduk') {
+                window.generateJadwalPemimpin('tempat_duduk', false);
+            }
+
+            saveDB();
+            navigateTo('denah_duduk');
+        };
+
+        window.setRotasiHanyaEfektif = function(isEfektifOnly) {
+            if (!db.denah_duduk) db.denah_duduk = {};
+            const d = db.denah_duduk;
+            d.rotasi_hanya_hari_efektif = !!isEfektifOnly;
+
+            // Hitung ulang susunan tempat duduk pada tanggal denah aktif
+            d.susunan = window.getSusunanUntukTanggal(d.tanggal_denah);
 
             if (d.metode_pemimpin === 'tempat_duduk') {
                 window.generateJadwalPemimpin('tempat_duduk', false);
@@ -9919,8 +9984,8 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                             </div>
                         </div>
 
-                        <!-- Baris 2: Tombol Aksi Urutkan, Geser Manual & Cetak Denah -->
-                        <div class="flex flex-wrap items-center justify-between gap-2 pt-0.5">
+                        <!-- Baris 2: Tombol Aksi Urutkan, Pengaturan Libur (Centang), Geser Manual & Cetak Denah -->
+                        <div class="flex flex-wrap items-center justify-between gap-2.5 pt-0.5 border-t border-slate-100 mt-2">
                             <!-- Grup Mode Pengurutan: Urut Kanan, Urut Kiri, Acak -->
                             <div class="inline-flex items-center gap-1.5 flex-wrap">
                                 <button onclick="window.recalcDenahDuduk('kanan')" class="px-2.5 py-1.5 ${d.mode_urutan === 'kanan' ? 'bg-blue-600 text-white shadow-2xs' : 'bg-blue-50 text-blue-700 hover:bg-blue-100 border border-blue-200'} rounded-xl text-xs font-bold transition flex items-center gap-1 cursor-pointer" title="Urutkan tempat duduk dari kiri ke kanan">
@@ -9935,6 +10000,20 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                                     <i class="fas fa-random text-[10px]"></i>
                                     <span>Acak Posisi</span>
                                 </button>
+                            </div>
+
+                            <!-- Opsi Centang: Denah Tetap Sama Saat Libur (Geser Hanya Saat Masuk) vs Libur Tetap Bergeser -->
+                            <div class="inline-flex items-center">
+                                <label class="inline-flex items-center gap-2 cursor-pointer select-none text-xs font-bold text-slate-700 bg-slate-50 hover:bg-indigo-50/50 border border-slate-200 hover:border-indigo-300 px-3 py-1.5 rounded-xl transition shadow-2xs" title="Jika dicentang: Tempat duduk tetap sama saat hari libur (kursi hanya bergeser ketika hari masuk sekolah). Jika tidak dicentang: Libur juga tetap dihitung bergeser.">
+                                    <input type="checkbox" ${d.rotasi_hanya_hari_efektif !== false ? 'checked' : ''} onchange="window.setRotasiHanyaEfektif(this.checked)" class="rounded text-indigo-600 focus:ring-indigo-500 w-4 h-4 cursor-pointer accent-indigo-600" />
+                                    <span class="flex items-center gap-1.5">
+                                        <i class="fas fa-umbrella-beach text-orange-500 text-xs"></i>
+                                        <span>Tetap Sama Saat Libur</span>
+                                        <span class="text-[10px] font-bold px-1.5 py-0.5 rounded ${d.rotasi_hanya_hari_efektif !== false ? 'bg-emerald-100 text-emerald-800 border border-emerald-200' : 'bg-amber-100 text-amber-800 border border-amber-200'}">
+                                            ${d.rotasi_hanya_hari_efektif !== false ? '✓ Geser Saat Masuk' : 'Libur Ikut Bergeser'}
+                                        </span>
+                                    </span>
+                                </label>
                             </div>
 
                             <!-- Grup Geser Manual & Cetak -->
