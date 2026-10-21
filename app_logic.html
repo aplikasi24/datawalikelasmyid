@@ -8353,6 +8353,7 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
             if (!d.tipe_petugas) d.tipe_petugas = 'sama'; // 'sama' (1 siswa doa & barisan) | 'berbeda' (2 siswa berbeda)
             if (typeof d.minggu_offset !== 'number') d.minggu_offset = 0;
             if (!d.interval_hari || typeof d.interval_hari !== 'number' || d.interval_hari < 1) d.interval_hari = 1;
+            if (!d.tanggal_mulai_rotasi) d.tanggal_mulai_rotasi = d.tanggal_denah;
             if (!d.jadwal_mingguan) d.jadwal_mingguan = {};
             if (!Array.isArray(d.susunan)) d.susunan = [];
             if (!Array.isArray(d.jadwal_pemimpin)) d.jadwal_pemimpin = [];
@@ -8366,6 +8367,9 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
 
             if (d.susunan.length !== totalSlots) {
                 window.recalcDenahDuduk(d.mode_urutan, false);
+            }
+            if (!Array.isArray(d.susunan_dasar) || d.susunan_dasar.length !== totalSlots) {
+                d.susunan_dasar = [...d.susunan];
             }
             if (d.tipe_petugas === 'sama' && Array.isArray(d.jadwal_pemimpin)) {
                 let needSync = false;
@@ -8381,7 +8385,16 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                 }
             }
 
-            if (d.jadwal_pemimpin.length === 0 && students.length > 0) {
+            // Selaraskan jadwal pemimpin saat init/refresh jika ada tanggal libur di db.libur_dates yang belum sinkron
+            if (Array.isArray(d.jadwal_pemimpin) && d.jadwal_pemimpin.length > 0 && db.libur_dates) {
+                const outOfSync = d.jadwal_pemimpin.some(j => {
+                    const shouldLibur = !!db.libur_dates[j.tanggalISO];
+                    return !!j.is_libur !== shouldLibur;
+                });
+                if (outOfSync) {
+                    window.generateJadwalPemimpin(d.metode_pemimpin, false, true);
+                }
+            } else if (d.jadwal_pemimpin.length === 0 && students.length > 0) {
                 window.generateJadwalPemimpin(d.metode_pemimpin, false);
             }
         };
@@ -8406,6 +8419,8 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                     }
                     d.susunan = newSusunan;
                 }
+                d.susunan_dasar = [...d.susunan];
+                d.tanggal_mulai_rotasi = d.tanggal_denah;
 
                 if (d.metode_pemimpin === 'tempat_duduk') {
                     window.generateJadwalPemimpin('tempat_duduk', false);
@@ -8448,6 +8463,8 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
             }
 
             d.susunan = newSusunan;
+            d.susunan_dasar = [...newSusunan];
+            d.tanggal_mulai_rotasi = d.tanggal_denah;
 
             if (d.metode_pemimpin === 'tempat_duduk') {
                 window.generateJadwalPemimpin('tempat_duduk', false);
@@ -8481,6 +8498,9 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                 d.susunan[slot1] = d.susunan[slot2];
                 d.susunan[slot2] = temp;
                 window._denahSelectedSlot = null;
+
+                d.susunan_dasar = [...d.susunan];
+                d.tanggal_mulai_rotasi = d.tanggal_denah;
 
                 if (d.metode_pemimpin === 'tempat_duduk') {
                     window.generateJadwalPemimpin('tempat_duduk', false);
@@ -8518,6 +8538,9 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
             }).then((result) => {
                 if (result.isConfirmed) {
                     d.susunan[slotIdx] = null;
+                    d.susunan_dasar = [...d.susunan];
+                    d.tanggal_mulai_rotasi = d.tanggal_denah;
+
                     if (window._denahSelectedSlot === slotIdx) {
                         window._denahSelectedSlot = null;
                     }
@@ -8577,6 +8600,8 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                         d.susunan[oldIdx] = null;
                     }
                     d.susunan[slotIdx] = studentId;
+                    d.susunan_dasar = [...d.susunan];
+                    d.tanggal_mulai_rotasi = d.tanggal_denah;
 
                     if (d.metode_pemimpin === 'tempat_duduk') {
                         window.generateJadwalPemimpin('tempat_duduk', false);
@@ -8704,6 +8729,81 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
             window.recalcDenahDuduk(d.mode_urutan || 'kanan', true);
         };
 
+        window.getSusunanUntukTanggal = function(targetDateStr) {
+            const d = db.denah_duduk;
+            if (!d) return [];
+
+            const slotsPerUnit = (d.tipe_meja === 'ganda' ? 2 : 1);
+            const totalSlots = (d.kolom || 4) * (d.baris || 4) * slotsPerUnit;
+
+            // Pastikan susunan_dasar valid
+            if (!Array.isArray(d.susunan_dasar) || d.susunan_dasar.length !== totalSlots) {
+                if (Array.isArray(d.susunan) && d.susunan.length === totalSlots) {
+                    d.susunan_dasar = [...d.susunan];
+                } else {
+                    return d.susunan || [];
+                }
+            }
+
+            // Jika mode_urutan adalah 'tetap', kunci posisi agar selalu persis susunan dasar
+            if (d.mode_urutan === 'tetap') {
+                return [...d.susunan_dasar];
+            }
+
+            const anchorDateStr = d.tanggal_mulai_rotasi || d.tanggal_denah || new Date().toISOString().split('T')[0];
+            const tAnchor = new Date(anchorDateStr + 'T00:00:00').getTime();
+            const tTarget = new Date((targetDateStr || d.tanggal_denah) + 'T00:00:00').getTime();
+            const diffDays = Math.round((tTarget - tAnchor) / (1000 * 60 * 60 * 24));
+
+            const interval = Math.max(1, parseInt(d.interval_hari) || 1);
+            const steps = Math.floor(diffDays / interval);
+
+            if (steps === 0) {
+                return [...d.susunan_dasar];
+            }
+
+            const mode = (d.mode_urutan === 'kiri') ? 'kiri' : 'kanan';
+            const kolom = d.kolom || 4;
+            const baris = d.baris || 4;
+
+            // Alur slot
+            const slotFlow = [];
+            for (let r = 0; r < baris; r++) {
+                if (mode === 'kiri') {
+                    for (let c = kolom - 1; c >= 0; c--) {
+                        for (let s = slotsPerUnit - 1; s >= 0; s--) {
+                            slotFlow.push(r * (kolom * slotsPerUnit) + c * slotsPerUnit + s);
+                        }
+                    }
+                } else {
+                    for (let c = 0; c < kolom; c++) {
+                        for (let s = 0; s < slotsPerUnit; s++) {
+                            slotFlow.push(r * (kolom * slotsPerUnit) + c * slotsPerUnit + s);
+                        }
+                    }
+                }
+            }
+
+            const occupiedSlots = slotFlow.filter(slotIdx => d.susunan_dasar[slotIdx] != null);
+            if (occupiedSlots.length <= 1) return [...d.susunan_dasar];
+
+            const baseStudents = occupiedSlots.map(slotIdx => d.susunan_dasar[slotIdx]);
+            const n = baseStudents.length;
+            const shiftCount = ((steps % n) + n) % n;
+
+            const shiftedStudents = new Array(n);
+            for (let i = 0; i < n; i++) {
+                shiftedStudents[(i + shiftCount) % n] = baseStudents[i];
+            }
+
+            const resultSusunan = [...d.susunan_dasar];
+            occupiedSlots.forEach((slotIdx, i) => {
+                resultSusunan[slotIdx] = shiftedStudents[i];
+            });
+
+            return resultSusunan;
+        };
+
         window.geserSusunanDenah = function(arah, langkah = 1, doSave = true) {
             if (!db.denah_duduk) db.denah_duduk = {};
             const d = db.denah_duduk;
@@ -8751,6 +8851,10 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                 d.susunan[slotIdx] = shiftedStudents[i];
             });
 
+            // Jadikan susunan hasil geser manual ini sebagai susunan dasar baru mulai tanggal saat ini!
+            d.susunan_dasar = [...d.susunan];
+            d.tanggal_mulai_rotasi = d.tanggal_denah;
+
             if (d.metode_pemimpin === 'tempat_duduk') {
                 window.generateJadwalPemimpin('tempat_duduk', false);
             }
@@ -8767,6 +8871,14 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
             let num = parseInt(val);
             if (isNaN(num) || num < 1) num = 1;
             d.interval_hari = num;
+
+            // Langsung perbarui susunan tempat duduk pada tanggal denah aktif dengan interval baru
+            d.susunan = window.getSusunanUntukTanggal(d.tanggal_denah);
+
+            if (d.metode_pemimpin === 'tempat_duduk') {
+                window.generateJadwalPemimpin('tempat_duduk', false);
+            }
+
             saveDB();
             navigateTo('denah_duduk');
         };
@@ -8774,49 +8886,13 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
         window.setTanggalDenah = function(val) {
             if (!db.denah_duduk) db.denah_duduk = {};
             const d = db.denah_duduk;
-            const oldDateVal = d.tanggal_denah;
             d.tanggal_denah = val;
 
-            // Jika mode_urutan adalah 'tetap', kunci posisi tempat duduk agar TIDAK bergeser
-            if (d.mode_urutan === 'tetap') {
-                if (d.metode_pemimpin === 'tempat_duduk') {
-                    window.generateJadwalPemimpin('tempat_duduk', false);
-                }
-                saveDB();
-                navigateTo('denah_duduk');
-                return;
-            }
+            // Perbarui susunan tempat duduk secara dinamis mengikuti tanggal baru dan interval_hari!
+            d.susunan = window.getSusunanUntukTanggal(val);
 
-            // Jika tanggal berubah, otomatis geser susunan denah tempat duduk sesuai interval_hari dan mode_urutan (kiri / kanan)
-            if (oldDateVal && val && oldDateVal !== val) {
-                const arah = (d.mode_urutan === 'kiri') ? 'kiri' : 'kanan';
-
-                // Hitung langkah pergeseran berdasarkan selisih hari dan interval rotasi
-                const tOld = new Date(oldDateVal).getTime();
-                const tNew = new Date(val).getTime();
-                const diffDays = Math.round((tNew - tOld) / (1000 * 60 * 60 * 24));
-                const interval = Math.max(1, parseInt(d.interval_hari) || 1);
-
-                let steps = Math.floor(Math.abs(diffDays) / interval);
-                if (steps < 1 && Math.abs(diffDays) >= interval) steps = 1;
-
-                let effectiveArah = arah;
-                if (diffDays < 0) {
-                    effectiveArah = (arah === 'kiri' ? 'kanan' : 'kiri');
-                }
-
-                // Geser susunan siswa secara dinamis jika sudah melewati interval hari
-                if (steps > 0) {
-                    window.geserSusunanDenah(effectiveArah, steps, false);
-                }
-
-                if (d.metode_pemimpin === 'tempat_duduk') {
-                    window.generateJadwalPemimpin('tempat_duduk', false);
-                }
-
-                saveDB();
-                navigateTo('denah_duduk');
-                return;
+            if (d.metode_pemimpin === 'tempat_duduk') {
+                window.generateJadwalPemimpin('tempat_duduk', false);
             }
 
             saveDB();
@@ -8903,8 +8979,16 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
             if (isCurrentlyLibur) {
                 // Batalkan libur
                 delete db.libur_dates[tglISO];
-                saveDB();
+                // Hapus cache minggu terkait di jadwal_mingguan agar ter-regenerasi bersih
+                if (d.jadwal_mingguan) {
+                    for (const k in d.jadwal_mingguan) {
+                        if ((d.jadwal_mingguan[k] || []).some(j => j.tanggalISO === tglISO)) {
+                            delete d.jadwal_mingguan[k];
+                        }
+                    }
+                }
                 window.generateJadwalPemimpin(d.metode_pemimpin || 'tempat_duduk', false, true);
+                saveDB();
                 navigateTo('denah_duduk');
             } else {
                 // Set jadi hari libur dengan keterangan
@@ -8929,8 +9013,16 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
 
                 if (ket) {
                     db.libur_dates[tglISO] = ket;
-                    saveDB();
+                    // Hapus cache minggu terkait di jadwal_mingguan agar ter-regenerasi bersih
+                    if (d.jadwal_mingguan) {
+                        for (const k in d.jadwal_mingguan) {
+                            if ((d.jadwal_mingguan[k] || []).some(j => j.tanggalISO === tglISO)) {
+                                delete d.jadwal_mingguan[k];
+                            }
+                        }
+                    }
                     window.generateJadwalPemimpin(d.metode_pemimpin || 'tempat_duduk', false, true);
+                    saveDB();
                     navigateTo('denah_duduk');
                 }
             }
@@ -9038,7 +9130,18 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
 
             // Jika jadwal untuk minggu ini sudah pernah diubah manual dan tidak force regenerasi
             if (!forceRegen && Array.isArray(d.jadwal_mingguan[weekKey]) && d.jadwal_mingguan[weekKey].length === hariList.length) {
-                d.jadwal_pemimpin = JSON.parse(JSON.stringify(d.jadwal_mingguan[weekKey]));
+                const cachedJadwal = JSON.parse(JSON.stringify(d.jadwal_mingguan[weekKey]));
+                // Periksa apakah status libur di cache sudah cocok dengan db.libur_dates
+                const isOutOfSync = cachedJadwal.some(j => {
+                    const shouldLibur = db.libur_dates && !!db.libur_dates[j.tanggalISO];
+                    return !!j.is_libur !== shouldLibur;
+                });
+                if (!isOutOfSync) {
+                    d.jadwal_pemimpin = cachedJadwal;
+                } else {
+                    delete d.jadwal_mingguan[weekKey];
+                    return window.generateJadwalPemimpin(metode, doSave, true);
+                }
             } else {
                 const siswaPerHari = (d.tipe_petugas === 'sama' ? 1 : 2);
 
@@ -9258,6 +9361,8 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
         function renderDenahDuduk() {
             window.initDenahDuduk();
             const d = db.denah_duduk;
+            // Selaraskan susunan tempat duduk agar selalu dinamis mengikuti tanggal denah aktif dan interval_hari
+            d.susunan = window.getSusunanUntukTanggal(d.tanggal_denah);
             const p = db.pengaturan || {};
             const students = db.students || [];
 
@@ -9376,29 +9481,47 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                                 ? `<div class="mt-1 text-[9px] bg-gradient-to-r from-amber-500 to-orange-500 text-white font-bold px-1.5 py-0.5 rounded-full truncate" title="${tugasMap[student.id]}">⭐ Petugas</div>` 
                                 : '';
 
+                            const potongNamaKursi = (nama) => {
+                                if (!nama) return '';
+                                const clean = nama.trim();
+                                const parts = clean.split(/\s+/);
+                                if (parts.length === 1) {
+                                    return parts[0].length > 8 ? parts[0].substring(0, 6) + '...' : parts[0];
+                                }
+                                let w1 = parts[0];
+                                let w2 = parts[1];
+                                if (w1.length > 7) w1 = w1.substring(0, 5) + '...';
+                                if (w2.length > 7) w2 = w2.substring(0, 5) + '...';
+                                if (parts.length > 2 && !w2.endsWith('...')) {
+                                    w2 = (w2.length > 5 ? w2.substring(0, 4) : w2) + '...';
+                                }
+                                return `${w1} ${w2}`;
+                            };
+                            const namaTampil = potongNamaKursi(student.name);
+
                             seatsInDeskHtml += `
-                                <div onclick="window.handleSeatClick(${slotIdx})" class="flex-1 p-2 rounded-xl transition-all cursor-pointer flex flex-col justify-between select-none relative group/seat overflow-visible ${bgCard}" title="Klik untuk menukar tempat duduk">
+                                <div onclick="window.handleSeatClick(${slotIdx})" class="flex-1 min-w-0 p-1.5 sm:p-2 rounded-xl transition-all cursor-pointer flex flex-col justify-between select-none relative group/seat overflow-hidden ${bgCard}" title="Klik untuk menukar tempat duduk: ${student.name}">
                                     <!-- Menu / Tombol Hapus Manual Saat Disorot (Hover) -->
-                                    <button type="button" onclick="window.hapusSiswaSeat(${slotIdx}, event)" class="opacity-0 group-hover/seat:opacity-100 transition-all duration-150 absolute -top-2 -right-2 bg-rose-600 hover:bg-rose-700 text-white rounded-full w-5 h-5 flex items-center justify-center text-[10px] shadow-md z-30 cursor-pointer border border-white" title="Hapus ${student.name} dari kursi ini">
+                                    <button type="button" onclick="window.hapusSiswaSeat(${slotIdx}, event)" class="opacity-0 group-hover/seat:opacity-100 transition-all duration-150 absolute top-1 right-1 bg-rose-600 hover:bg-rose-700 text-white rounded-full w-4 h-4 flex items-center justify-center text-[8px] shadow-md z-30 cursor-pointer border border-white" title="Hapus ${student.name} dari kursi ini">
                                         <i class="fas fa-times"></i>
                                     </button>
 
-                                    <div class="flex items-center justify-between mb-1">
+                                    <div class="flex items-center justify-between mb-0.5">
                                         <span class="text-[10px] font-bold text-gray-500 flex items-center gap-1">
                                             <span class="w-4 h-4 bg-white border border-gray-300 rounded-full flex items-center justify-center text-[9px] font-extrabold text-gray-700 shadow-2xs">${student.noAbsen}</span>
                                         </span>
                                         <div class="flex items-center gap-1">
                                             ${tagGender}
                                             <span onclick="window.hapusSiswaSeat(${slotIdx}, event)" class="hidden group-hover/seat:inline-flex items-center gap-0.5 px-1 py-0.2 bg-rose-100 hover:bg-rose-200 text-rose-700 rounded text-[8px] font-extrabold cursor-pointer transition" title="Hapus dari kursi">
-                                                <i class="fas fa-trash-alt text-[7px]"></i> Hapus
+                                                <i class="fas fa-trash-alt text-[7px]"></i>
                                             </span>
                                         </div>
                                     </div>
-                                    <div class="my-0.5">
-                                        <p class="text-xs font-bold text-gray-800 leading-tight line-clamp-2" title="${student.name}">${student.name}</p>
+                                    <div class="my-0.5 w-full min-w-0 overflow-hidden text-center">
+                                        <p class="text-[11px] sm:text-xs font-bold text-gray-800 leading-tight line-clamp-2 break-all text-center" title="${student.name}">${namaTampil}</p>
                                     </div>
                                     ${tugasBadge}
-                                    <div class="text-[9px] text-gray-400 mt-1 flex justify-between items-center">
+                                    <div class="text-[9px] text-gray-400 mt-0.5 flex justify-between items-center">
                                         <span>K.${seatNum}</span>
                                         ${isSelected ? '<span class="text-amber-700 font-extrabold animate-pulse text-[9px]">DIPILIH</span>' : ''}
                                     </div>
@@ -9410,12 +9533,12 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                                 : 'bg-gray-50 border border-dashed border-gray-300 hover:border-gray-400 text-gray-400 hover:bg-gray-100';
 
                             seatsInDeskHtml += `
-                                <div onclick="window.handleSeatClick(${slotIdx})" class="flex-1 p-2 rounded-xl transition-all cursor-pointer flex flex-col items-center justify-center min-h-[75px] select-none group/empty relative ${bgEmpty}" title="Meja Kosong (Klik untuk isi/tukar)">
+                                <div onclick="window.handleSeatClick(${slotIdx})" class="flex-1 min-w-0 p-1.5 sm:p-2 rounded-xl transition-all cursor-pointer flex flex-col items-center justify-center min-h-[75px] select-none group/empty relative overflow-hidden ${bgEmpty}" title="Meja Kosong (Klik untuk isi/tukar)">
                                     <i class="fas fa-chair text-gray-300 mb-1 group-hover/empty:text-indigo-400 transition-colors"></i>
                                     <span class="text-[10px] italic font-medium group-hover/empty:text-indigo-600 transition-colors">Kosong</span>
                                     <span class="text-[8px] text-gray-300 mt-1">K.${seatNum}</span>
                                     <span class="opacity-0 group-hover/empty:opacity-100 transition-opacity absolute bottom-1 px-1.5 py-0.5 bg-indigo-600 text-white rounded text-[8px] font-bold shadow-2xs">
-                                        <i class="fas fa-plus mr-0.5"></i> Isi Siswa
+                                        <i class="fas fa-plus mr-0.5"></i> Isi
                                     </span>
                                 </div>
                             `;
@@ -9460,16 +9583,16 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                     }
 
                     rowDesksHtml += `
-                        <div class="bg-white rounded-2xl p-1.5 sm:p-2 border-2 border-slate-200/90 shadow-xs hover:shadow-sm transition flex flex-col gap-1 sm:gap-1.5 relative group ${d.tipe_meja === 'ganda' ? 'min-w-[130px] sm:min-w-0' : 'min-w-[85px] sm:min-w-0'}">
+                        <div class="bg-white rounded-2xl p-1.5 sm:p-2 border-2 border-slate-200/90 shadow-xs hover:shadow-sm transition flex flex-col gap-1 sm:gap-1.5 relative group overflow-hidden ${d.tipe_meja === 'ganda' ? 'min-w-[130px] sm:min-w-0' : 'min-w-[85px] sm:min-w-0'}">
                             ${arahTandaHtml}
-                            <div class="flex gap-1 sm:gap-1.5 h-full">
+                            <div class="flex gap-1 sm:gap-1.5 h-full min-w-0 w-full">
                                 ${seatsInDeskHtml}
                             </div>
                         </div>
                     `;
                 }
                 gridHtml += `
-                    <div class="grid gap-2 sm:gap-3" style="grid-template-columns: repeat(${d.kolom}, minmax(${d.tipe_meja === 'ganda' ? '125px' : '85px'}, 1fr));">
+                    <div class="grid gap-2 sm:gap-3" style="grid-template-columns: repeat(${d.kolom}, minmax(${d.tipe_meja === 'ganda' ? '130px' : '85px'}, 1fr));">
                         ${rowDesksHtml}
                     </div>
                 `;
@@ -9668,7 +9791,7 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                     </div>
 
                     <!-- Header & Statistik -->
-                    <div class="bg-gradient-to-r from-blue-700 via-indigo-700 to-purple-800 rounded-2xl p-6 text-white shadow-md relative overflow-hidden print-hide">
+                    <div class="bg-gradient-to-r from-blue-700 via-blue-900 to-blue-950 rounded-2xl p-6 text-white shadow-md relative overflow-hidden print-hide">
                         <div class="absolute -right-8 -bottom-8 w-44 h-44 bg-white/10 rounded-full blur-2xl pointer-events-none"></div>
                         <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 relative z-10">
                             <div class="flex-1">
@@ -9694,7 +9817,7 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                                             </div>
                                         ` : (jadwalHariIni ? (
                                             isPetugasSamaHariIni ? `
-                                                <div class="inline-flex items-center gap-2 bg-gradient-to-r from-emerald-900/40 to-indigo-900/40 border border-amber-300/60 rounded-lg px-3 py-1 text-xs shadow-xs">
+                                                <div class="inline-flex items-center gap-2 bg-gradient-to-r from-emerald-900/40 to-blue-900/40 border border-amber-300/60 rounded-lg px-3 py-1 text-xs shadow-xs">
                                                     <span class="flex -space-x-1">
                                                         <span class="w-5 h-5 rounded-full bg-emerald-500 text-white flex items-center justify-center text-[10px] shadow-xs" title="Pemimpin Doa">🤲</span>
                                                         <span class="w-5 h-5 rounded-full bg-blue-600 text-white flex items-center justify-center text-[10px] shadow-xs" title="Pemimpin Barisan">🚩</span>
