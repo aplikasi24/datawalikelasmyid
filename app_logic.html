@@ -9093,12 +9093,7 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                             }
                         </div>
                         <div class="flex-1">
-                            <div class="flex items-center gap-2 mb-1 flex-wrap">
-                                <p id="pengaturan-profile-nama" class="font-bold text-gray-800 text-xl">${p.nama || 'Wali Kelas'}</p>
-                                <button type="button" onclick="window.editNamaLengkap()" class="text-xs bg-blue-50 text-blue-600 hover:bg-blue-100 hover:text-blue-700 px-2.5 py-1 rounded-md font-medium transition inline-flex items-center gap-1 border border-blue-200 shadow-sm cursor-pointer" title="Edit nama guru">
-                                    <i class="fas fa-edit"></i> Edit Nama
-                                </button>
-                            </div>
+                            <p id="pengaturan-profile-nama" class="font-bold text-gray-800 text-xl mb-1">${p.nama || 'Wali Kelas'}</p>
                             <p id="pengaturan-profile-nip" class="text-sm text-gray-500 mb-3">NIP. ${p.nip || '-'}</p>
                             <div class="flex flex-wrap gap-2">
                                 ${p.foto 
@@ -9111,9 +9106,6 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                                        </label>`
                                 }
                                 ${p.foto ? `<button onclick="window.handleHapusFoto('profil')" class="text-xs bg-red-50 text-red-600 px-3 py-1.5 rounded-lg hover:bg-red-100 font-medium transition inline-flex items-center gap-1 shadow-sm border border-red-100"><i class="fas fa-trash"></i> Hapus Foto</button>` : ''}
-                                <button type="button" onclick="window.editNamaLengkap()" class="text-xs bg-indigo-50 text-indigo-600 px-3 py-1.5 rounded-lg hover:bg-indigo-100 font-medium transition inline-flex items-center gap-1 shadow-sm border border-indigo-100 cursor-pointer">
-                                    <i class="fas fa-user-edit"></i> Ubah Nama
-                                </button>
                             </div>
                         </div>
                     </div>
