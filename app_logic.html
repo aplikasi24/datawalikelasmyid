@@ -3301,12 +3301,12 @@ ${formatInstruction}`;
             const siswaListHtml = (studentsArray.length > 0) ? studentsArray.map(siswa => {
                 const isChecked = selectedNames.includes(siswa.name) ? 'checked' : '';
                 return `
-                    <label class="flex items-center p-2 hover:bg-slate-50 cursor-pointer rounded transition-colors" onclick="event.stopPropagation()">
-                        <input type="checkbox" value="${siswa.name}" class="org-name-checkbox mr-3 h-4 w-4 text-blue-600 rounded focus:ring-blue-500 border-slate-300" ${isChecked} onchange="window.updateOrgNameInput()">
-                        <span class="text-sm font-medium text-slate-700">${siswa.name}</span>
+                    <label class="flex items-center p-2 hover:bg-blue-50/70 cursor-pointer rounded-lg transition-colors org-siswa-item" data-name="${(siswa.name || '').toLowerCase()}" onclick="event.stopPropagation()">
+                        <input type="checkbox" value="${siswa.name}" class="org-name-checkbox mr-3 h-4 w-4 text-blue-600 rounded focus:ring-blue-500 border-slate-300 cursor-pointer" ${isChecked} onchange="window.updateOrgNameInput()">
+                        <span class="text-sm font-medium text-slate-700 select-none">${siswa.name}</span>
                     </label>
                 `;
-            }).join('') : '<div class="p-3 text-sm text-slate-500 text-center italic">Data siswa kosong (' + (db.students ? typeof db.students : 'null') + '). Silakan tambah data siswa terlebih dahulu.</div>';
+            }).join('') : '<div class="p-3 text-sm text-slate-500 text-center italic">Data siswa kosong. Silakan tambah data siswa terlebih dahulu.</div>';
 
             const modal = document.createElement('div');
             modal.id = 'modal-struktur';
@@ -3317,16 +3317,40 @@ ${formatInstruction}`;
                         <h2 class="text-xl font-bold text-slate-800">${title}</h2>
                         <button type="button" onclick="document.getElementById('modal-struktur').remove()" class="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-full transition-colors"><i class="fas fa-times"></i></button>
                     </div>
-                    <form onsubmit="window.orgSimpan(event)" class="p-6 space-y-4">
+                    <form onsubmit="window.orgSimpan(event)" onclick="window.checkCloseOrgDropdown(event)" class="p-6 space-y-4">
                         <input type="hidden" name="editId" value="${s ? s.id : ''}">
                         <input type="hidden" name="parentId" value="${s ? s.parentId || '' : parentId || ''}">
                         <div>
                             <label class="block text-sm font-medium text-slate-700 mb-1">Nama Lengkap</label>
                             <div class="relative">
-                                <input type="text" id="org-name-display" name="name" required readonly class="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition-all bg-white cursor-pointer pr-10 text-slate-700 font-medium" value="${s ? s.name : ''}" placeholder="Pilih siswa..." onclick="document.getElementById('org-name-dropdown').classList.toggle('hidden')">
+                                <input type="text" id="org-name-display" name="name" required readonly class="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition-all bg-white cursor-pointer pr-10 text-slate-700 font-medium" value="${s ? s.name : ''}" placeholder="Pilih siswa..." onclick="window.toggleOrgDropdown(event)">
                                 <div class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"><i class="fas fa-chevron-down"></i></div>
-                                <div id="org-name-dropdown" class="absolute z-50 w-full mt-2 bg-white border border-slate-200 rounded-xl shadow-xl hidden max-h-60 overflow-y-auto p-1.5 divide-y divide-slate-50">
-                                    ${siswaListHtml}
+                                
+                                <!-- Dropdown Siswa Multi-Select dengan Menu Simpan untuk Menutup Dropdown -->
+                                <div id="org-name-dropdown" class="absolute z-50 left-0 right-0 top-full mt-1.5 bg-white border border-slate-200 rounded-2xl shadow-2xl hidden flex flex-col overflow-hidden" onclick="event.stopPropagation()">
+                                    <!-- Search & Reset -->
+                                    <div class="p-2 border-b border-slate-100 bg-slate-50/90 flex items-center gap-2">
+                                        <div class="relative flex-1">
+                                            <i class="fas fa-search absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+                                            <input type="text" placeholder="Cari nama siswa..." oninput="window.filterOrgSiswa(this.value)" class="w-full pl-7 pr-2.5 py-1.5 text-xs bg-white border border-slate-200 rounded-lg outline-none focus:ring-1 focus:ring-blue-500">
+                                        </div>
+                                        <button type="button" onclick="window.orgSelectAll(false)" class="text-[11px] text-slate-500 hover:text-rose-600 px-2 py-1 rounded hover:bg-slate-100 font-medium whitespace-nowrap transition cursor-pointer" title="Hapus semua centang">Reset</button>
+                                    </div>
+
+                                    <!-- List Siswa -->
+                                    <div class="max-h-48 overflow-y-auto p-1.5 divide-y divide-slate-50" id="org-siswa-list-container">
+                                        ${siswaListHtml}
+                                    </div>
+
+                                    <!-- Footer Menu Simpan untuk Menyimpan dan Menutup Dropdown -->
+                                    <div class="p-2.5 border-t border-slate-200 bg-slate-50 flex items-center justify-between gap-2">
+                                        <span id="org-selected-count" class="text-xs font-semibold text-slate-600 truncate">
+                                            ${selectedNames.length > 0 ? selectedNames.length + ' siswa dipilih' : 'Pilih nama siswa'}
+                                        </span>
+                                        <button type="button" onclick="window.closeOrgDropdown(event)" class="px-4 py-1.5 bg-blue-600 hover:bg-blue-700 active:scale-95 text-white rounded-lg text-xs font-bold transition flex items-center gap-1.5 shadow-xs cursor-pointer">
+                                            <i class="fas fa-check"></i> Simpan
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -3374,10 +3398,63 @@ ${formatInstruction}`;
             });
         };
         
+        window.toggleOrgDropdown = (e) => {
+            if (e) e.stopPropagation();
+            const dd = document.getElementById('org-name-dropdown');
+            if (dd) {
+                dd.classList.toggle('hidden');
+                if (!dd.classList.contains('hidden')) {
+                    const searchInput = dd.querySelector('input[type="text"]');
+                    if (searchInput) searchInput.focus();
+                }
+            }
+        };
+
+        window.closeOrgDropdown = (e) => {
+            if (e) e.stopPropagation();
+            window.updateOrgNameInput();
+            const dd = document.getElementById('org-name-dropdown');
+            if (dd) dd.classList.add('hidden');
+        };
+
+        window.checkCloseOrgDropdown = (e) => {
+            const dd = document.getElementById('org-name-dropdown');
+            const disp = document.getElementById('org-name-display');
+            if (dd && !dd.classList.contains('hidden')) {
+                if (!dd.contains(e.target) && e.target !== disp) {
+                    window.closeOrgDropdown(e);
+                }
+            }
+        };
+
         window.updateOrgNameInput = () => {
             const checkboxes = document.querySelectorAll('.org-name-checkbox:checked');
             const names = Array.from(checkboxes).map(cb => cb.value);
-            document.getElementById('org-name-display').value = names.join(', ');
+            const input = document.getElementById('org-name-display');
+            if (input) input.value = names.join(', ');
+            const countEl = document.getElementById('org-selected-count');
+            if (countEl) {
+                countEl.textContent = names.length > 0 ? `${names.length} siswa dipilih` : 'Pilih nama siswa';
+            }
+        };
+
+        window.filterOrgSiswa = (keyword) => {
+            const query = (keyword || '').toLowerCase().trim();
+            const items = document.querySelectorAll('.org-siswa-item');
+            items.forEach(el => {
+                const name = el.getAttribute('data-name') || '';
+                if (!query || name.includes(query)) {
+                    el.style.display = 'flex';
+                } else {
+                    el.style.display = 'none';
+                }
+            });
+        };
+
+        window.orgSelectAll = (checkAll) => {
+            const checkboxes = document.querySelectorAll('.org-name-checkbox');
+            checkboxes.forEach(cb => { cb.checked = !!checkAll; });
+            window.updateOrgNameInput();
         };
 
         window.handleOrgPhotoUpload = async (event) => {
@@ -9003,51 +9080,21 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
             }
         };
 
-        window.updateManualPetugas = function(hariIdx, jenis, val) {
-            const role = (jenis === 'doa_id' || jenis === 'doa') ? 'doa' : 'barisan';
-            window.updateManualPetugasNama(hariIdx, role, val);
-        };
-
-        window.updateManualPetugasNama = function(hariIdx, jenis, inputVal) {
+        window.updateManualPetugasSelect = function(hariIdx, role, studentId) {
             const d = db.denah_duduk;
             if (!d || !d.jadwal_pemimpin || !d.jadwal_pemimpin[hariIdx]) return;
             const item = d.jadwal_pemimpin[hariIdx];
-            const cleanVal = (inputVal || '').trim();
 
-            const students = db.students || [];
-            let matchedStudent = null;
+            const sid = studentId ? parseInt(studentId) : null;
+            const student = (db.students || []).find(s => s.id === sid);
 
-            if (cleanVal) {
-                // Cek jika input berupa ID angka langsung
-                if (/^\d+$/.test(cleanVal)) {
-                    const sid = parseInt(cleanVal);
-                    matchedStudent = students.find(s => s.id === sid);
-                }
-                // Cek apakah string diawali nomor absen, misal "1. Eko Prasetyo"
-                if (!matchedStudent) {
-                    const matchNum = cleanVal.match(/^(\d+)[\.\s\-]+(.*)/);
-                    if (matchNum) {
-                        const absenNum = parseInt(matchNum[1]);
-                        const namaPart = matchNum[2].trim().toLowerCase();
-                        matchedStudent = students.find((s, idx) => {
-                            const no = parseInt(s.noAbsen || s.nomor_absen || idx + 1);
-                            return no === absenNum || s.name.toLowerCase() === namaPart;
-                        });
-                    }
-                }
-                // Cek kecocokan nama langsung
-                if (!matchedStudent) {
-                    matchedStudent = students.find(s => s.name.toLowerCase() === cleanVal.toLowerCase());
-                }
-            }
-
-            const targetKey = (jenis === 'doa' || jenis === 'doa_id') ? 'doa' : 'barisan';
+            const targetKey = (role === 'doa' || role === 'doa_id') ? 'doa' : 'barisan';
             if (targetKey === 'doa') {
-                item.doa_id = matchedStudent ? matchedStudent.id : null;
-                item.doa_nama = matchedStudent ? matchedStudent.name : cleanVal;
+                item.doa_id = sid;
+                item.doa_nama = student ? student.name : '';
             } else {
-                item.barisan_id = matchedStudent ? matchedStudent.id : null;
-                item.barisan_nama = matchedStudent ? matchedStudent.name : cleanVal;
+                item.barisan_id = sid;
+                item.barisan_nama = student ? student.name : '';
             }
 
             // Sinkronkan ke jadwal mingguan
@@ -9064,36 +9111,10 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
             navigateTo('denah_duduk');
         };
 
-        window.editManualPetugasModal = async function(hariIdx, jenis) {
-            const d = db.denah_duduk;
-            if (!d || !d.jadwal_pemimpin || !d.jadwal_pemimpin[hariIdx]) return;
-            const item = d.jadwal_pemimpin[hariIdx];
-            const isDoa = (jenis === 'doa' || jenis === 'doa_id');
-            const peranLabel = isDoa ? '🤲 Pemimpin Doa' : '🚩 Pemimpin Barisan';
-            const currentVal = isDoa ? (item.doa_nama || '') : (item.barisan_nama || '');
-
-            const { value: namaBaru } = await Swal.fire({
-                title: `Isi Manual: ${peranLabel}`,
-                html: `
-                    <p class="text-xs text-gray-500 mb-2">Hari: <b>${item.hari} (${item.tanggalFormatted})</b></p>
-                    <input id="swal-input-nama-petugas" class="swal2-input text-xs" placeholder="Ketik nama petugas..." value="${currentVal}">
-                `,
-                showCancelButton: true,
-                confirmButtonText: 'Simpan',
-                cancelButtonText: 'Batal',
-                confirmButtonColor: isDoa ? '#059669' : '#2563eb',
-                cancelButtonColor: '#64748b',
-                customClass: { popup: 'rounded-2xl' },
-                preConfirm: () => {
-                    const input = document.getElementById('swal-input-nama-petugas');
-                    return input ? input.value.trim() : '';
-                }
-            });
-
-            if (namaBaru !== undefined) {
-                window.updateManualPetugasNama(hariIdx, isDoa ? 'doa' : 'barisan', namaBaru);
-            }
+        window.updateManualPetugas = function(hariIdx, jenis, val) {
+            window.updateManualPetugasSelect(hariIdx, jenis, val);
         };
+        window.updateManualPetugasNama = window.updateManualPetugasSelect;
 
         window.kirimJadwalPetugasWA = function() {
             const d = db.denah_duduk;
@@ -9502,33 +9523,37 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                         <td class="p-3 text-xs">
                             <div class="flex items-center gap-1.5">
                                 <span class="w-6 h-6 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center text-xs shrink-0 font-bold" title="Pemimpin Doa">🤲</span>
-                                <div class="flex-1 min-w-0 relative">
-                                    <input type="text" 
-                                           list="list-semua-siswa-jadwal" 
-                                           value="${namaDoaDisp}" 
-                                           onchange="window.updateManualPetugasNama(${idx}, 'doa', this.value)" 
-                                           placeholder="Ketik nama / pilih siswa..." 
-                                           class="w-full text-xs border border-gray-200 rounded-lg py-1.5 px-2.5 bg-white font-medium focus:ring-1 focus:ring-emerald-500 outline-none text-gray-800 print:border-none print:p-0 print:bg-transparent print:font-bold" />
+                                <div class="flex-1 min-w-0">
+                                    <select onchange="window.updateManualPetugasSelect(${idx}, 'doa', this.value)" 
+                                            class="w-full text-xs border border-gray-200 rounded-lg py-1.5 px-2 bg-white font-medium focus:ring-1 focus:ring-emerald-500 outline-none text-gray-800 cursor-pointer print:hidden"
+                                            title="Pilih Siswa Pemimpin Doa">
+                                        <option value="">-- Pilih Siswa --</option>
+                                        ${students.map(s => `
+                                            <option value="${s.id}" ${j.doa_id === s.id ? 'selected' : ''}>
+                                                ${studentMap[s.id].noAbsen}. ${s.name}
+                                            </option>
+                                        `).join('')}
+                                    </select>
+                                    <span class="hidden print:inline font-bold text-gray-800">${namaDoaDisp || '-'}</span>
                                 </div>
-                                <button type="button" onclick="window.editManualPetugasModal(${idx}, 'doa')" class="p-1.5 text-gray-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition shrink-0 cursor-pointer print-hide" title="Edit teks manual">
-                                    <i class="fas fa-edit text-xs"></i>
-                                </button>
                             </div>
                         </td>
                         <td class="p-3 text-xs">
                             <div class="flex items-center gap-1.5">
                                 <span class="w-6 h-6 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center text-xs shrink-0 font-bold" title="Pemimpin Barisan">🚩</span>
-                                <div class="flex-1 min-w-0 relative">
-                                    <input type="text" 
-                                           list="list-semua-siswa-jadwal" 
-                                           value="${namaBarisanDisp}" 
-                                           onchange="window.updateManualPetugasNama(${idx}, 'barisan', this.value)" 
-                                           placeholder="Ketik nama / pilih siswa..." 
-                                           class="w-full text-xs border border-gray-200 rounded-lg py-1.5 px-2.5 bg-white font-medium focus:ring-1 focus:ring-blue-500 outline-none text-gray-800 print:border-none print:p-0 print:bg-transparent print:font-bold" />
+                                <div class="flex-1 min-w-0">
+                                    <select onchange="window.updateManualPetugasSelect(${idx}, 'barisan', this.value)" 
+                                            class="w-full text-xs border border-gray-200 rounded-lg py-1.5 px-2 bg-white font-medium focus:ring-1 focus:ring-blue-500 outline-none text-gray-800 cursor-pointer print:hidden"
+                                            title="Pilih Siswa Pemimpin Barisan">
+                                        <option value="">-- Pilih Siswa --</option>
+                                        ${students.map(s => `
+                                            <option value="${s.id}" ${j.barisan_id === s.id ? 'selected' : ''}>
+                                                ${studentMap[s.id].noAbsen}. ${s.name}
+                                            </option>
+                                        `).join('')}
+                                    </select>
+                                    <span class="hidden print:inline font-bold text-gray-800">${namaBarisanDisp || '-'}</span>
                                 </div>
-                                <button type="button" onclick="window.editManualPetugasModal(${idx}, 'barisan')" class="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition shrink-0 cursor-pointer print-hide" title="Edit teks manual">
-                                    <i class="fas fa-edit text-xs"></i>
-                                </button>
                                 <button type="button" onclick="window.samakanPetugasHari(${idx})" class="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition shrink-0 cursor-pointer print-hide" title="Samakan Pemimpin Barisan & Doa">
                                     <i class="fas fa-equals text-xs"></i>
                                 </button>
@@ -9539,10 +9564,6 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
             }).join('');
 
             return `
-                <datalist id="list-semua-siswa-jadwal">
-                    ${students.map(s => `<option value="${studentMap[s.id].noAbsen}. ${s.name}">`).join('')}
-                    ${students.map(s => `<option value="${s.name}">`).join('')}
-                </datalist>
                 <div class="w-full space-y-6">
                     <!-- Lembar Kop Khusus Cetak -->
                     <div class="hidden print:block mb-4 border-b-2 border-black pb-3 text-center">
@@ -9802,9 +9823,6 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                                     </button>
                                     <button onclick="window.setMetodePemimpin('presensi')" class="px-2.5 py-1.5 rounded-md font-semibold transition ${d.metode_pemimpin === 'presensi' ? 'bg-indigo-600 text-white shadow-xs' : 'text-gray-600 hover:text-indigo-600'}" title="Giliran rotasi urut nomor presensi">
                                         <i class="fas fa-list-ol mr-1"></i> Sesuai Presensi
-                                    </button>
-                                    <button onclick="window.setMetodePemimpin('manual')" class="px-2.5 py-1.5 rounded-md font-semibold transition ${d.metode_pemimpin === 'manual' ? 'bg-indigo-600 text-white shadow-xs' : 'text-gray-600 hover:text-indigo-600'}" title="Mode Bebas: Isi nama pemimpin doa & barisan secara manual">
-                                        <i class="fas fa-edit mr-1"></i> Isi Manual
                                     </button>
                                 </div>
 
