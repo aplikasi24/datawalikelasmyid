@@ -9152,12 +9152,7 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                     <form id="form-pengaturan" onsubmit="event.preventDefault()" oninput="window.autoSavePengaturan()" class="space-y-5">
                         <div class="grid grid-cols-2 gap-4">
                             <div>
-                                <div class="flex items-center justify-between mb-1">
-                                    <label class="text-sm font-medium text-gray-600">Nama Lengkap</label>
-                                    <button type="button" onclick="window.editNamaLengkap()" class="text-xs text-blue-600 hover:text-blue-700 bg-blue-50 hover:bg-blue-100 border border-blue-200 px-2 py-0.5 rounded font-semibold flex items-center gap-1 shadow-sm transition cursor-pointer">
-                                        <i class="fas fa-edit text-[11px]"></i> Edit
-                                    </button>
-                                </div>
+                                <label class="text-sm font-medium text-gray-600 block mb-1">Nama Lengkap</label>
                                 <div class="relative flex items-center">
                                     <input type="text" id="input-pengaturan-nama" name="nama" value="${p.nama || ''}" placeholder="Nama Lengkap Guru" class="w-full border p-2 pr-20 rounded-lg bg-gray-50 focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none transition" />
                                     <button type="button" onclick="window.editNamaLengkap()" class="absolute right-1.5 px-3 py-1 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-md text-xs font-semibold flex items-center gap-1 shadow-sm transition-all cursor-pointer" title="Klik untuk edit nama">
