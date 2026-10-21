@@ -8922,7 +8922,9 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
         window.autoSavePengaturan = () => {
             const form = document.getElementById('form-pengaturan');
             if (!form) return;
-            const newNama = form.nama.value;
+            const inputNama = form.nama;
+            // Jika sedang diedit inline, jangan overwrite nama di DB sampai tombol Simpan diklik
+            const newNama = (window._isEditingNama && db.pengaturan) ? (db.pengaturan.nama || inputNama.value) : inputNama.value;
             db.pengaturan = {
                 ...db.pengaturan,
                 nama: newNama,
@@ -8935,7 +8937,7 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                 semester: form.semester.value,
                 npsn: form.npsn.value
             };
-            if (window.currentUser) {
+            if (!window._isEditingNama && window.currentUser) {
                 window.currentUser.nama = newNama;
                 window.currentUser.name = newNama;
                 try {
@@ -8946,10 +8948,12 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
             }
             window.addAktivitas && window.addAktivitas('pengaturan', 'Pengaturan diperbarui', 'Profil/Identitas');
             saveDB();
-            window.updateUIIdentitas();
+            if (!window._isEditingNama) {
+                window.updateUIIdentitas();
+            }
 
-            // Debounce kirim perubahan nama ke database server
-            if (window.currentUser && window.currentUser.email && newNama && newNama.trim() && typeof APPSCRIPT_URL !== 'undefined') {
+            // Debounce kirim perubahan nama ke database server (hanya jika tidak sedang diedit inline)
+            if (!window._isEditingNama && window.currentUser && window.currentUser.email && newNama && newNama.trim() && typeof APPSCRIPT_URL !== 'undefined') {
                 const trimmed = newNama.trim();
                 if (trimmed !== (window._lastSyncedNama || '')) {
                     clearTimeout(window._debounceUpdateNamaTimer);
@@ -8968,85 +8972,133 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
             }
         };
 
-        window.editNamaLengkap = async () => {
-            const curNama = (db.pengaturan && db.pengaturan.nama) || (window.currentUser && window.currentUser.nama) || '';
-            const { value: newNama } = await Swal.fire({
-                title: 'Edit Nama Lengkap',
-                input: 'text',
-                inputLabel: 'Masukkan Nama Lengkap Anda beserta Gelar:',
-                inputValue: curNama,
-                placeholder: 'Contoh: Ahmad Budi Santoso, S.Pd.',
-                showCancelButton: true,
-                confirmButtonText: '<i class="fas fa-save mr-1"></i> Simpan Perubahan',
-                cancelButtonText: 'Batal',
-                confirmButtonColor: '#2563eb',
-                cancelButtonColor: '#64748b',
-                customClass: {
-                    popup: 'rounded-2xl',
-                    confirmButton: 'rounded-xl px-5 py-2.5 font-bold',
-                    cancelButton: 'rounded-xl px-4 py-2.5 font-medium'
-                },
-                inputValidator: (val) => {
-                    if (!val || !val.trim()) return 'Nama lengkap tidak boleh kosong!';
-                }
-            });
+        window.startEditNamaLengkap = () => {
+            const input = document.getElementById('input-pengaturan-nama');
+            const wrapper = document.getElementById('wrapper-btn-edit-nama');
+            if (!input || !wrapper) return;
+            
+            window._isEditingNama = true;
+            window._prevNama = input.value;
 
-            if (newNama !== undefined && newNama.trim()) {
-                const trimmed = newNama.trim();
-                if (!db.pengaturan) db.pengaturan = {};
-                db.pengaturan.nama = trimmed;
-                
-                const inputForm = document.querySelector('#form-pengaturan input[name="nama"]');
-                if (inputForm) inputForm.value = trimmed;
-                const profileNama = document.getElementById('pengaturan-profile-nama');
-                if (profileNama) profileNama.innerText = trimmed;
+            input.removeAttribute('readonly');
+            input.classList.remove('bg-gray-100', 'text-gray-700', 'cursor-not-allowed');
+            input.classList.add('bg-white', 'text-gray-900', 'ring-2', 'ring-blue-500', 'border-blue-500', 'cursor-text');
+            input.focus();
+            input.select();
 
-                if (window.currentUser) {
-                    window.currentUser.nama = trimmed;
-                    window.currentUser.name = trimmed;
-                    try {
-                        localStorage.setItem('currentUser', JSON.stringify(window.currentUser));
-                        localStorage.setItem('auth_user', JSON.stringify(window.currentUser));
-                        document.cookie = "auth_user=" + encodeURIComponent(JSON.stringify(window.currentUser)) + "; max-age=31536000; path=/";
-                    } catch(e) {}
-                }
-                
-                saveDB();
-                window.updateUIIdentitas();
-                window.addAktivitas && window.addAktivitas('pengaturan', 'Nama guru diperbarui menjadi ' + trimmed, 'Profil/Identitas');
+            wrapper.innerHTML = `
+                <button type="button" onclick="window.cancelEditNamaLengkap()" class="px-2.5 py-1 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-md text-xs font-medium transition cursor-pointer" title="Batal ubah nama">
+                    Batal
+                </button>
+                <button type="button" onclick="window.saveEditNamaLengkap()" class="px-3 py-1 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white rounded-md text-xs font-semibold flex items-center gap-1 shadow-sm transition-all cursor-pointer" title="Simpan nama baru">
+                    <i class="fas fa-check text-[10px]"></i> Simpan
+                </button>
+            `;
+        };
 
-                // Sinkronkan nama ke database server (code.gs)
-                window._lastSyncedNama = trimmed;
-                if (window.currentUser && window.currentUser.email && typeof APPSCRIPT_URL !== 'undefined') {
-                    fetch(APPSCRIPT_URL, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                        body: new URLSearchParams({
-                            action: 'updateNama',
-                            data: JSON.stringify({ email: window.currentUser.email, nama: trimmed })
-                        })
-                    })
-                    .then(r => r.json())
-                    .then(res => {
-                        if (res.status === 'success') {
-                            console.log('Nama berhasil diperbarui di server database:', res.nama);
-                        } else {
-                            console.warn('Gagal sinkron nama ke server:', res.message);
-                        }
-                    })
-                    .catch(e => console.log('Update nama server offline:', e));
-                }
-                
+        window.cancelEditNamaLengkap = () => {
+            const input = document.getElementById('input-pengaturan-nama');
+            const wrapper = document.getElementById('wrapper-btn-edit-nama');
+            if (!input || !wrapper) return;
+
+            input.value = window._prevNama !== undefined ? window._prevNama : ((db.pengaturan && db.pengaturan.nama) || '');
+            input.setAttribute('readonly', 'true');
+            input.classList.remove('bg-white', 'text-gray-900', 'ring-2', 'ring-blue-500', 'border-blue-500', 'cursor-text');
+            input.classList.add('bg-gray-100', 'text-gray-700', 'cursor-not-allowed');
+
+            wrapper.innerHTML = `
+                <button type="button" id="btn-edit-nama" onclick="window.startEditNamaLengkap()" class="px-3 py-1 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-md text-xs font-semibold flex items-center gap-1 shadow-sm transition-all cursor-pointer" title="Klik untuk edit nama">
+                    <i class="fas fa-pen text-[10px]"></i> Edit
+                </button>
+            `;
+            window._isEditingNama = false;
+        };
+
+        window.saveEditNamaLengkap = async () => {
+            const input = document.getElementById('input-pengaturan-nama');
+            const wrapper = document.getElementById('wrapper-btn-edit-nama');
+            if (!input) return;
+
+            const trimmed = (input.value || '').trim();
+            if (!trimmed) {
                 Swal.fire({
-                    icon: 'success',
-                    title: 'Berhasil Disimpan',
-                    text: 'Nama Lengkap berhasil diperbarui menjadi: ' + trimmed,
-                    timer: 1600,
-                    showConfirmButton: false,
+                    icon: 'warning',
+                    title: 'Perhatian',
+                    text: 'Nama lengkap tidak boleh kosong!',
                     customClass: { popup: 'rounded-2xl' }
                 });
+                input.focus();
+                return;
             }
+
+            if (!db.pengaturan) db.pengaturan = {};
+            db.pengaturan.nama = trimmed;
+            input.value = trimmed;
+
+            const profileNama = document.getElementById('pengaturan-profile-nama');
+            if (profileNama) profileNama.innerText = trimmed;
+
+            if (window.currentUser) {
+                window.currentUser.nama = trimmed;
+                window.currentUser.name = trimmed;
+                try {
+                    localStorage.setItem('currentUser', JSON.stringify(window.currentUser));
+                    localStorage.setItem('auth_user', JSON.stringify(window.currentUser));
+                    document.cookie = "auth_user=" + encodeURIComponent(JSON.stringify(window.currentUser)) + "; max-age=31536000; path=/";
+                } catch(e) {}
+            }
+
+            saveDB();
+            window.updateUIIdentitas();
+            window.addAktivitas && window.addAktivitas('pengaturan', 'Nama guru diperbarui menjadi ' + trimmed, 'Profil/Identitas');
+
+            // Kunci kembali input
+            input.setAttribute('readonly', 'true');
+            input.classList.remove('bg-white', 'text-gray-900', 'ring-2', 'ring-blue-500', 'border-blue-500', 'cursor-text');
+            input.classList.add('bg-gray-100', 'text-gray-700', 'cursor-not-allowed');
+
+            if (wrapper) {
+                wrapper.innerHTML = `
+                    <button type="button" id="btn-edit-nama" onclick="window.startEditNamaLengkap()" class="px-3 py-1 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-md text-xs font-semibold flex items-center gap-1 shadow-sm transition-all cursor-pointer" title="Klik untuk edit nama">
+                        <i class="fas fa-pen text-[10px]"></i> Edit
+                    </button>
+                `;
+            }
+            window._isEditingNama = false;
+
+            // Sinkronkan nama ke server database (code.gs)
+            window._lastSyncedNama = trimmed;
+            if (window.currentUser && window.currentUser.email && typeof APPSCRIPT_URL !== 'undefined') {
+                fetch(APPSCRIPT_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: new URLSearchParams({
+                        action: 'updateNama',
+                        data: JSON.stringify({ email: window.currentUser.email, nama: trimmed })
+                    })
+                })
+                .then(r => r.json())
+                .then(res => {
+                    if (res.status === 'success') {
+                        console.log('Nama berhasil diperbarui di server database:', res.nama);
+                    } else {
+                        console.warn('Gagal sinkron nama ke server:', res.message);
+                    }
+                })
+                .catch(e => console.log('Update nama server offline:', e));
+            }
+
+            Swal.fire({
+                icon: 'success',
+                title: 'Berhasil Disimpan',
+                text: 'Nama Lengkap berhasil diperbarui menjadi: ' + trimmed,
+                timer: 1600,
+                showConfirmButton: false,
+                customClass: { popup: 'rounded-2xl' }
+            });
         };
+
+        window.editNamaLengkap = window.startEditNamaLengkap;
 
         function renderPengaturan() {
             const p = db.pengaturan || {nama: '', nip: '-', sekolah: ''};
@@ -9146,10 +9198,12 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                             <div>
                                 <label class="text-sm font-medium text-gray-600 block mb-1">Nama Lengkap</label>
                                 <div class="relative flex items-center">
-                                    <input type="text" id="input-pengaturan-nama" name="nama" value="${p.nama || ''}" placeholder="Nama Lengkap Guru" class="w-full border p-2 pr-20 rounded-lg bg-gray-50 focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none transition" />
-                                    <button type="button" onclick="window.editNamaLengkap()" class="absolute right-1.5 px-3 py-1 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-md text-xs font-semibold flex items-center gap-1 shadow-sm transition-all cursor-pointer" title="Klik untuk edit nama">
-                                        <i class="fas fa-pen text-[10px]"></i> Edit
-                                    </button>
+                                    <input type="text" id="input-pengaturan-nama" name="nama" value="${p.nama || ''}" placeholder="Nama Lengkap Guru" readonly onkeydown="if(event.key==='Enter'){event.preventDefault();window.saveEditNamaLengkap();}else if(event.key==='Escape'){event.preventDefault();window.cancelEditNamaLengkap();}" class="w-full border p-2 pr-32 rounded-lg bg-gray-100 text-gray-700 cursor-not-allowed outline-none transition" title="Klik tombol Edit di samping untuk mengubah nama" />
+                                    <div id="wrapper-btn-edit-nama" class="absolute right-1.5 flex items-center gap-1">
+                                        <button type="button" id="btn-edit-nama" onclick="window.startEditNamaLengkap()" class="px-3 py-1 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-md text-xs font-semibold flex items-center gap-1 shadow-sm transition-all cursor-pointer" title="Klik untuk edit nama">
+                                            <i class="fas fa-pen text-[10px]"></i> Edit
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
                             <div>
