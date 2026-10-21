@@ -8262,6 +8262,7 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
         // MODUL: DENAH TEMPAT DUDUK INTERAKTIF & JADWAL PEMIMPIN
         // ============================================================
         window._denahSelectedSlot = null;
+        window._depanSelectedElement = null;
 
         window.initDenahDuduk = function() {
             if (!db.denah_duduk) db.denah_duduk = {};
@@ -8277,6 +8278,9 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
             if (!d.jadwal_mingguan) d.jadwal_mingguan = {};
             if (!Array.isArray(d.susunan)) d.susunan = [];
             if (!Array.isArray(d.jadwal_pemimpin)) d.jadwal_pemimpin = [];
+            if (!Array.isArray(d.layout_depan) || d.layout_depan.length !== 3) {
+                d.layout_depan = ['guru', 'papan', 'pintu'];
+            }
 
             const slotsPerUnit = (d.tipe_meja === 'ganda' ? 2 : 1);
             const totalSlots = d.kolom * d.baris * slotsPerUnit;
@@ -8497,6 +8501,102 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
             navigateTo('denah_duduk');
         };
 
+        window.moveDepanElement = function(elementKey, direction) {
+            const d = db.denah_duduk;
+            if (!d) return;
+            if (!Array.isArray(d.layout_depan) || d.layout_depan.length !== 3) {
+                d.layout_depan = ['guru', 'papan', 'pintu'];
+            }
+            const idx = d.layout_depan.indexOf(elementKey);
+            if (idx === -1) return;
+            const targetIdx = idx + direction;
+            if (targetIdx < 0 || targetIdx >= d.layout_depan.length) return;
+
+            const temp = d.layout_depan[idx];
+            d.layout_depan[idx] = d.layout_depan[targetIdx];
+            d.layout_depan[targetIdx] = temp;
+
+            saveDB();
+            navigateTo('denah_duduk');
+        };
+
+        window.handleDepanElementClick = function(elementKey) {
+            const d = db.denah_duduk;
+            if (!d) return;
+            if (!Array.isArray(d.layout_depan) || d.layout_depan.length !== 3) {
+                d.layout_depan = ['guru', 'papan', 'pintu'];
+            }
+
+            if (window._depanSelectedElement === null) {
+                window._depanSelectedElement = elementKey;
+                navigateTo('denah_duduk');
+            } else if (window._depanSelectedElement === elementKey) {
+                window._depanSelectedElement = null;
+                navigateTo('denah_duduk');
+            } else {
+                const el1 = window._depanSelectedElement;
+                const el2 = elementKey;
+                const idx1 = d.layout_depan.indexOf(el1);
+                const idx2 = d.layout_depan.indexOf(el2);
+                if (idx1 !== -1 && idx2 !== -1) {
+                    const temp = d.layout_depan[idx1];
+                    d.layout_depan[idx1] = d.layout_depan[idx2];
+                    d.layout_depan[idx2] = temp;
+                }
+                window._depanSelectedElement = null;
+                saveDB();
+                navigateTo('denah_duduk');
+            }
+        };
+
+        window.batalPilihDepan = function() {
+            window._depanSelectedElement = null;
+            navigateTo('denah_duduk');
+        };
+
+        window.swapMejaGuruDanPintu = function() {
+            const d = db.denah_duduk;
+            if (!d) return;
+            if (!Array.isArray(d.layout_depan) || d.layout_depan.length !== 3) {
+                d.layout_depan = ['guru', 'papan', 'pintu'];
+            }
+            const idxGuru = d.layout_depan.indexOf('guru');
+            const idxPintu = d.layout_depan.indexOf('pintu');
+            if (idxGuru !== -1 && idxPintu !== -1) {
+                const temp = d.layout_depan[idxGuru];
+                d.layout_depan[idxGuru] = d.layout_depan[idxPintu];
+                d.layout_depan[idxPintu] = temp;
+                saveDB();
+                navigateTo('denah_duduk');
+            }
+        };
+
+        window.resetLayoutDepan = function() {
+            const d = db.denah_duduk;
+            if (!d) return;
+            d.layout_depan = ['guru', 'papan', 'pintu'];
+            window._depanSelectedElement = null;
+            saveDB();
+            navigateTo('denah_duduk');
+        };
+
+        window.handleFormatDanModeChange = function(val) {
+            const d = db.denah_duduk;
+            if (!d) return;
+
+            if (val === 'tetap') {
+                window.recalcDenahDuduk('tetap', true);
+            } else if (val === 'ganda') {
+                d.tipe_meja = 'ganda';
+                if (d.mode_urutan === 'tetap') d.mode_urutan = 'kanan';
+                window.recalcDenahDuduk(d.mode_urutan || 'kanan', true);
+            } else if (val === 'tunggal') {
+                d.tipe_meja = 'tunggal';
+                if (d.mode_urutan === 'tetap') d.mode_urutan = 'kanan';
+                window.recalcDenahDuduk(d.mode_urutan || 'kanan', true);
+            }
+        };
+
         window.changeDenahTipeMeja = function(tipe) {
             const d = db.denah_duduk;
             if (!d) return;
@@ -8626,6 +8726,11 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
             if (metode === 'presensi') {
                 d.minggu_offset = 0; // Reset ke minggu awal agar langsung mulai dari absen 1
             }
+            if (metode === 'manual') {
+                saveDB();
+                navigateTo('denah_duduk');
+                return;
+            }
             window.generateJadwalPemimpin(metode, true, true);
         };
 
@@ -8640,11 +8745,24 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
             const d = db.denah_duduk;
             if (!d || !d.jadwal_pemimpin || !d.jadwal_pemimpin[hariIdx]) return;
             const j = d.jadwal_pemimpin[hariIdx];
-            if (j.doa_id) {
+            if (j.doa_nama || j.doa_id) {
                 j.barisan_id = j.doa_id;
-            } else if (j.barisan_id) {
+                j.barisan_nama = j.doa_nama;
+            } else if (j.barisan_nama || j.barisan_id) {
                 j.doa_id = j.barisan_id;
+                j.doa_nama = j.barisan_nama;
             }
+
+            // Sinkronkan ke jadwal mingguan
+            const tglBasis = new Date(d.tanggal_denah || new Date());
+            const dayOfWeek = tglBasis.getDay();
+            const diffToMonday = (dayOfWeek === 0 ? -6 : 1 - dayOfWeek);
+            const seninDate = new Date(tglBasis);
+            seninDate.setDate(tglBasis.getDate() + diffToMonday + ((d.minggu_offset || 0) * 7));
+            const weekKey = seninDate.toISOString().split('T')[0];
+            if (!d.jadwal_mingguan) d.jadwal_mingguan = {};
+            d.jadwal_mingguan[weekKey] = d.jadwal_pemimpin;
+
             saveDB();
             navigateTo('denah_duduk');
         };
@@ -8707,8 +8825,46 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
             d.metode_pemimpin = metode;
             const students = db.students || [];
             if (students.length === 0) return;
+            const studentMap = {};
+            students.forEach((s, idx) => { studentMap[s.id] = { ...s, noAbsen: idx + 1 }; });
 
             const hariList = (db.hari_efektif && db.hari_efektif.length) ? db.hari_efektif : ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat'];
+            
+            if (metode === 'manual') {
+                if (!d.jadwal_pemimpin || d.jadwal_pemimpin.length === 0) {
+                    const tglBasis = new Date(d.tanggal_denah || new Date());
+                    const dayOfWeek = tglBasis.getDay();
+                    const diffToMonday = (dayOfWeek === 0 ? -6 : 1 - dayOfWeek);
+                    const seninBasis = new Date(tglBasis);
+                    seninBasis.setDate(tglBasis.getDate() + diffToMonday);
+                    const seninDate = new Date(seninBasis);
+                    seninDate.setDate(seninBasis.getDate() + ((d.minggu_offset || 0) * 7));
+                    d.jadwal_pemimpin = hariList.map((hari, idx) => {
+                        const tglHari = new Date(seninDate);
+                        tglHari.setDate(seninDate.getDate() + idx);
+                        const y = tglHari.getFullYear();
+                        const m = String(tglHari.getMonth() + 1).padStart(2, '0');
+                        const day = String(tglHari.getDate()).padStart(2, '0');
+                        return {
+                            hari: hari,
+                            tanggalISO: `${y}-${m}-${day}`,
+                            tanggalFormatted: tglHari.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }),
+                            doa_id: null,
+                            doa_nama: '',
+                            barisan_id: null,
+                            barisan_nama: '',
+                            is_libur: false,
+                            ket_libur: ''
+                        };
+                    });
+                }
+                if (doSave) {
+                    saveDB();
+                    navigateTo('denah_duduk');
+                }
+                return;
+            }
+
             let orderedStudentIds = [];
 
             if (metode === 'tempat_duduk') {
@@ -8821,12 +8977,17 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                         barisanId = null;
                     }
 
+                    const sDoaObj = doaId ? studentMap[doaId] : null;
+                    const sBarisanObj = barisanId ? studentMap[barisanId] : null;
+
                     newJadwal.push({
                         hari: hari,
                         tanggalISO: tglISO,
                         tanggalFormatted: tglStr,
                         doa_id: doaId,
+                        doa_nama: sDoaObj ? sDoaObj.name : '',
                         barisan_id: barisanId,
+                        barisan_nama: sBarisanObj ? sBarisanObj.name : '',
                         is_libur: isLibur,
                         ket_libur: ketLibur
                     });
@@ -8842,16 +9003,51 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
             }
         };
 
-        window.updateManualPetugas = function(hariIdx, jenis, studentId) {
+        window.updateManualPetugas = function(hariIdx, jenis, val) {
+            const role = (jenis === 'doa_id' || jenis === 'doa') ? 'doa' : 'barisan';
+            window.updateManualPetugasNama(hariIdx, role, val);
+        };
+
+        window.updateManualPetugasNama = function(hariIdx, jenis, inputVal) {
             const d = db.denah_duduk;
             if (!d || !d.jadwal_pemimpin || !d.jadwal_pemimpin[hariIdx]) return;
-            const sid = studentId ? parseInt(studentId) : null;
-            d.jadwal_pemimpin[hariIdx][jenis] = sid;
+            const item = d.jadwal_pemimpin[hariIdx];
+            const cleanVal = (inputVal || '').trim();
 
-            // Jika tipe_petugas === 'sama', samakan peran pasangannya secara otomatis
-            if (d.tipe_petugas === 'sama') {
-                const partner = (jenis === 'doa_id' ? 'barisan_id' : 'doa_id');
-                d.jadwal_pemimpin[hariIdx][partner] = sid;
+            const students = db.students || [];
+            let matchedStudent = null;
+
+            if (cleanVal) {
+                // Cek jika input berupa ID angka langsung
+                if (/^\d+$/.test(cleanVal)) {
+                    const sid = parseInt(cleanVal);
+                    matchedStudent = students.find(s => s.id === sid);
+                }
+                // Cek apakah string diawali nomor absen, misal "1. Eko Prasetyo"
+                if (!matchedStudent) {
+                    const matchNum = cleanVal.match(/^(\d+)[\.\s\-]+(.*)/);
+                    if (matchNum) {
+                        const absenNum = parseInt(matchNum[1]);
+                        const namaPart = matchNum[2].trim().toLowerCase();
+                        matchedStudent = students.find((s, idx) => {
+                            const no = parseInt(s.noAbsen || s.nomor_absen || idx + 1);
+                            return no === absenNum || s.name.toLowerCase() === namaPart;
+                        });
+                    }
+                }
+                // Cek kecocokan nama langsung
+                if (!matchedStudent) {
+                    matchedStudent = students.find(s => s.name.toLowerCase() === cleanVal.toLowerCase());
+                }
+            }
+
+            const targetKey = (jenis === 'doa' || jenis === 'doa_id') ? 'doa' : 'barisan';
+            if (targetKey === 'doa') {
+                item.doa_id = matchedStudent ? matchedStudent.id : null;
+                item.doa_nama = matchedStudent ? matchedStudent.name : cleanVal;
+            } else {
+                item.barisan_id = matchedStudent ? matchedStudent.id : null;
+                item.barisan_nama = matchedStudent ? matchedStudent.name : cleanVal;
             }
 
             // Sinkronkan ke jadwal mingguan
@@ -8868,10 +9064,41 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
             navigateTo('denah_duduk');
         };
 
-        window.salinJadwalPetugasWA = function() {
+        window.editManualPetugasModal = async function(hariIdx, jenis) {
+            const d = db.denah_duduk;
+            if (!d || !d.jadwal_pemimpin || !d.jadwal_pemimpin[hariIdx]) return;
+            const item = d.jadwal_pemimpin[hariIdx];
+            const isDoa = (jenis === 'doa' || jenis === 'doa_id');
+            const peranLabel = isDoa ? '🤲 Pemimpin Doa' : '🚩 Pemimpin Barisan';
+            const currentVal = isDoa ? (item.doa_nama || '') : (item.barisan_nama || '');
+
+            const { value: namaBaru } = await Swal.fire({
+                title: `Isi Manual: ${peranLabel}`,
+                html: `
+                    <p class="text-xs text-gray-500 mb-2">Hari: <b>${item.hari} (${item.tanggalFormatted})</b></p>
+                    <input id="swal-input-nama-petugas" class="swal2-input text-xs" placeholder="Ketik nama petugas..." value="${currentVal}">
+                `,
+                showCancelButton: true,
+                confirmButtonText: 'Simpan',
+                cancelButtonText: 'Batal',
+                confirmButtonColor: isDoa ? '#059669' : '#2563eb',
+                cancelButtonColor: '#64748b',
+                customClass: { popup: 'rounded-2xl' },
+                preConfirm: () => {
+                    const input = document.getElementById('swal-input-nama-petugas');
+                    return input ? input.value.trim() : '';
+                }
+            });
+
+            if (namaBaru !== undefined) {
+                window.updateManualPetugasNama(hariIdx, isDoa ? 'doa' : 'barisan', namaBaru);
+            }
+        };
+
+        window.kirimJadwalPetugasWA = function() {
             const d = db.denah_duduk;
             if (!d || !d.jadwal_pemimpin || d.jadwal_pemimpin.length === 0) {
-                Swal.fire('Info', 'Belum ada jadwal pemimpin untuk disalin.', 'info');
+                Swal.fire('Info', 'Belum ada jadwal pemimpin untuk dikirim.', 'info');
                 return;
             }
 
@@ -8890,8 +9117,8 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
 
             let text = `*JADWAL PEMIMPIN DOA & PEMIMPIN BARISAN*\n`;
             text += `*${sekolah ? sekolah + ' - ' : ''}${kelas}*\n`;
-            text += `📅 Periode Minggu: ${rentangMinggu}\n`;
-            text += `Sistem Giliran: ${d.metode_pemimpin === 'tempat_duduk' ? 'Urutan Tempat Duduk' : 'Urutan Presensi Siswa'} (${d.tipe_petugas === 'sama' ? 'Siswa Sama' : 'Siswa Berbeda'})\n`;
+            text += `📅 Periode: ${rentangMinggu}\n`;
+            text += `Sistem Giliran: ${d.metode_pemimpin === 'manual' ? 'Pengisian Manual' : (d.metode_pemimpin === 'tempat_duduk' ? 'Urutan Tempat Duduk' : 'Urutan Presensi Siswa')} (${d.tipe_petugas === 'sama' ? 'Siswa Sama' : 'Siswa Berbeda'})\n`;
             text += `-----------------------------------------\n\n`;
 
             const studentMap = {};
@@ -8902,9 +9129,9 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                     text += `*${idx + 1}. ${j.hari} (${j.tanggalFormatted})*\n`;
                     text += `   🌴 *LIBUR SEKOLAH* (${j.ket_libur || 'Hari Libur'}) - Tidak ada petugas\n\n`;
                 } else {
-                    const namaDoa = studentMap[j.doa_id] || '(Belum diset)';
-                    const namaBarisan = studentMap[j.barisan_id] || '(Belum diset)';
-                    const ketSama = (j.doa_id && j.doa_id === j.barisan_id) ? ' (Siswa yang Sama)' : '';
+                    const namaDoa = j.doa_nama || studentMap[j.doa_id] || '(Belum diset)';
+                    const namaBarisan = j.barisan_nama || studentMap[j.barisan_id] || '(Belum diset)';
+                    const ketSama = (namaDoa && namaDoa === namaBarisan) ? ' (Siswa yang Sama)' : '';
                     text += `*${idx + 1}. ${j.hari} (${j.tanggalFormatted})*\n`;
                     text += `   🤲 Pemimpin Doa : ${namaDoa}${ketSama}\n`;
                     text += `   🚩 Pemimpin Barisan : ${namaBarisan}${ketSama}\n\n`;
@@ -8914,19 +9141,16 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
             text += `_Mohon ananda yang bertugas dapat hadir tepat waktu dan mempersiapkan diri dengan baik._\n\n`;
             text += `Wali Kelas: ${p.nama || 'Wali Kelas'}`;
 
-            navigator.clipboard.writeText(text).then(() => {
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Tersalin ke Clipboard!',
-                    text: 'Format teks jadwal siap ditempel/dikirim ke grup WhatsApp.',
-                    timer: 2000,
-                    showConfirmButton: false,
-                    customClass: { popup: 'rounded-2xl' }
-                });
-            }).catch(() => {
-                Swal.fire('Info', 'Gagal menyalin otomatis.', 'info');
-            });
+            // Salin ke clipboard sebagai cadangan
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(text).catch(() => {});
+            }
+
+            // Langsung buka WhatsApp
+            const waUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`;
+            window.open(waUrl, '_blank');
         };
+        window.salinJadwalPetugasWA = window.kirimJadwalPetugasWA;
 
 
         window.cetakDenahDuduk = function() {
@@ -8988,11 +9212,14 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
             const ketLiburToday = isLiburManToday ? db.libur_dates[nowISO] : '';
             const isLiburHariIni = (now.getDay() === 0 || now.getDay() === 6) || isLiburManToday; // Hari Sabtu, Minggu, atau diset libur
 
-            // Cari jadwal pemimpin hari ini
+            // Cari jadwal pemimpin hari ini (otomatis mendeteksi nama manual atau siswa)
             const jadwalHariIni = (d.jadwal_pemimpin || []).find(j => j.hari && j.hari.toLowerCase() === namaHariIni.toLowerCase() && !j.is_libur);
             const sDoaHariIni = jadwalHariIni && jadwalHariIni.doa_id ? studentMap[jadwalHariIni.doa_id] : null;
             const sBarisanHariIni = jadwalHariIni && jadwalHariIni.barisan_id ? studentMap[jadwalHariIni.barisan_id] : null;
-            const isPetugasSamaHariIni = sDoaHariIni && sBarisanHariIni && (sDoaHariIni.id === sBarisanHariIni.id);
+
+            const namaDoaHariIni = jadwalHariIni ? (jadwalHariIni.doa_nama || (sDoaHariIni ? `${sDoaHariIni.noAbsen ? sDoaHariIni.noAbsen + '. ' : ''}${sDoaHariIni.name}` : '')) : '';
+            const namaBarisanHariIni = jadwalHariIni ? (jadwalHariIni.barisan_nama || (sBarisanHariIni ? `${sBarisanHariIni.noAbsen ? sBarisanHariIni.noAbsen + '. ' : ''}${sBarisanHariIni.name}` : '')) : '';
+            const isPetugasSamaHariIni = namaDoaHariIni && namaBarisanHariIni && (namaDoaHariIni === namaBarisanHariIni);
 
             // Cek siapa saja yang bertugas minggu ini untuk diberi badge di meja
             const tugasMap = {};
@@ -9118,29 +9345,108 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                     }
 
                     rowDesksHtml += `
-                        <div class="bg-white rounded-2xl p-2 border-2 border-slate-200/90 shadow-xs hover:shadow-sm transition flex flex-col gap-1.5 relative group">
+                        <div class="bg-white rounded-2xl p-1.5 sm:p-2 border-2 border-slate-200/90 shadow-xs hover:shadow-sm transition flex flex-col gap-1 sm:gap-1.5 relative group ${d.tipe_meja === 'ganda' ? 'min-w-[130px] sm:min-w-0' : 'min-w-[85px] sm:min-w-0'}">
                             ${arahTandaHtml}
-                            <div class="flex gap-1.5 h-full">
+                            <div class="flex gap-1 sm:gap-1.5 h-full">
                                 ${seatsInDeskHtml}
                             </div>
                         </div>
                     `;
                 }
                 gridHtml += `
-                    <div class="grid gap-3" style="grid-template-columns: repeat(${d.kolom}, minmax(0, 1fr));">
+                    <div class="grid gap-2 sm:gap-3" style="grid-template-columns: repeat(${d.kolom}, minmax(${d.tipe_meja === 'ganda' ? '125px' : '85px'}, 1fr));">
                         ${rowDesksHtml}
                     </div>
                 `;
             }
 
+            // Bangun Komponen Elemen Depan Kelas berdasarkan d.layout_depan
+            if (!Array.isArray(d.layout_depan) || d.layout_depan.length !== 3) {
+                d.layout_depan = ['guru', 'papan', 'pintu'];
+            }
+
+            const depanComponents = {
+                guru: (idxInLayout) => {
+                    const isSelected = (window._depanSelectedElement === 'guru');
+                    return `
+                        <div class="bg-amber-50 border-2 ${isSelected ? 'border-amber-600 ring-4 ring-amber-300 shadow-md scale-102 z-10' : 'border-amber-300 hover:border-amber-400 hover:shadow-xs'} rounded-xl p-2.5 text-center text-xs font-bold text-amber-900 shadow-2xs relative group transition-all select-none cursor-pointer" onclick="window.handleDepanElementClick('guru')" title="Klik untuk menukar posisi">
+                            <div class="flex items-center justify-between mb-1 print-hide">
+                                <button type="button" onclick="event.stopPropagation(); window.moveDepanElement('guru', -1);" class="w-5 h-5 rounded bg-white hover:bg-amber-200 text-amber-800 flex items-center justify-center text-[10px] font-bold shadow-2xs transition cursor-pointer ${idxInLayout === 0 ? 'opacity-30 cursor-not-allowed' : ''}" title="Geser ke Kiri" ${idxInLayout === 0 ? 'disabled' : ''}>
+                                    <i class="fas fa-chevron-left"></i>
+                                </button>
+                                <span class="text-[9px] uppercase tracking-wider text-amber-800 font-extrabold flex items-center gap-1">
+                                    <i class="fas fa-chalkboard-teacher text-amber-600"></i> Meja Guru
+                                </span>
+                                <button type="button" onclick="event.stopPropagation(); window.moveDepanElement('guru', 1);" class="w-5 h-5 rounded bg-white hover:bg-amber-200 text-amber-800 flex items-center justify-center text-[10px] font-bold shadow-2xs transition cursor-pointer ${idxInLayout === 2 ? 'opacity-30 cursor-not-allowed' : ''}" title="Geser ke Kanan" ${idxInLayout === 2 ? 'disabled' : ''}>
+                                    <i class="fas fa-chevron-right"></i>
+                                </button>
+                            </div>
+                            <div class="py-1">
+                                <span class="block font-black text-amber-950">${p.nama || 'Wali Kelas'}</span>
+                                <span class="text-[10px] text-amber-700 font-medium">Meja Guru</span>
+                            </div>
+                        </div>
+                    `;
+                },
+                papan: (idxInLayout) => {
+                    const isSelected = (window._depanSelectedElement === 'papan');
+                    return `
+                        <div class="md:col-span-2 bg-gradient-to-r from-emerald-900 via-emerald-800 to-emerald-900 border-4 ${isSelected ? 'border-amber-300 ring-4 ring-amber-300 shadow-md scale-102 z-10' : 'border-amber-900 hover:border-amber-700 hover:shadow-md'} rounded-xl p-2.5 text-center text-white font-black tracking-wider text-xs shadow-md relative group transition-all select-none cursor-pointer" onclick="window.handleDepanElementClick('papan')" title="Klik untuk menukar posisi">
+                            <div class="flex items-center justify-between mb-1 print-hide">
+                                <button type="button" onclick="event.stopPropagation(); window.moveDepanElement('papan', -1);" class="w-5 h-5 rounded bg-emerald-800 hover:bg-emerald-700 text-white flex items-center justify-center text-[10px] font-bold shadow-2xs transition cursor-pointer ${idxInLayout === 0 ? 'opacity-30 cursor-not-allowed' : ''}" title="Geser ke Kiri" ${idxInLayout === 0 ? 'disabled' : ''}>
+                                    <i class="fas fa-chevron-left"></i>
+                                </button>
+                                <span class="text-[9px] uppercase tracking-wider text-emerald-300 font-extrabold flex items-center gap-1">
+                                    <i class="fas fa-chalkboard text-emerald-300"></i> Papan Tulis
+                                </span>
+                                <button type="button" onclick="event.stopPropagation(); window.moveDepanElement('papan', 1);" class="w-5 h-5 rounded bg-emerald-800 hover:bg-emerald-700 text-white flex items-center justify-center text-[10px] font-bold shadow-2xs transition cursor-pointer ${idxInLayout === 2 ? 'opacity-30 cursor-not-allowed' : ''}" title="Geser ke Kanan" ${idxInLayout === 2 ? 'disabled' : ''}>
+                                    <i class="fas fa-chevron-right"></i>
+                                </button>
+                            </div>
+                            <div class="py-1 flex items-center justify-center gap-2">
+                                <i class="fas fa-chalkboard text-emerald-300 text-sm"></i>
+                                <span class="tracking-widest uppercase">PAPAN TULIS & LAYAR PROYEKTOR</span>
+                            </div>
+                        </div>
+                    `;
+                },
+                pintu: (idxInLayout) => {
+                    const isSelected = (window._depanSelectedElement === 'pintu');
+                    return `
+                        <div class="bg-slate-200 border-2 ${isSelected ? 'border-amber-500 ring-4 ring-amber-300 shadow-md scale-102 z-10' : 'border-slate-300 hover:border-slate-400 hover:shadow-xs'} rounded-xl p-2.5 text-center text-xs font-bold text-slate-700 shadow-2xs relative group transition-all select-none cursor-pointer" onclick="window.handleDepanElementClick('pintu')" title="Klik untuk menukar posisi">
+                            <div class="flex items-center justify-between mb-1 print-hide">
+                                <button type="button" onclick="event.stopPropagation(); window.moveDepanElement('pintu', -1);" class="w-5 h-5 rounded bg-white hover:bg-slate-300 text-slate-800 flex items-center justify-center text-[10px] font-bold shadow-2xs transition cursor-pointer ${idxInLayout === 0 ? 'opacity-30 cursor-not-allowed' : ''}" title="Geser ke Kiri" ${idxInLayout === 0 ? 'disabled' : ''}>
+                                    <i class="fas fa-chevron-left"></i>
+                                </button>
+                                <span class="text-[9px] uppercase tracking-wider text-slate-600 font-extrabold flex items-center gap-1">
+                                    <i class="fas fa-door-open text-slate-600"></i> Pintu Kelas
+                                </span>
+                                <button type="button" onclick="event.stopPropagation(); window.moveDepanElement('pintu', 1);" class="w-5 h-5 rounded bg-white hover:bg-slate-300 text-slate-800 flex items-center justify-center text-[10px] font-bold shadow-2xs transition cursor-pointer ${idxInLayout === 2 ? 'opacity-30 cursor-not-allowed' : ''}" title="Geser ke Kanan" ${idxInLayout === 2 ? 'disabled' : ''}>
+                                    <i class="fas fa-chevron-right"></i>
+                                </button>
+                            </div>
+                            <div class="py-1">
+                                <span class="block font-black text-slate-800">Pintu Masuk / Keluar</span>
+                                <span class="text-[10px] text-slate-500 font-medium">Akses Kelas</span>
+                            </div>
+                        </div>
+                    `;
+                }
+            };
+
+            const depanElementsHtml = d.layout_depan.map((key, idx) => {
+                const renderer = depanComponents[key] || depanComponents.papan;
+                return renderer(idx);
+            }).join('');
+
             // Bangun Tabel Jadwal Pemimpin Doa & Barisan
-            const studentOptions = students.map(s => `<option value="${s.id}">${studentMap[s.id].noAbsen}. ${s.name}</option>`).join('');
-            
             let jadwalTableHtml = (d.jadwal_pemimpin || []).map((j, idx) => {
                 const sDoa = studentMap[j.doa_id];
                 const sBarisan = studentMap[j.barisan_id];
+                const namaDoaDisp = j.doa_nama || (sDoa ? `${sDoa.noAbsen}. ${sDoa.name}` : '');
+                const namaBarisanDisp = j.barisan_nama || (sBarisan ? `${sBarisan.noAbsen}. ${sBarisan.name}` : '');
                 const isHariIni = (j.hari && j.hari.toLowerCase() === namaHariIni.toLowerCase());
-                const isSama = (j.doa_id && j.barisan_id && j.doa_id === j.barisan_id);
+                const isSama = (namaDoaDisp && namaBarisanDisp && namaDoaDisp === namaBarisanDisp);
                 const isLibur = !!j.is_libur;
 
                 if (isLibur) {
@@ -9194,26 +9500,36 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                             </div>
                         </td>
                         <td class="p-3 text-xs">
-                            <div class="flex items-center gap-2">
-                                <span class="w-6 h-6 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center text-xs shrink-0 font-bold">🤲</span>
-                                <div class="flex-1 min-w-0">
-                                    <select onchange="window.updateManualPetugas(${idx}, 'doa_id', this.value)" class="w-full text-xs border border-gray-200 rounded-lg p-1.5 bg-white font-medium focus:ring-1 focus:ring-indigo-500 outline-none">
-                                        <option value="">-- Pilih Siswa --</option>
-                                        ${students.map(s => `<option value="${s.id}" ${j.doa_id === s.id ? 'selected' : ''}>${studentMap[s.id].noAbsen}. ${s.name}</option>`).join('')}
-                                    </select>
+                            <div class="flex items-center gap-1.5">
+                                <span class="w-6 h-6 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center text-xs shrink-0 font-bold" title="Pemimpin Doa">🤲</span>
+                                <div class="flex-1 min-w-0 relative">
+                                    <input type="text" 
+                                           list="list-semua-siswa-jadwal" 
+                                           value="${namaDoaDisp}" 
+                                           onchange="window.updateManualPetugasNama(${idx}, 'doa', this.value)" 
+                                           placeholder="Ketik nama / pilih siswa..." 
+                                           class="w-full text-xs border border-gray-200 rounded-lg py-1.5 px-2.5 bg-white font-medium focus:ring-1 focus:ring-emerald-500 outline-none text-gray-800 print:border-none print:p-0 print:bg-transparent print:font-bold" />
                                 </div>
+                                <button type="button" onclick="window.editManualPetugasModal(${idx}, 'doa')" class="p-1.5 text-gray-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition shrink-0 cursor-pointer print-hide" title="Edit teks manual">
+                                    <i class="fas fa-edit text-xs"></i>
+                                </button>
                             </div>
                         </td>
                         <td class="p-3 text-xs">
-                            <div class="flex items-center gap-2">
+                            <div class="flex items-center gap-1.5">
                                 <span class="w-6 h-6 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center text-xs shrink-0 font-bold" title="Pemimpin Barisan">🚩</span>
-                                <div class="flex-1 min-w-0">
-                                    <select onchange="window.updateManualPetugas(${idx}, 'barisan_id', this.value)" class="w-full text-xs border border-gray-200 rounded-lg p-1.5 bg-white font-medium focus:ring-1 focus:ring-blue-500 outline-none">
-                                        <option value="">-- Pilih Siswa --</option>
-                                        ${students.map(s => `<option value="${s.id}" ${j.barisan_id === s.id ? 'selected' : ''}>${studentMap[s.id].noAbsen}. ${s.name}</option>`).join('')}
-                                    </select>
+                                <div class="flex-1 min-w-0 relative">
+                                    <input type="text" 
+                                           list="list-semua-siswa-jadwal" 
+                                           value="${namaBarisanDisp}" 
+                                           onchange="window.updateManualPetugasNama(${idx}, 'barisan', this.value)" 
+                                           placeholder="Ketik nama / pilih siswa..." 
+                                           class="w-full text-xs border border-gray-200 rounded-lg py-1.5 px-2.5 bg-white font-medium focus:ring-1 focus:ring-blue-500 outline-none text-gray-800 print:border-none print:p-0 print:bg-transparent print:font-bold" />
                                 </div>
-                                <button onclick="window.samakanPetugasHari(${idx})" class="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition" title="Samakan Pemimpin Barisan & Doa">
+                                <button type="button" onclick="window.editManualPetugasModal(${idx}, 'barisan')" class="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition shrink-0 cursor-pointer print-hide" title="Edit teks manual">
+                                    <i class="fas fa-edit text-xs"></i>
+                                </button>
+                                <button type="button" onclick="window.samakanPetugasHari(${idx})" class="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition shrink-0 cursor-pointer print-hide" title="Samakan Pemimpin Barisan & Doa">
                                     <i class="fas fa-equals text-xs"></i>
                                 </button>
                             </div>
@@ -9223,6 +9539,10 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
             }).join('');
 
             return `
+                <datalist id="list-semua-siswa-jadwal">
+                    ${students.map(s => `<option value="${studentMap[s.id].noAbsen}. ${s.name}">`).join('')}
+                    ${students.map(s => `<option value="${s.name}">`).join('')}
+                </datalist>
                 <div class="w-full space-y-6">
                     <!-- Lembar Kop Khusus Cetak -->
                     <div class="hidden print:block mb-4 border-b-2 border-black pb-3 text-center">
@@ -9264,19 +9584,19 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                                                         <span class="w-5 h-5 rounded-full bg-blue-600 text-white flex items-center justify-center text-[10px] shadow-xs" title="Pemimpin Barisan">🚩</span>
                                                     </span>
                                                     <span class="font-bold text-amber-200">🤲 Doa & 🚩 Barisan:</span>
-                                                    <span class="font-black text-white underline decoration-amber-300 underline-offset-2">${sDoaHariIni.noAbsen ? sDoaHariIni.noAbsen + '. ' : ''}${sDoaHariIni.name}</span>
+                                                    <span class="font-black text-white underline decoration-amber-300 underline-offset-2">${namaDoaHariIni}</span>
                                                     <span class="text-[10px] bg-amber-400/30 text-amber-200 border border-amber-300/40 px-1.5 py-0.2 rounded font-semibold">(Siswa yang Sama)</span>
                                                 </div>
                                             ` : `
                                                 <div class="inline-flex items-center gap-1.5 bg-emerald-950/40 border border-emerald-300/40 rounded-lg px-2.5 py-1 text-xs shadow-xs">
                                                     <span class="w-5 h-5 rounded-full bg-emerald-500 text-white flex items-center justify-center text-[10px] shrink-0">🤲</span>
                                                     <span class="font-bold text-emerald-200">Doa:</span>
-                                                    <span class="font-black text-white">${sDoaHariIni ? `${sDoaHariIni.noAbsen ? sDoaHariIni.noAbsen + '. ' : ''}${sDoaHariIni.name}` : '<i class="text-blue-200 font-normal">Belum diset</i>'}</span>
+                                                    <span class="font-black text-white">${namaDoaHariIni || '<i class="text-blue-200 font-normal">Belum diset</i>'}</span>
                                                 </div>
                                                 <div class="inline-flex items-center gap-1.5 bg-blue-950/40 border border-blue-300/40 rounded-lg px-2.5 py-1 text-xs shadow-xs">
                                                     <span class="w-5 h-5 rounded-full bg-blue-600 text-white flex items-center justify-center text-[10px] shrink-0">🚩</span>
                                                     <span class="font-bold text-blue-200">Barisan:</span>
-                                                    <span class="font-black text-white">${sBarisanHariIni ? `${sBarisanHariIni.noAbsen ? sBarisanHariIni.noAbsen + '. ' : ''}${sBarisanHariIni.name}` : '<i class="text-blue-200 font-normal">Belum diset</i>'}</span>
+                                                    <span class="font-black text-white">${namaBarisanHariIni || '<i class="text-blue-200 font-normal">Belum diset</i>'}</span>
                                                 </div>
                                             `
                                         ) : `
@@ -9305,122 +9625,133 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                         </div>
                     </div>
 
-                    <!-- Toolbar Kontrol Pengaturan Denah (Desain Padat, Ramping & Presisi) -->
-                    <div class="bg-white rounded-xl p-2.5 sm:p-3 border border-slate-200 shadow-xs print-hide space-y-2">
-                        <!-- Baris Atas: Pengaturan Tanggal, Format Meja, dan Ukuran Kolom x Baris -->
-                        <div class="flex flex-wrap items-center justify-between gap-2.5 border-b border-slate-100 pb-2">
-                            <!-- Tanggal Denah -->
+                    <!-- Toolbar Kontrol Pengaturan Denah (Desain Rapi, Padat & Ringkas di HP / PC) -->
+                    <div class="bg-white rounded-2xl p-3 border border-slate-200 shadow-xs print-hide space-y-3">
+                        <!-- Baris 1: Pengaturan Tanggal, Format & Ukuran Meja -->
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5 items-center border-b border-slate-100 pb-2.5">
+                            <!-- 1. Tanggal Denah & Status Alur -->
                             <div class="flex items-center gap-2">
                                 <label class="text-[10px] font-bold uppercase tracking-wider text-slate-500 whitespace-nowrap">Tanggal:</label>
-                                <div class="relative">
-                                    <input type="date" value="${d.tanggal_denah}" onchange="window.setTanggalDenah(this.value)" class="text-xs border border-slate-200 py-1 px-2 rounded-lg bg-slate-50 font-semibold outline-none focus:bg-white focus:ring-1 focus:ring-indigo-500 h-7" title="Mengganti tanggal denah" />
-                                </div>
+                                <input type="date" value="${d.tanggal_denah}" onchange="window.setTanggalDenah(this.value)" class="flex-1 sm:flex-initial text-xs border border-slate-200 py-1.5 px-2 rounded-xl bg-slate-50 font-bold outline-none focus:bg-white focus:ring-1 focus:ring-indigo-500 h-8" title="Mengganti tanggal denah" />
                                 ${d.mode_urutan === 'tetap' ? `
-                                    <span class="text-[10px] bg-emerald-50 text-emerald-700 border border-emerald-200 px-2 py-0.5 rounded-md font-bold flex items-center gap-1" title="Posisi tempat duduk siswa dikunci dan tidak bergeser saat tanggal diganti">
+                                    <span class="text-[10px] bg-emerald-50 text-emerald-700 border border-emerald-200 px-2 py-1 rounded-lg font-bold flex items-center gap-1 shrink-0" title="Posisi tempat duduk dikunci permanen">
                                         <i class="fas fa-lock text-[8px]"></i> Tetap
                                     </span>
                                 ` : `
-                                    <span class="text-[10px] bg-indigo-50 text-indigo-700 border border-indigo-200 px-2 py-0.5 rounded-md font-bold flex items-center gap-1" title="Ganti tanggal otomatis menggeser tempat duduk siswa">
-                                        <i class="fas fa-sync-alt text-[8px]"></i> Geser: <b>${d.mode_urutan === 'kiri' ? 'Ke Kiri ↶' : 'Ke Kanan ↷'}</b>
+                                    <span class="text-[10px] bg-indigo-50 text-indigo-700 border border-indigo-200 px-2 py-1 rounded-lg font-bold flex items-center gap-1 shrink-0" title="Alur rotasi otomatis">
+                                        <i class="fas fa-sync-alt text-[8px]"></i> <b>${d.mode_urutan === 'kiri' ? 'Ke Kiri ↶' : 'Ke Kanan ↷'}</b>
                                     </span>
                                 `}
                             </div>
 
-                            <div class="flex items-center gap-3 flex-wrap">
-                                <!-- Format Meja -->
-                                <div class="flex items-center gap-1.5">
-                                    <label class="text-[10px] font-bold uppercase tracking-wider text-slate-500 whitespace-nowrap">Format:</label>
-                                    <div class="inline-flex rounded-lg border border-slate-200 p-0.5 bg-slate-50 text-xs">
-                                        <button onclick="window.changeDenahTipeMeja('ganda')" class="px-2 py-0.5 rounded-md text-[11px] font-bold transition ${d.tipe_meja === 'ganda' ? 'bg-indigo-600 text-white shadow-2xs' : 'text-slate-600 hover:text-indigo-600'}">
-                                            Ganda (2 Siswa)
-                                        </button>
-                                        <button onclick="window.changeDenahTipeMeja('tunggal')" class="px-2 py-0.5 rounded-md text-[11px] font-bold transition ${d.tipe_meja === 'tunggal' ? 'bg-indigo-600 text-white shadow-2xs' : 'text-slate-600 hover:text-indigo-600'}">
-                                            Tunggal (1 Siswa)
-                                        </button>
-                                    </div>
+                            <!-- 2. Menu Format (Termasuk Denah Tetap) -->
+                            <div class="flex items-center gap-2">
+                                <label class="text-[10px] font-bold uppercase tracking-wider text-slate-500 whitespace-nowrap">Format:</label>
+                                <div class="relative flex-1">
+                                    <select onchange="window.handleFormatDanModeChange(this.value)" class="w-full text-xs border border-slate-200 py-1.5 px-2.5 rounded-xl bg-slate-50 font-bold outline-none focus:bg-white focus:ring-1 focus:ring-indigo-500 h-8 cursor-pointer text-slate-800" title="Pilih Format Meja atau Denah Tetap">
+                                        <option value="ganda" ${(d.tipe_meja === 'ganda' && d.mode_urutan !== 'tetap') ? 'selected' : ''}>Ganda (2 Siswa)</option>
+                                        <option value="tunggal" ${(d.tipe_meja === 'tunggal' && d.mode_urutan !== 'tetap') ? 'selected' : ''}>Tunggal (1 Siswa)</option>
+                                        <option value="tetap" ${d.mode_urutan === 'tetap' ? 'selected' : ''}>🔒 Denah Tetap (Kunci Posisi)</option>
+                                    </select>
                                 </div>
+                            </div>
 
-                                <!-- Ukuran (Kolom x Baris) -->
-                                <div class="flex items-center gap-1.5">
-                                    <label class="text-[10px] font-bold uppercase tracking-wider text-slate-500 whitespace-nowrap">Ukuran:</label>
-                                    <div class="inline-flex items-center gap-1 text-xs">
-                                        <select onchange="window.changeDenahUkuran(this.value, ${d.baris})" class="text-[11px] border border-slate-200 py-1 px-1.5 rounded-lg bg-slate-50 font-bold outline-none h-7" title="Jumlah Kolom">
-                                            ${[3, 4, 5, 6].map(k => `<option value="${k}" ${d.kolom === k ? 'selected' : ''}>${k} Kolom</option>`).join('')}
-                                        </select>
-                                        <span class="text-slate-400 font-bold text-xs">×</span>
-                                        <select onchange="window.changeDenahUkuran(${d.kolom}, this.value)" class="text-[11px] border border-slate-200 py-1 px-1.5 rounded-lg bg-slate-50 font-bold outline-none h-7" title="Jumlah Baris">
-                                            ${[3, 4, 5, 6, 7].map(b => `<option value="${b}" ${d.baris === b ? 'selected' : ''}>${b} Baris</option>`).join('')}
-                                        </select>
-                                    </div>
+                            <!-- 3. Ukuran Meja (Kolom x Baris) -->
+                            <div class="flex items-center gap-2 justify-start sm:justify-end">
+                                <label class="text-[10px] font-bold uppercase tracking-wider text-slate-500 whitespace-nowrap">Ukuran:</label>
+                                <div class="inline-flex items-center gap-1 text-xs">
+                                    <select onchange="window.changeDenahUkuran(this.value, ${d.baris})" class="text-xs border border-slate-200 py-1.5 px-2 rounded-xl bg-slate-50 font-bold outline-none h-8 cursor-pointer" title="Jumlah Kolom">
+                                        ${[3, 4, 5, 6].map(k => `<option value="${k}" ${d.kolom === k ? 'selected' : ''}>${k} Kolom</option>`).join('')}
+                                    </select>
+                                    <span class="text-slate-400 font-bold text-xs">×</span>
+                                    <select onchange="window.changeDenahUkuran(${d.kolom}, this.value)" class="text-xs border border-slate-200 py-1.5 px-2 rounded-xl bg-slate-50 font-bold outline-none h-8 cursor-pointer" title="Jumlah Baris">
+                                        ${[3, 4, 5, 6, 7].map(b => `<option value="${b}" ${d.baris === b ? 'selected' : ''}>${b} Baris</option>`).join('')}
+                                    </select>
                                 </div>
                             </div>
                         </div>
 
-                        <!-- Baris Bawah: Tombol Aksi Pengurutan, Pergeseran & Cetak (Ramping & Padat) -->
-                        <div class="flex flex-wrap items-center justify-between gap-2">
-                            <!-- Grup Mode Pengurutan -->
-                            <div class="inline-flex items-center gap-1 flex-wrap">
-                                <button onclick="window.recalcDenahDuduk('tetap')" class="px-2.5 py-1 ${d.mode_urutan === 'tetap' ? 'bg-emerald-600 text-white shadow-2xs' : 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-200'} rounded-lg text-[11px] font-bold transition flex items-center gap-1 cursor-pointer" title="Kunci posisi tempat duduk agar tetap">
-                                    <i class="fas fa-lock text-[10px]"></i>
-                                    <span>Denah Tetap</span>
-                                </button>
-                                <button onclick="window.recalcDenahDuduk('kanan')" class="px-2.5 py-1 ${d.mode_urutan === 'kanan' ? 'bg-blue-600 text-white shadow-2xs' : 'bg-blue-50 text-blue-700 hover:bg-blue-100 border border-blue-200'} rounded-lg text-[11px] font-bold transition flex items-center gap-1 cursor-pointer" title="Urutkan tempat duduk dari kiri ke kanan">
+                        <!-- Baris 2: Tombol Aksi Urutkan, Geser Manual & Cetak Denah -->
+                        <div class="flex flex-wrap items-center justify-between gap-2 pt-0.5">
+                            <!-- Grup Mode Pengurutan: Urut Kanan, Urut Kiri, Acak -->
+                            <div class="inline-flex items-center gap-1.5 flex-wrap">
+                                <button onclick="window.recalcDenahDuduk('kanan')" class="px-2.5 py-1.5 ${d.mode_urutan === 'kanan' ? 'bg-blue-600 text-white shadow-2xs' : 'bg-blue-50 text-blue-700 hover:bg-blue-100 border border-blue-200'} rounded-xl text-xs font-bold transition flex items-center gap-1 cursor-pointer" title="Urutkan tempat duduk dari kiri ke kanan">
                                     <i class="fas fa-arrow-right text-[10px]"></i>
                                     <span>Urut ke Kanan</span>
                                 </button>
-                                <button onclick="window.recalcDenahDuduk('kiri')" class="px-2.5 py-1 ${d.mode_urutan === 'kiri' ? 'bg-blue-600 text-white shadow-2xs' : 'bg-blue-50 text-blue-700 hover:bg-blue-100 border border-blue-200'} rounded-lg text-[11px] font-bold transition flex items-center gap-1 cursor-pointer" title="Urutkan tempat duduk dari kanan ke kiri">
+                                <button onclick="window.recalcDenahDuduk('kiri')" class="px-2.5 py-1.5 ${d.mode_urutan === 'kiri' ? 'bg-blue-600 text-white shadow-2xs' : 'bg-blue-50 text-blue-700 hover:bg-blue-100 border border-blue-200'} rounded-xl text-xs font-bold transition flex items-center gap-1 cursor-pointer" title="Urutkan tempat duduk dari kanan ke kiri">
                                     <i class="fas fa-arrow-left text-[10px]"></i>
                                     <span>Urut ke Kiri</span>
                                 </button>
-                                <button onclick="window.recalcDenahDuduk('acak')" class="px-2.5 py-1 bg-purple-50 text-purple-700 hover:bg-purple-100 border border-purple-200 rounded-lg text-[11px] font-bold transition flex items-center gap-1 cursor-pointer" title="Acak posisi tempat duduk siswa">
+                                <button onclick="window.recalcDenahDuduk('acak')" class="px-2.5 py-1.5 bg-purple-50 text-purple-700 hover:bg-purple-100 border border-purple-200 rounded-xl text-xs font-bold transition flex items-center gap-1 cursor-pointer" title="Acak posisi tempat duduk siswa">
                                     <i class="fas fa-random text-[10px]"></i>
                                     <span>Acak Posisi</span>
                                 </button>
                             </div>
 
                             <!-- Grup Geser Manual & Cetak -->
-                            <div class="inline-flex items-center gap-1.5 flex-wrap">
-                                <div class="inline-flex rounded-lg border border-indigo-200 p-0.5 bg-indigo-50/70 text-xs shadow-2xs">
-                                    <button onclick="window.geserSusunanDenah('kiri', 1, true)" class="px-2 py-0.5 rounded-md font-bold text-indigo-700 hover:bg-white text-[11px] transition flex items-center gap-1 cursor-pointer" title="Geser posisi siswa 1 langkah ke kiri">
+                            <div class="inline-flex items-center gap-2 flex-wrap">
+                                <div class="inline-flex rounded-xl border border-indigo-200 p-0.5 bg-indigo-50/70 text-xs shadow-2xs">
+                                    <button onclick="window.geserSusunanDenah('kiri', 1, true)" class="px-2.5 py-1 rounded-lg font-bold text-indigo-700 hover:bg-white text-xs transition flex items-center gap-1 cursor-pointer" title="Geser posisi siswa 1 langkah ke kiri">
                                         <i class="fas fa-undo text-[9px]"></i> Geser Kiri
                                     </button>
-                                    <button onclick="window.geserSusunanDenah('kanan', 1, true)" class="px-2 py-0.5 rounded-md font-bold text-indigo-700 hover:bg-white text-[11px] transition flex items-center gap-1 cursor-pointer" title="Geser posisi siswa 1 langkah ke kanan">
+                                    <button onclick="window.geserSusunanDenah('kanan', 1, true)" class="px-2.5 py-1 rounded-lg font-bold text-indigo-700 hover:bg-white text-xs transition flex items-center gap-1 cursor-pointer" title="Geser posisi siswa 1 langkah ke kanan">
                                         Geser Kanan <i class="fas fa-redo text-[9px]"></i>
                                     </button>
                                 </div>
 
-                                <button onclick="window.cetakDenahDuduk()" class="px-3 py-1 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white rounded-lg text-[11px] font-bold transition flex items-center gap-1 shadow-2xs cursor-pointer" title="Cetak Denah & Jadwal Petugas">
-                                    <i class="fas fa-print text-[10px]"></i>
+                                <button onclick="window.cetakDenahDuduk()" class="px-3.5 py-1.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white rounded-xl text-xs font-bold transition flex items-center gap-1.5 shadow-2xs cursor-pointer active:scale-95" title="Cetak Denah & Jadwal Petugas">
+                                    <i class="fas fa-print text-xs"></i>
                                     <span>Cetak Denah</span>
                                 </button>
                             </div>
                         </div>
 
                         ${window._denahSelectedSlot !== null ? `
-                            <div class="mt-2 p-2 bg-amber-50 border border-amber-200 rounded-xl flex items-center justify-between text-xs text-amber-800">
+                            <div class="mt-2 p-2.5 bg-amber-50 border border-amber-300 rounded-xl flex items-center justify-between text-xs text-amber-900 animate-pulse">
                                 <span class="flex items-center gap-1.5">
-                                    <i class="fas fa-hand-pointer text-amber-600 animate-bounce"></i>
+                                    <i class="fas fa-hand-pointer text-amber-600"></i>
                                     <b>Meja Kursi #${window._denahSelectedSlot + 1} dipilih.</b> Klik meja/kursi lain untuk menukar tempat duduk, atau klik batal.
                                 </span>
-                                <button onclick="window.batalPilihSeat()" class="px-2 py-0.5 bg-white border border-amber-300 text-amber-900 rounded-lg text-xs font-bold hover:bg-amber-100 transition cursor-pointer">Batal</button>
+                                <button onclick="window.batalPilihSeat()" class="px-2.5 py-1 bg-white border border-amber-300 text-amber-900 rounded-lg text-xs font-bold hover:bg-amber-100 transition cursor-pointer">Batal</button>
                             </div>
                         ` : ''}
                     </div>
 
                     <!-- Area Visual Denah Tempat Duduk -->
                     <div id="area-denah-duduk" class="bg-slate-50/80 rounded-2xl p-6 border border-slate-200 space-y-4">
-                        <!-- Depan Kelas: Papan Tulis & Meja Guru -->
+                        <!-- Kontrol & Header Posisi Depan Kelas (Tukar Meja Guru, Papan Tulis, Pintu) -->
+                        <div class="flex flex-wrap items-center justify-between gap-2 text-xs print-hide">
+                            <span class="font-bold flex items-center gap-1.5 text-slate-700">
+                                <span class="w-5 h-5 rounded-md bg-indigo-100 text-indigo-700 flex items-center justify-center text-xs font-bold">
+                                    <i class="fas fa-arrows-alt-h text-[10px]"></i>
+                                </span>
+                                <span>Posisi Depan Kelas:</span>
+                                <span class="font-normal text-slate-500 text-[11px] hidden sm:inline">(Klik kartu atau gunakan panah ◀ ▶ untuk menukar posisi)</span>
+                            </span>
+                            <div class="flex items-center gap-1.5">
+                                <button type="button" onclick="window.swapMejaGuruDanPintu()" class="px-2.5 py-1 bg-white hover:bg-indigo-50 border border-slate-200 hover:border-indigo-300 rounded-lg text-[11px] font-bold text-indigo-700 transition flex items-center gap-1 shadow-2xs cursor-pointer active:scale-95" title="Tukar posisi Meja Guru dan Pintu secara cepat">
+                                    <i class="fas fa-exchange-alt text-[9px]"></i> Tukar Guru & Pintu
+                                </button>
+                                <button type="button" onclick="window.resetLayoutDepan()" class="px-2 py-1 bg-white hover:bg-slate-100 border border-slate-200 rounded-lg text-[11px] font-semibold text-slate-600 transition shadow-2xs cursor-pointer" title="Kembalikan posisi standar">
+                                    <i class="fas fa-undo text-[9px]"></i> Reset
+                                </button>
+                            </div>
+                        </div>
+
+                        ${window._depanSelectedElement ? `
+                            <div class="p-2 bg-amber-50 border border-amber-300 rounded-xl flex items-center justify-between text-xs text-amber-900 print-hide animate-pulse">
+                                <span class="flex items-center gap-1.5">
+                                    <i class="fas fa-hand-pointer text-amber-600"></i>
+                                    <span>Elemen <b>${window._depanSelectedElement === 'guru' ? 'Meja Guru' : (window._depanSelectedElement === 'papan' ? 'Papan Tulis' : 'Pintu Kelas')}</b> dipilih. Klik elemen depan kelas lainnya untuk menukar posisi.</span>
+                                </span>
+                                <button type="button" onclick="window.batalPilihDepan()" class="px-2 py-0.5 bg-white border border-amber-300 rounded-md font-bold text-[11px] hover:bg-amber-100 cursor-pointer">Batal</button>
+                            </div>
+                        ` : ''}
+
+                        <!-- Depan Kelas: Grid 4 Kolom Sesuai Urutan d.layout_depan -->
                         <div class="grid grid-cols-1 md:grid-cols-4 gap-3 items-center">
-                            <div class="bg-amber-50 border-2 border-amber-300 rounded-xl p-2.5 text-center text-xs font-bold text-amber-900 shadow-2xs">
-                                <i class="fas fa-chalkboard-teacher mr-1 text-amber-600"></i> Meja Guru: ${p.nama || 'Wali Kelas'}
-                            </div>
-                            <div class="md:col-span-2 bg-gradient-to-r from-emerald-900 via-emerald-800 to-emerald-900 border-4 border-amber-900 rounded-xl p-3 text-center text-white font-black tracking-widest text-xs shadow-md flex items-center justify-center gap-2">
-                                <i class="fas fa-chalkboard text-emerald-300"></i>
-                                <span>PAPAN TULIS & LAYAR PROYEKTOR (DEPAN KELAS)</span>
-                            </div>
-                            <div class="bg-slate-200 border border-slate-300 rounded-xl p-2.5 text-center text-xs font-bold text-slate-700 shadow-2xs">
-                                <i class="fas fa-door-open mr-1 text-slate-600"></i> Pintu Kelas
-                            </div>
+                            ${depanElementsHtml}
                         </div>
 
                         <!-- Indikator Arah Alur Pergeseran Denah Meja -->
@@ -9434,8 +9765,14 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                             </span>
                         </div>
 
-                        <!-- Grid Denah Meja -->
-                        <div class="space-y-3 overflow-x-auto pb-2">
+                        <!-- Grid Denah Meja (Responsif & Rapi di HP / PC) -->
+                        <div class="space-y-2.5 overflow-x-auto pb-2 overscroll-x-contain">
+                            ${d.kolom >= 4 ? `
+                                <div class="block sm:hidden text-[10px] text-slate-500 font-semibold mb-1 flex items-center justify-between print-hide px-1">
+                                    <span class="flex items-center gap-1 text-indigo-600"><i class="fas fa-arrows-alt-h"></i> Geser ke samping untuk melihat seluruh meja</span>
+                                    <span class="text-[9px] bg-slate-200/70 text-slate-700 px-1.5 py-0.2 rounded font-bold">${d.kolom} Kolom</span>
+                                </div>
+                            ` : ''}
                             ${gridHtml}
                         </div>
 
@@ -9460,11 +9797,14 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                             <!-- Pilihan Metode Giliran, Tipe Siswa & Tombol WA -->
                             <div class="flex items-center gap-2 flex-wrap print-hide">
                                 <div class="inline-flex rounded-lg border border-gray-200 p-0.5 bg-gray-50 text-xs">
-                                    <button onclick="window.setMetodePemimpin('tempat_duduk')" class="px-3 py-1.5 rounded-md font-semibold transition ${d.metode_pemimpin === 'tempat_duduk' ? 'bg-indigo-600 text-white shadow-xs' : 'text-gray-600 hover:text-indigo-600'}" title="Giliran rotasi urut tempat duduk">
+                                    <button onclick="window.setMetodePemimpin('tempat_duduk')" class="px-2.5 py-1.5 rounded-md font-semibold transition ${d.metode_pemimpin === 'tempat_duduk' ? 'bg-indigo-600 text-white shadow-xs' : 'text-gray-600 hover:text-indigo-600'}" title="Giliran rotasi urut tempat duduk">
                                         <i class="fas fa-chair mr-1"></i> Sesuai Meja
                                     </button>
-                                    <button onclick="window.setMetodePemimpin('presensi')" class="px-3 py-1.5 rounded-md font-semibold transition ${d.metode_pemimpin === 'presensi' ? 'bg-indigo-600 text-white shadow-xs' : 'text-gray-600 hover:text-indigo-600'}" title="Giliran rotasi urut nomor presensi">
+                                    <button onclick="window.setMetodePemimpin('presensi')" class="px-2.5 py-1.5 rounded-md font-semibold transition ${d.metode_pemimpin === 'presensi' ? 'bg-indigo-600 text-white shadow-xs' : 'text-gray-600 hover:text-indigo-600'}" title="Giliran rotasi urut nomor presensi">
                                         <i class="fas fa-list-ol mr-1"></i> Sesuai Presensi
+                                    </button>
+                                    <button onclick="window.setMetodePemimpin('manual')" class="px-2.5 py-1.5 rounded-md font-semibold transition ${d.metode_pemimpin === 'manual' ? 'bg-indigo-600 text-white shadow-xs' : 'text-gray-600 hover:text-indigo-600'}" title="Mode Bebas: Isi nama pemimpin doa & barisan secara manual">
+                                        <i class="fas fa-edit mr-1"></i> Isi Manual
                                     </button>
                                 </div>
 
@@ -9480,8 +9820,8 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                                 <button onclick="window.generateJadwalPemimpin('${d.metode_pemimpin}', true, true)" class="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-xs font-bold transition flex items-center gap-1 cursor-pointer" title="Generate ulang giliran petugas minggu ini">
                                     <i class="fas fa-sync-alt"></i> Acak Ulang
                                 </button>
-                                <button onclick="window.salinJadwalPetugasWA()" class="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold transition flex items-center gap-1.5 shadow-xs cursor-pointer" title="Salin Jadwal ke WhatsApp">
-                                    <i class="fab fa-whatsapp text-sm"></i> Salin ke WA
+                                <button onclick="window.kirimJadwalPetugasWA()" class="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white rounded-lg text-xs font-bold transition flex items-center gap-1.5 shadow-xs cursor-pointer" title="Kirim Jadwal langsung ke WhatsApp">
+                                    <i class="fab fa-whatsapp text-sm"></i> Kirim WA
                                 </button>
                             </div>
                         </div>
