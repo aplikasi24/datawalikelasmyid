@@ -9742,7 +9742,7 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                 return renderer(idx);
             }).join('');
 
-            // Bangun Tabel Jadwal Pemimpin Doa & Barisan
+            // Bangun Tabel Jadwal Pemimpin Doa & Barisan (Desktop & Cetak)
             let jadwalTableHtml = (d.jadwal_pemimpin || []).map((j, idx) => {
                 const sDoa = studentMap[j.doa_id];
                 const sBarisan = studentMap[j.barisan_id];
@@ -9843,6 +9843,97 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                             </div>
                         </td>
                     </tr>
+                `;
+            }).join('');
+
+            // Bangun Kartu Jadwal Pemimpin Doa & Barisan (Mobile / Tampilan HP Bertumpuk)
+            let jadwalCardsMobileHtml = (d.jadwal_pemimpin || []).map((j, idx) => {
+                const sDoa = studentMap[j.doa_id];
+                const sBarisan = studentMap[j.barisan_id];
+                const namaDoaDisp = j.doa_nama || (sDoa ? `${sDoa.noAbsen}. ${sDoa.name}` : '');
+                const namaBarisanDisp = j.barisan_nama || (sBarisan ? `${sBarisan.noAbsen}. ${sBarisan.name}` : '');
+                const isHariIni = (j.tanggalISO === nowISO);
+                const isSama = (namaDoaDisp && namaBarisanDisp && namaDoaDisp === namaBarisanDisp);
+                const isLibur = !!j.is_libur;
+
+                if (isLibur) {
+                    return `
+                        <div class="p-3.5 rounded-xl border border-rose-200 bg-rose-50/60 transition shadow-2xs">
+                            <div class="flex items-center justify-between gap-2 pb-2 mb-2 border-b border-rose-200/60">
+                                <div class="flex items-center gap-1.5 flex-wrap">
+                                    <span class="inline-block px-2.5 py-0.5 bg-rose-100 text-rose-700 font-bold rounded-md text-xs">${j.hari}</span>
+                                    <span class="inline-block px-2 py-0.5 bg-rose-600 text-white text-[10px] font-black rounded-md shadow-2xs">
+                                        <i class="fas fa-umbrella-beach mr-1"></i> LIBUR
+                                    </span>
+                                    ${isHariIni ? '<span class="inline-block px-1.5 py-0.5 bg-emerald-100 text-emerald-800 text-[10px] font-extrabold rounded">HARI INI</span>' : ''}
+                                    <span class="text-[11px] text-gray-500 font-medium">${j.tanggalFormatted}</span>
+                                </div>
+                                <button onclick="window.toggleLiburJadwal('${j.tanggalISO}', '${j.hari}')" class="px-2 py-1 bg-white border border-rose-300 hover:bg-emerald-50 text-rose-700 rounded-md text-[10px] font-bold transition flex items-center gap-1 cursor-pointer shadow-2xs">
+                                    <i class="fas fa-undo text-[8px]"></i> Masuk
+                                </button>
+                            </div>
+                            <div class="flex items-center gap-2 p-2.5 bg-white/90 border border-rose-200 rounded-xl text-rose-700">
+                                <span class="w-7 h-7 rounded-full bg-rose-100 text-rose-600 flex items-center justify-center text-sm font-bold shrink-0">🌴</span>
+                                <div>
+                                    <p class="font-bold text-xs text-rose-800">Hari Libur Sekolah (${j.ket_libur || 'Libur / Tanggal Merah'})</p>
+                                    <p class="text-[11px] text-rose-600 font-medium">Siswa terjadwal otomatis digeser ke hari efektif berikutnya.</p>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }
+
+                return `
+                    <div class="p-3.5 rounded-xl border ${isHariIni ? 'bg-amber-50/80 border-amber-400 ring-2 ring-amber-300/40 shadow-xs' : 'bg-slate-50/70 border-slate-200 hover:bg-white'} transition">
+                        <div class="flex items-center justify-between gap-2 pb-2.5 mb-2.5 border-b border-gray-200/60">
+                            <div class="flex items-center gap-1.5 flex-wrap">
+                                <span class="inline-block px-2.5 py-1 ${isHariIni ? 'bg-amber-500 text-white font-black shadow-xs' : 'bg-indigo-50 text-indigo-700 font-bold'} rounded-lg text-xs">${j.hari}</span>
+                                ${isHariIni ? '<span class="inline-block px-2 py-0.5 bg-emerald-100 text-emerald-800 text-[10px] font-extrabold rounded-full">HARI INI</span>' : ''}
+                                ${isSama ? '<span class="inline-block px-2 py-0.5 bg-purple-100 text-purple-700 text-[10px] font-bold rounded-full">✨ Siswa Sama</span>' : ''}
+                                <span class="text-xs text-gray-500 font-medium">${j.tanggalFormatted}</span>
+                            </div>
+                            <button onclick="window.toggleLiburJadwal('${j.tanggalISO}', '${j.hari}')" class="px-2 py-1 bg-white hover:bg-orange-100 text-gray-500 hover:text-orange-700 border border-gray-200 hover:border-orange-300 rounded-md text-[10px] font-semibold transition flex items-center gap-1 cursor-pointer">
+                                <i class="fas fa-umbrella-beach text-[9px]"></i> Set Libur
+                            </button>
+                        </div>
+                        <div class="space-y-3">
+                            <div>
+                                <label class="text-[11px] font-bold text-emerald-800 flex items-center gap-1.5 mb-1.5">
+                                    <span class="w-5 h-5 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center text-[10px] font-bold shrink-0">🤲</span>
+                                    Pemimpin Doa (Pagi / Pulang)
+                                </label>
+                                <select onchange="window.updateManualPetugasSelect(${idx}, 'doa', this.value)" 
+                                        class="w-full text-xs border border-gray-300 rounded-lg py-2 px-2.5 bg-white font-medium focus:ring-2 focus:ring-emerald-500 outline-none text-gray-800 shadow-2xs cursor-pointer">
+                                    <option value="">-- Pilih Siswa Pemimpin Doa --</option>
+                                    ${students.map(s => `
+                                        <option value="${s.id}" ${(j.doa_id != null && String(j.doa_id) === String(s.id)) ? 'selected' : ''}>
+                                            ${studentMap[s.id].noAbsen}. ${s.name}
+                                        </option>
+                                    `).join('')}
+                                </select>
+                            </div>
+                            <div>
+                                <div class="flex items-center justify-between mb-1.5">
+                                    <label class="text-[11px] font-bold text-blue-800 flex items-center gap-1.5">
+                                        <span class="w-5 h-5 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center text-[10px] font-bold shrink-0">🚩</span>
+                                        Pemimpin Barisan (Apel / Masuk)
+                                    </label>
+                                    <button type="button" onclick="window.samakanPetugasHari(${idx})" class="text-[10px] text-blue-600 hover:text-blue-800 font-bold flex items-center gap-1 py-0.5 px-2 rounded-md bg-blue-50 hover:bg-blue-100 border border-blue-200 transition cursor-pointer" title="Samakan Pemimpin Barisan & Doa">
+                                        <i class="fas fa-equals text-[9px]"></i> Samakan
+                                    </button>
+                                </div>
+                                <select onchange="window.updateManualPetugasSelect(${idx}, 'barisan', this.value)" 
+                                        class="w-full text-xs border border-gray-300 rounded-lg py-2 px-2.5 bg-white font-medium focus:ring-2 focus:ring-blue-500 outline-none text-gray-800 shadow-2xs cursor-pointer">
+                                    <option value="">-- Pilih Siswa Pemimpin Barisan --</option>
+                                    ${students.map(s => `
+                                        <option value="${s.id}" ${(j.barisan_id != null && String(j.barisan_id) === String(s.id)) ? 'selected' : ''}>
+                                            ${studentMap[s.id].noAbsen}. ${s.name}
+                                        </option>
+                                    `).join('')}
+                                </select>
+                            </div>
+                        </div>
+                    </div>
                 `;
             }).join('');
 
@@ -10116,7 +10207,7 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                     </div>
 
                     <!-- Panel Jadwal Pemimpin Doa & Pemimpin Barisan -->
-                    <div class="bg-white rounded-2xl p-6 border border-slate-200 shadow-xs space-y-4">
+                    <div class="bg-white rounded-2xl p-4 sm:p-6 border border-slate-200 shadow-xs space-y-4">
                         <div class="flex flex-col md:flex-row md:items-center justify-between gap-3 border-b border-gray-100 pb-4">
                             <div>
                                 <h3 class="text-base font-bold text-gray-800 flex items-center gap-2">
@@ -10190,9 +10281,14 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                             </div>
                         </div>
 
-                        <!-- Tabel Jadwal -->
-                        <div class="overflow-x-auto">
-                            <table class="w-full text-left border-collapse">
+                        <!-- Tampilan Kartu di Mobile (Bertumpuk ke Bawah) -->
+                        <div class="block md:hidden space-y-3 print:hidden">
+                            ${jadwalCardsMobileHtml || '<div class="p-4 text-center text-gray-400 italic text-xs bg-slate-50 rounded-xl">Belum ada jadwal</div>'}
+                        </div>
+
+                        <!-- Tampilan Tabel di Desktop & Print -->
+                        <div class="hidden md:block print:block overflow-x-auto">
+                            <table class="w-full min-w-[650px] text-left border-collapse">
                                 <thead>
                                     <tr class="bg-slate-50 text-gray-600 text-[11px] font-bold uppercase tracking-wider border-y border-gray-200">
                                         <th class="p-3 w-1/4">Hari & Tanggal</th>
