@@ -11100,8 +11100,8 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                         <div id="telah-aktif-chevron" class="text-orange-400 transition-transform duration-300 shrink-0 opacity-50 group-hover:opacity-100 ml-auto" style="${window.isTelahAktifClosed ? 'transform: rotate(180deg); margin-left: 0.25rem;' : 'transform: rotate(0deg); margin-left: 0.25rem;'}"><i class="fas fa-chevron-left text-[8px] sm:text-[10px]"></i></div>
                     </div>
                 </div>
-                <div class="bg-white rounded-2xl p-8 border shadow-sm w-full relative">
-                    <div class="flex items-center gap-6 mb-8 border-b pb-6">
+                <div class="bg-white rounded-2xl p-4 sm:p-6 md:p-8 border shadow-sm w-full relative">
+                    <div class="flex flex-col sm:flex-row items-center sm:items-start text-center sm:text-left gap-4 sm:gap-6 mb-6 sm:mb-8 border-b pb-6">
                         <div class="relative group shrink-0">
                             <img id="pengaturan-profile-avatar" src="${avatarSrc}" onerror="this.onerror=null;this.src='https://ui-avatars.com/api/?name=${encodeURIComponent(p.nama)}&background=f97316&color=fff&size=150';" class="w-24 h-24 rounded-full shadow-md object-cover border-4 border-white z-10 relative bg-gray-50" />
                             ${p.foto 
@@ -11117,7 +11117,7 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                         <div class="flex-1">
                             <p id="pengaturan-profile-nama" class="font-bold text-gray-800 text-xl mb-1">${p.nama || 'Wali Kelas'}</p>
                             <p id="pengaturan-profile-nip" class="text-sm text-gray-500 mb-3">NIP. ${p.nip || '-'}</p>
-                            <div class="flex flex-wrap gap-2">
+                            <div class="flex flex-wrap gap-2 justify-center sm:justify-start">
                                 ${p.foto 
                                     ? `<div class="text-xs bg-gray-100 text-gray-400 px-3 py-1.5 rounded-lg cursor-not-allowed font-medium inline-flex items-center gap-1 shadow-sm border border-gray-200" title="Hapus foto lama terlebih dahulu">
                                         <i class="fas fa-upload"></i> Unggah Foto
@@ -11133,7 +11133,7 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                     </div>
 
                     <!-- Foto Sekolah Section -->
-                    <div class="flex items-center gap-6 mb-8 border-b pb-6">
+                    <div class="flex flex-col sm:flex-row items-center sm:items-start text-center sm:text-left gap-4 sm:gap-6 mb-6 sm:mb-8 border-b pb-6">
                         <div class="relative group shrink-0">
                             <img src="${p.fotoSekolah ? window.getReliableImageUrl(p.fotoSekolah) : 'https://placehold.co/300x150/e2e8f0/64748b?text=Foto+Sekolah'}" class="w-32 h-20 rounded-lg shadow-md object-cover border-4 border-white z-10 relative bg-gray-50" />
                             ${p.fotoSekolah 
@@ -11149,7 +11149,7 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                         <div class="flex-1">
                             <p class="font-bold text-gray-800 text-lg mb-1">Foto Sekolah</p>
                             <p class="text-sm text-gray-500 mb-3">Tampil di header dashboard (Disarankan rasio lanskap)</p>
-                            <div class="flex flex-wrap gap-2">
+                            <div class="flex flex-wrap gap-2 justify-center sm:justify-start">
                                 ${p.fotoSekolah 
                                     ? `<div class="text-xs bg-gray-100 text-gray-400 px-3 py-1.5 rounded-lg cursor-not-allowed font-medium inline-flex items-center gap-1 shadow-sm border border-gray-200" title="Hapus foto lama terlebih dahulu">
                                         <i class="fas fa-upload"></i> Unggah Foto
@@ -11164,7 +11164,7 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                         </div>
                     </div>
                     <form id="form-pengaturan" onsubmit="event.preventDefault()" oninput="window.autoSavePengaturan()" class="space-y-5">
-                        <div class="grid grid-cols-2 gap-4">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
                                 <label class="text-sm font-medium text-gray-600 block mb-1">Nama Lengkap</label>
                                 <div class="relative flex items-center">
@@ -11181,52 +11181,52 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                                 <input type="text" name="nip" value="${p.nip || ''}" class="w-full border p-2 rounded-lg bg-gray-50 focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none transition" />
                             </div>
                         </div>
-                        <div class="grid grid-cols-2 gap-4">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
-                                <label class="text-sm font-medium text-gray-600">Nama Sekolah</label>
-                                <input type="text" name="sekolah" value="${p.sekolah || ''}" class="w-full mt-1 border p-2 rounded-lg bg-gray-50 focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none transition" />
+                                <label class="text-sm font-medium text-gray-600 block mb-1">Nama Sekolah</label>
+                                <input type="text" name="sekolah" value="${p.sekolah || ''}" class="w-full border p-2 rounded-lg bg-gray-50 focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none transition" />
                             </div>
                             <div>
-                                <label class="text-sm font-medium text-gray-600">Kelas yang Diampu</label>
-                                <input type="text" name="kelas" value="${p.kelas || ''}" placeholder="Misal: 6A" class="w-full mt-1 border p-2 rounded-lg bg-gray-50 focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none transition" />
+                                <label class="text-sm font-medium text-gray-600 block mb-1">Kelas yang Diampu</label>
+                                <input type="text" name="kelas" value="${p.kelas || ''}" placeholder="Misal: 6A" class="w-full border p-2 rounded-lg bg-gray-50 focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none transition" />
                             </div>
                         </div>
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                             <div>
-                                <label class="text-sm font-medium text-gray-600">Tahun Ajaran</label>
-                                <input type="text" name="tapel" value="${p.tapel || ''}" placeholder="2025/2026" class="w-full mt-1 border p-2 rounded-lg bg-gray-50 focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none transition" />
+                                <label class="text-sm font-medium text-gray-600 block mb-1">Tahun Ajaran</label>
+                                <input type="text" name="tapel" value="${p.tapel || ''}" placeholder="2025/2026" class="w-full border p-2 rounded-lg bg-gray-50 focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none transition" />
                             </div>
                             <div>
-                                <label class="text-sm font-medium text-gray-600">Semester</label>
-                                <select name="semester" class="w-full mt-1 border p-2 rounded-lg bg-gray-50 focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none transition">
+                                <label class="text-sm font-medium text-gray-600 block mb-1">Semester</label>
+                                <select name="semester" class="w-full border p-2 rounded-lg bg-gray-50 focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none transition">
                                     <option value="Semester Ganjil" ${p.semester === 'Semester Ganjil' ? 'selected' : ''}>Semester Ganjil</option>
                                     <option value="Semester Genap" ${p.semester === 'Semester Genap' ? 'selected' : ''}>Semester Genap</option>
                                 </select>
                             </div>
                             <div>
-                                <label class="text-sm font-medium text-gray-600">NPSN ${window.currentUser ? '<i class="fas fa-lock text-xs text-gray-400" title="Dikunci dari akun"></i>' : ''}</label>
-                                <input type="text" name="npsn" value="${p.npsn || ''}" placeholder="Misal: 10203040" ${window.currentUser ? 'readonly' : ''} class="w-full mt-1 border p-2 rounded-lg ${window.currentUser ? 'bg-gray-100 text-gray-500 cursor-not-allowed' : 'bg-gray-50 focus:bg-white focus:ring-2 focus:ring-blue-500'} outline-none transition" />
+                                <label class="text-sm font-medium text-gray-600 block mb-1">NPSN ${window.currentUser ? '<i class="fas fa-lock text-xs text-gray-400" title="Dikunci dari akun"></i>' : ''}</label>
+                                <input type="text" name="npsn" value="${p.npsn || ''}" placeholder="Misal: 10203040" ${window.currentUser ? 'readonly' : ''} class="w-full border p-2 rounded-lg ${window.currentUser ? 'bg-gray-100 text-gray-500 cursor-not-allowed' : 'bg-gray-50 focus:bg-white focus:ring-2 focus:ring-blue-500'} outline-none transition" />
                             </div>
                         </div>
-                        <div class="grid grid-cols-2 gap-4">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
-                                <label class="text-sm font-medium text-gray-600">Nama Kepala Sekolah</label>
-                                <input type="text" name="kepsek" value="${p.kepsek || ''}" class="w-full mt-1 border p-2 rounded-lg bg-gray-50 focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none transition" />
+                                <label class="text-sm font-medium text-gray-600 block mb-1">Nama Kepala Sekolah</label>
+                                <input type="text" name="kepsek" value="${p.kepsek || ''}" class="w-full border p-2 rounded-lg bg-gray-50 focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none transition" />
                             </div>
                             <div>
-                                <label class="text-sm font-medium text-gray-600">NIP Kepala Sekolah</label>
-                                <input type="text" name="nip_kepsek" value="${p.nip_kepsek || ''}" class="w-full mt-1 border p-2 rounded-lg bg-gray-50 focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none transition" />
+                                <label class="text-sm font-medium text-gray-600 block mb-1">NIP Kepala Sekolah</label>
+                                <input type="text" name="nip_kepsek" value="${p.nip_kepsek || ''}" class="w-full border p-2 rounded-lg bg-gray-50 focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none transition" />
                             </div>
                         </div>
                         ${window.currentUser ? `
-                        <div class="grid grid-cols-2 gap-4">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
-                                <label class="text-sm font-medium text-gray-600">Email Terdaftar <i class="fas fa-lock text-xs text-gray-400" title="Dikunci dari akun"></i></label>
-                                <input type="text" value="${window.currentUser.email || ''}" readonly class="w-full mt-1 border p-2 rounded-lg bg-gray-100 text-gray-500 cursor-not-allowed outline-none transition" />
+                                <label class="text-sm font-medium text-gray-600 block mb-1">Email Terdaftar <i class="fas fa-lock text-xs text-gray-400" title="Dikunci dari akun"></i></label>
+                                <input type="text" value="${window.currentUser.email || ''}" readonly class="w-full border p-2 rounded-lg bg-gray-100 text-gray-500 cursor-not-allowed outline-none transition" />
                             </div>
                             <div>
-                                <label class="text-sm font-medium text-gray-600">No HP / WA <i class="fas fa-lock text-xs text-gray-400" title="Dikunci dari akun"></i></label>
-                                <input type="text" value="${window.currentUser.wa || ''}" readonly class="w-full mt-1 border p-2 rounded-lg bg-gray-100 text-gray-500 cursor-not-allowed outline-none transition" />
+                                <label class="text-sm font-medium text-gray-600 block mb-1">No HP / WA <i class="fas fa-lock text-xs text-gray-400" title="Dikunci dari akun"></i></label>
+                                <input type="text" value="${window.currentUser.wa || ''}" readonly class="w-full border p-2 rounded-lg bg-gray-100 text-gray-500 cursor-not-allowed outline-none transition" />
                             </div>
                         </div>
                         ` : ''}
