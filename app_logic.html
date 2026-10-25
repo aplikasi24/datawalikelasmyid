@@ -7841,7 +7841,7 @@ Setelah semua baris terisi, tolong berikan kembali kepada saya file Excel terseb
             if(judul && deadline) {
                 const dateObj = new Date(deadline);
                 const deadlineStr = dateObj.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
-                const fullInfo = `? Deadline: <span class="font-bold text-red-600">${deadlineStr}</span>`;
+                const fullInfo = `📅 Deadline: <span class="font-bold text-red-600">${deadlineStr}</span>`;
                 
                 db.tugas.push({id: Date.now(), judul, info: fullInfo, status: "diberikan"});
                 saveDB();
@@ -7858,15 +7858,41 @@ Setelah semua baris terisi, tolong berikan kembali kepada saya file Excel terseb
             }
         };
         window.shareTugasWA = (judul, info) => {
-            const defaultMsg = `Assalamualaikum wr. wb.\n\nBapak/Ibu wali murid yang kami hormati, mengingatkan kembali untuk tugas anak-anak kita:\n\nðŸ“š *[tugas]*\n[deadline]\n\nMohon bimbingannya di rumah agar ananda dapat menyelesaikan tugas ini dengan baik. Terima kasih banyak atas perhatian dan kerja samanya. ðŸ™`;
+            const defaultMsg = `Assalamualaikum wr. wb.\n\nBapak/Ibu wali murid yang kami hormati, mengingatkan kembali untuk tugas anak-anak kita:\n\n📚 *[tugas]*\n[deadline]\n\nMohon bimbingannya di rumah agar ananda dapat menyelesaikan tugas ini dengan baik. Terima kasih banyak atas perhatian dan kerja samanya. 🙏`;
+            
+            // Auto repair jika database tersimpan mojibake
+            if (db.pengaturan && db.pengaturan.pesan_wa) {
+                if (db.pengaturan.pesan_wa.includes('ðŸ') || db.pengaturan.pesan_wa.includes('dY"') || db.pengaturan.pesan_wa.includes('dYT')) {
+                    db.pengaturan.pesan_wa = db.pengaturan.pesan_wa
+                        .replace(/ðŸ“š|dY"s/g, '📚')
+                        .replace(/ðŸ™\s?|dYT\?/g, '🙏')
+                        .replace(/ðŸ[^\s]*/g, '');
+                    saveDB();
+                }
+            }
+
             let template = db.pengaturan?.pesan_wa || defaultMsg;
+            template = template.replace(/ðŸ“š|dY"s/g, '📚').replace(/ðŸ™\s?|dYT\?/g, '🙏');
             let pesan = template.replace(/\[tugas\]/gi, judul).replace(/\[deadline\]/gi, info);
             window.open(`https://wa.me/?text=${encodeURIComponent(pesan)}`, '_blank');
         };
 
         window.openModalSettingWA = () => {
-            const defaultMsg = `Assalamualaikum wr. wb.\n\nBapak/Ibu wali murid yang kami hormati, mengingatkan kembali untuk tugas anak-anak kita:\n\nðŸ“š *[tugas]*\n[deadline]\n\nMohon bimbingannya di rumah agar ananda dapat menyelesaikan tugas ini dengan baik. Terima kasih banyak atas perhatian dan kerja samanya. ðŸ™`;
-            const currentMsg = db.pengaturan?.pesan_wa || defaultMsg;
+            const defaultMsg = `Assalamualaikum wr. wb.\n\nBapak/Ibu wali murid yang kami hormati, mengingatkan kembali untuk tugas anak-anak kita:\n\n📚 *[tugas]*\n[deadline]\n\nMohon bimbingannya di rumah agar ananda dapat menyelesaikan tugas ini dengan baik. Terima kasih banyak atas perhatian dan kerja samanya. 🙏`;
+            
+            // Auto repair jika database tersimpan mojibake
+            if (db.pengaturan && db.pengaturan.pesan_wa) {
+                if (db.pengaturan.pesan_wa.includes('ðŸ') || db.pengaturan.pesan_wa.includes('dY"') || db.pengaturan.pesan_wa.includes('dYT')) {
+                    db.pengaturan.pesan_wa = db.pengaturan.pesan_wa
+                        .replace(/ðŸ“š|dY"s/g, '📚')
+                        .replace(/ðŸ™\s?|dYT\?/g, '🙏')
+                        .replace(/ðŸ[^\s]*/g, '');
+                    saveDB();
+                }
+            }
+
+            let currentMsg = db.pengaturan?.pesan_wa || defaultMsg;
+            currentMsg = currentMsg.replace(/ðŸ“š|dY"s/g, '📚').replace(/ðŸ™\s?|dYT\?/g, '🙏');
             
             const modal = document.createElement('div');
             modal.id = 'modal-setting-wa';
@@ -7884,7 +7910,10 @@ Setelah semua baris terisi, tolong berikan kembali kepada saya file Excel terseb
                             <code class="bg-white px-2 py-1 rounded shadow-sm text-blue-600 font-bold">[deadline]</code> &rarr; Otomatis diganti dengan <strong>Tanggal Deadline</strong>
                         </div>
                         <div>
-                            <label class="block text-sm font-bold text-gray-700 mb-2">Template Pesan</label>
+                            <div class="flex justify-between items-center mb-2">
+                                <label class="block text-sm font-bold text-gray-700">Template Pesan</label>
+                                <button type="button" onclick="document.getElementById('input-pesan-wa').value = \`Assalamualaikum wr. wb.\\n\\nBapak/Ibu wali murid yang kami hormati, mengingatkan kembali untuk tugas anak-anak kita:\\n\\n📚 *[tugas]*\\n[deadline]\\n\\nMohon bimbingannya di rumah agar ananda dapat menyelesaikan tugas ini dengan baik. Terima kasih banyak atas perhatian dan kerja samanya. 🙏\`" class="text-xs text-blue-600 hover:text-blue-800 font-semibold flex items-center gap-1 transition"><i class="fas fa-undo"></i> Reset ke Default</button>
+                            </div>
                             <textarea id="input-pesan-wa" class="w-full border-2 border-gray-200 rounded-xl p-3 outline-none focus:border-green-500 bg-gray-50 focus:bg-white min-h-[200px] text-sm custom-scrollbar leading-relaxed">${currentMsg}</textarea>
                         </div>
                     </div>
@@ -14340,7 +14369,7 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
         window.hapusPengeluaranKas = (id) => {
             window.showModernConfirm(
                 "Yakin mau menghapus riwayat pengeluaran kas ini?",
-                '<span class="text-5xl">ðŸ—‘ï¸</span>',
+                '<span class="text-4xl">🗑️</span>',
                 () => {
                     db.kas_kelas.pengeluaran = db.kas_kelas.pengeluaran.filter(p => p.id !== id);
                     saveDB();
@@ -14408,7 +14437,7 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
         window.hapusPemasukanKas = (id) => {
             window.showModernConfirm(
                 "Yakin mau menghapus riwayat pemasukan ini?",
-                '<span class="text-5xl">ðŸ—‘ï¸</span>',
+                '<span class="text-4xl">🗑️</span>',
                 () => {
                     db.kas_kelas.pemasukan_lain = db.kas_kelas.pemasukan_lain.filter(p => p.id !== id);
                     saveDB();
@@ -16208,7 +16237,7 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                 const currentUrl = window.location.href.toLowerCase();
                 if (currentUrl.startsWith('file:///') && (currentUrl.includes('/temp/') || currentUrl.includes('/appdata/local/temp/') || currentUrl.includes('rar$') || currentUrl.includes('zip'))) {
                     setTimeout(() => {
-                        alert("âš ï¸ PERINGATAN PENTING! âš ï¸\n\nSepertinya Anda menjalankan aplikasi ini LANGSUNG dari dalam file ZIP tanpa mengekstraknya terlebih dahulu.\n\nAkibatnya, Windows membuat folder sementara (Temp) yang baru setiap kali Anda membukanya, sehingga semua data yang Anda simpan akan SELALU HILANG saat Anda menutup browser!\n\nSOLUSI:\n1. Tutup browser ini.\n2. Klik Kanan pada file ZIP yang Anda unduh.\n3. Pilih 'Extract Here' (Ekstrak di sini) atau 'Extract All'.\n4. Buka file index.html dari folder hasil ekstraksi tersebut.\n\nDengan begitu, data Anda akan tersimpan secara permanen.");
+                        alert("⚠️ PERINGATAN PENTING! ⚠️\n\nSepertinya Anda menjalankan aplikasi ini LANGSUNG dari dalam file ZIP tanpa mengekstraknya terlebih dahulu.\n\nAkibatnya, Windows membuat folder sementara (Temp) yang baru setiap kali Anda membukanya, sehingga semua data yang Anda simpan akan SELALU HILANG saat Anda menutup browser!\n\nSOLUSI:\n1. Tutup browser ini.\n2. Klik Kanan pada file ZIP yang Anda unduh.\n3. Pilih 'Extract Here' (Ekstrak di sini) atau 'Extract All'.\n4. Buka file index.html dari folder hasil ekstraksi tersebut.\n\nDengan begitu, data Anda akan tersimpan secara permanen.");
                     }, 1000);
                 }
             };
