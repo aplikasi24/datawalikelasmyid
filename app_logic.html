@@ -11018,10 +11018,10 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
             const form = document.getElementById('form-pengaturan');
             if (!form) return;
             const inputNama = form.nama;
-            // Jika sedang diedit inline, jangan overwrite nama di DB sampai tombol Simpan diklik
-            const newNama = (window._isEditingNama && db.pengaturan) ? (db.pengaturan.nama || inputNama.value) : inputNama.value;
-            const newSekolah = (form.sekolah?.value || '').trim();
-            const newNpsn = (form.npsn?.value || '').trim();
+            // Jika sedang diedit inline, jangan overwrite nama, sekolah, atau npsn di DB sampai tombol Simpan diklik
+            const newNama = (window._isEditingNama && db.pengaturan) ? (db.pengaturan.nama || (inputNama ? inputNama.value : '')) : (inputNama ? inputNama.value : '');
+            const newSekolah = (window._isEditingSekolah && db.pengaturan) ? (db.pengaturan.sekolah || (form.sekolah?.value || '')) : (form.sekolah?.value || '').trim();
+            const newNpsn = (window._isEditingNpsn && db.pengaturan) ? (db.pengaturan.npsn || (form.npsn?.value || '')) : (form.npsn?.value || '').trim();
 
             db.pengaturan = {
                 ...db.pengaturan,
@@ -11035,11 +11035,17 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                 semester: form.semester.value,
                 npsn: newNpsn
             };
-            if (!window._isEditingNama && window.currentUser) {
-                window.currentUser.nama = newNama;
-                window.currentUser.name = newNama;
-                window.currentUser.sekolah = newSekolah;
-                window.currentUser.npsn = newNpsn;
+            if (window.currentUser) {
+                if (!window._isEditingNama) {
+                    window.currentUser.nama = newNama;
+                    window.currentUser.name = newNama;
+                }
+                if (!window._isEditingSekolah) {
+                    window.currentUser.sekolah = newSekolah;
+                }
+                if (!window._isEditingNpsn) {
+                    window.currentUser.npsn = newNpsn;
+                }
                 try {
                     localStorage.setItem('currentUser', JSON.stringify(window.currentUser));
                     localStorage.setItem('auth_user', JSON.stringify(window.currentUser));
@@ -11048,12 +11054,13 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
             }
             window.addAktivitas && window.addAktivitas('pengaturan', 'Pengaturan diperbarui', 'Profil/Identitas');
             saveDB();
-            if (!window._isEditingNama) {
+            if (!window._isEditingNama && !window._isEditingSekolah) {
                 window.updateUIIdentitas();
             }
 
             // Debounce kirim perubahan profil (sekolah, npsn, nama) ke database server (Apps Script & Cloudflare D1)
-            if (window.currentUser && window.currentUser.email && typeof APPSCRIPT_URL !== 'undefined') {
+            // Hanya kirim jika tidak sedang dalam proses inline edit nama, sekolah, atau npsn
+            if (!window._isEditingNama && !window._isEditingSekolah && !window._isEditingNpsn && window.currentUser && window.currentUser.email && typeof APPSCRIPT_URL !== 'undefined') {
                 const syncData = {
                     email: window.currentUser.email,
                     nama: newNama,
@@ -11205,6 +11212,263 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
 
         window.editNamaLengkap = window.startEditNamaLengkap;
 
+        // ===== EDIT NAMA SEKOLAH =====
+        window.startEditSekolah = () => {
+            const input = document.getElementById('input-pengaturan-sekolah');
+            const wrapper = document.getElementById('wrapper-btn-edit-sekolah');
+            if (!input || !wrapper) return;
+            
+            window._isEditingSekolah = true;
+            window._prevSekolah = input.value;
+
+            input.removeAttribute('readonly');
+            input.classList.remove('bg-gray-100', 'text-gray-700', 'cursor-not-allowed');
+            input.classList.add('bg-white', 'text-gray-900', 'ring-2', 'ring-blue-500', 'border-blue-500', 'cursor-text');
+            input.focus();
+            input.select();
+
+            wrapper.innerHTML = `
+                <button type="button" onclick="window.cancelEditSekolah()" class="px-2.5 py-1 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-md text-xs font-medium transition cursor-pointer" title="Batal ubah nama sekolah">
+                    Batal
+                </button>
+                <button type="button" onclick="window.saveEditSekolah()" class="px-3 py-1 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white rounded-md text-xs font-semibold flex items-center gap-1 shadow-sm transition-all cursor-pointer" title="Simpan nama sekolah baru">
+                    <i class="fas fa-check text-[10px]"></i> Simpan
+                </button>
+            `;
+        };
+
+        window.cancelEditSekolah = () => {
+            const input = document.getElementById('input-pengaturan-sekolah');
+            const wrapper = document.getElementById('wrapper-btn-edit-sekolah');
+            if (!input || !wrapper) return;
+
+            input.value = window._prevSekolah !== undefined ? window._prevSekolah : ((db.pengaturan && db.pengaturan.sekolah) || (window.currentUser && window.currentUser.sekolah) || '');
+            input.setAttribute('readonly', 'true');
+            input.classList.remove('bg-white', 'text-gray-900', 'ring-2', 'ring-blue-500', 'border-blue-500', 'cursor-text');
+            input.classList.add('bg-gray-100', 'text-gray-700', 'cursor-not-allowed');
+
+            wrapper.innerHTML = `
+                <button type="button" id="btn-edit-sekolah" onclick="window.startEditSekolah()" class="px-3 py-1 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-md text-xs font-semibold flex items-center gap-1 shadow-sm transition-all cursor-pointer" title="Klik untuk edit nama sekolah">
+                    <i class="fas fa-pen text-[10px]"></i> Edit
+                </button>
+            `;
+            window._isEditingSekolah = false;
+        };
+
+        window.saveEditSekolah = async () => {
+            const input = document.getElementById('input-pengaturan-sekolah');
+            const wrapper = document.getElementById('wrapper-btn-edit-sekolah');
+            if (!input) return;
+
+            const trimmed = (input.value || '').trim();
+            if (!trimmed) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Perhatian',
+                    text: 'Nama sekolah tidak boleh kosong!',
+                    customClass: { popup: 'rounded-2xl' }
+                });
+                input.focus();
+                return;
+            }
+
+            if (!db.pengaturan) db.pengaturan = {};
+            db.pengaturan.sekolah = trimmed;
+            input.value = trimmed;
+
+            if (window.currentUser) {
+                window.currentUser.sekolah = trimmed;
+                try {
+                    localStorage.setItem('currentUser', JSON.stringify(window.currentUser));
+                    localStorage.setItem('auth_user', JSON.stringify(window.currentUser));
+                    document.cookie = "auth_user=" + encodeURIComponent(JSON.stringify(window.currentUser)) + "; max-age=31536000; path=/";
+                } catch(e) {}
+            }
+
+            saveDB();
+            window.updateUIIdentitas();
+            window.addAktivitas && window.addAktivitas('pengaturan', 'Nama sekolah diperbarui menjadi ' + trimmed, 'Profil/Identitas');
+
+            input.setAttribute('readonly', 'true');
+            input.classList.remove('bg-white', 'text-gray-900', 'ring-2', 'ring-blue-500', 'border-blue-500', 'cursor-text');
+            input.classList.add('bg-gray-100', 'text-gray-700', 'cursor-not-allowed');
+
+            if (wrapper) {
+                wrapper.innerHTML = `
+                    <button type="button" id="btn-edit-sekolah" onclick="window.startEditSekolah()" class="px-3 py-1 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-md text-xs font-semibold flex items-center gap-1 shadow-sm transition-all cursor-pointer" title="Klik untuk edit nama sekolah">
+                        <i class="fas fa-pen text-[10px]"></i> Edit
+                    </button>
+                `;
+            }
+            window._isEditingSekolah = false;
+
+            // Sinkronkan nama sekolah ke server database (code.gs & Cloudflare D1)
+            if (window.currentUser && window.currentUser.email && typeof APPSCRIPT_URL !== 'undefined') {
+                fetch(APPSCRIPT_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: new URLSearchParams({
+                        action: 'updateProfile',
+                        data: JSON.stringify({
+                            email: window.currentUser.email,
+                            nama: (db.pengaturan && db.pengaturan.nama) || (window.currentUser ? window.currentUser.nama : ''),
+                            sekolah: trimmed,
+                            instansi: trimmed,
+                            npsn: (db.pengaturan && db.pengaturan.npsn) || (window.currentUser && window.currentUser.npsn ? window.currentUser.npsn : '')
+                        })
+                    })
+                })
+                .then(r => r.json())
+                .then(res => {
+                    if (res.status === 'success') {
+                        console.log('Nama sekolah berhasil diperbarui di server database:', trimmed);
+                    } else {
+                        console.warn('Gagal sinkron sekolah ke server:', res.message);
+                    }
+                })
+                .catch(e => console.log('Update sekolah server offline:', e));
+            }
+
+            Swal.fire({
+                icon: 'success',
+                title: 'Berhasil Disimpan',
+                text: 'Nama Sekolah berhasil diperbarui menjadi: ' + trimmed,
+                timer: 1600,
+                showConfirmButton: false,
+                customClass: { popup: 'rounded-2xl' }
+            });
+        };
+
+        window.editSekolah = window.startEditSekolah;
+
+        // ===== EDIT NPSN =====
+        window.startEditNpsn = () => {
+            const input = document.getElementById('input-pengaturan-npsn');
+            const wrapper = document.getElementById('wrapper-btn-edit-npsn');
+            if (!input || !wrapper) return;
+            
+            window._isEditingNpsn = true;
+            window._prevNpsn = input.value;
+
+            input.removeAttribute('readonly');
+            input.classList.remove('bg-gray-100', 'text-gray-700', 'cursor-not-allowed');
+            input.classList.add('bg-white', 'text-gray-900', 'ring-2', 'ring-blue-500', 'border-blue-500', 'cursor-text');
+            input.focus();
+            input.select();
+
+            wrapper.innerHTML = `
+                <button type="button" onclick="window.cancelEditNpsn()" class="px-2.5 py-1 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-md text-xs font-medium transition cursor-pointer" title="Batal ubah NPSN">
+                    Batal
+                </button>
+                <button type="button" onclick="window.saveEditNpsn()" class="px-3 py-1 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white rounded-md text-xs font-semibold flex items-center gap-1 shadow-sm transition-all cursor-pointer" title="Simpan NPSN baru">
+                    <i class="fas fa-check text-[10px]"></i> Simpan
+                </button>
+            `;
+        };
+
+        window.cancelEditNpsn = () => {
+            const input = document.getElementById('input-pengaturan-npsn');
+            const wrapper = document.getElementById('wrapper-btn-edit-npsn');
+            if (!input || !wrapper) return;
+
+            input.value = window._prevNpsn !== undefined ? window._prevNpsn : ((db.pengaturan && db.pengaturan.npsn) || (window.currentUser && window.currentUser.npsn) || '');
+            input.setAttribute('readonly', 'true');
+            input.classList.remove('bg-white', 'text-gray-900', 'ring-2', 'ring-blue-500', 'border-blue-500', 'cursor-text');
+            input.classList.add('bg-gray-100', 'text-gray-700', 'cursor-not-allowed');
+
+            wrapper.innerHTML = `
+                <button type="button" id="btn-edit-npsn" onclick="window.startEditNpsn()" class="px-3 py-1 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-md text-xs font-semibold flex items-center gap-1 shadow-sm transition-all cursor-pointer" title="Klik untuk edit NPSN">
+                    <i class="fas fa-pen text-[10px]"></i> Edit
+                </button>
+            `;
+            window._isEditingNpsn = false;
+        };
+
+        window.saveEditNpsn = async () => {
+            const input = document.getElementById('input-pengaturan-npsn');
+            const wrapper = document.getElementById('wrapper-btn-edit-npsn');
+            if (!input) return;
+
+            const trimmed = (input.value || '').trim();
+            if (!trimmed) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Perhatian',
+                    text: 'NPSN tidak boleh kosong!',
+                    customClass: { popup: 'rounded-2xl' }
+                });
+                input.focus();
+                return;
+            }
+
+            if (!db.pengaturan) db.pengaturan = {};
+            db.pengaturan.npsn = trimmed;
+            input.value = trimmed;
+
+            if (window.currentUser) {
+                window.currentUser.npsn = trimmed;
+                try {
+                    localStorage.setItem('currentUser', JSON.stringify(window.currentUser));
+                    localStorage.setItem('auth_user', JSON.stringify(window.currentUser));
+                    document.cookie = "auth_user=" + encodeURIComponent(JSON.stringify(window.currentUser)) + "; max-age=31536000; path=/";
+                } catch(e) {}
+            }
+
+            saveDB();
+            window.addAktivitas && window.addAktivitas('pengaturan', 'NPSN diperbarui menjadi ' + trimmed, 'Profil/Identitas');
+
+            input.setAttribute('readonly', 'true');
+            input.classList.remove('bg-white', 'text-gray-900', 'ring-2', 'ring-blue-500', 'border-blue-500', 'cursor-text');
+            input.classList.add('bg-gray-100', 'text-gray-700', 'cursor-not-allowed');
+
+            if (wrapper) {
+                wrapper.innerHTML = `
+                    <button type="button" id="btn-edit-npsn" onclick="window.startEditNpsn()" class="px-3 py-1 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-md text-xs font-semibold flex items-center gap-1 shadow-sm transition-all cursor-pointer" title="Klik untuk edit NPSN">
+                        <i class="fas fa-pen text-[10px]"></i> Edit
+                    </button>
+                `;
+            }
+            window._isEditingNpsn = false;
+
+            // Sinkronkan NPSN ke server database (code.gs & Cloudflare D1)
+            if (window.currentUser && window.currentUser.email && typeof APPSCRIPT_URL !== 'undefined') {
+                fetch(APPSCRIPT_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: new URLSearchParams({
+                        action: 'updateProfile',
+                        data: JSON.stringify({
+                            email: window.currentUser.email,
+                            nama: (db.pengaturan && db.pengaturan.nama) || (window.currentUser ? window.currentUser.nama : ''),
+                            sekolah: (db.pengaturan && db.pengaturan.sekolah) || (window.currentUser && window.currentUser.sekolah ? window.currentUser.sekolah : ''),
+                            instansi: (db.pengaturan && db.pengaturan.sekolah) || (window.currentUser && window.currentUser.sekolah ? window.currentUser.sekolah : ''),
+                            npsn: trimmed
+                        })
+                    })
+                })
+                .then(r => r.json())
+                .then(res => {
+                    if (res.status === 'success') {
+                        console.log('NPSN berhasil diperbarui di server database:', trimmed);
+                    } else {
+                        console.warn('Gagal sinkron NPSN ke server:', res.message);
+                    }
+                })
+                .catch(e => console.log('Update NPSN server offline:', e));
+            }
+
+            Swal.fire({
+                icon: 'success',
+                title: 'Berhasil Disimpan',
+                text: 'NPSN berhasil diperbarui menjadi: ' + trimmed,
+                timer: 1600,
+                showConfirmButton: false,
+                customClass: { popup: 'rounded-2xl' }
+            });
+        };
+
+        window.editNpsn = window.startEditNpsn;
+
         function renderPengaturan() {
             const p = db.pengaturan || {nama: '', nip: '-', sekolah: ''};
             const avatarSrc = p.foto ? window.getReliableImageUrl(p.foto) : `https://ui-avatars.com/api/?name=${encodeURIComponent(p.nama || 'Guru')}&background=f97316&color=fff&size=150`;
@@ -11319,7 +11583,14 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
                                 <label class="text-sm font-medium text-gray-600 block mb-1">Nama Sekolah</label>
-                                <input type="text" name="sekolah" value="${p.sekolah || (window.currentUser && window.currentUser.sekolah ? window.currentUser.sekolah : '') || ''}" placeholder="Misal: SDN Konoha 02" class="w-full border p-2 rounded-lg bg-gray-50 focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none transition" />
+                                <div class="relative flex items-center">
+                                    <input type="text" id="input-pengaturan-sekolah" name="sekolah" value="${p.sekolah || (window.currentUser && window.currentUser.sekolah ? window.currentUser.sekolah : '') || ''}" placeholder="Misal: SDN Konoha 02" readonly onkeydown="if(event.key==='Enter'){event.preventDefault();window.saveEditSekolah();}else if(event.key==='Escape'){event.preventDefault();window.cancelEditSekolah();}" class="w-full border p-2 pr-32 rounded-lg bg-gray-100 text-gray-700 cursor-not-allowed outline-none transition" title="Klik tombol Edit di samping untuk mengubah nama sekolah" />
+                                    <div id="wrapper-btn-edit-sekolah" class="absolute right-1.5 flex items-center gap-1">
+                                        <button type="button" id="btn-edit-sekolah" onclick="window.startEditSekolah()" class="px-3 py-1 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-md text-xs font-semibold flex items-center gap-1 shadow-sm transition-all cursor-pointer" title="Klik untuk edit nama sekolah">
+                                            <i class="fas fa-pen text-[10px]"></i> Edit
+                                        </button>
+                                    </div>
+                                </div>
                             </div>
                             <div>
                                 <label class="text-sm font-medium text-gray-600 block mb-1">Kelas yang Diampu</label>
@@ -11340,7 +11611,14 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                             </div>
                             <div>
                                 <label class="text-sm font-medium text-gray-600 block mb-1">NPSN</label>
-                                <input type="text" name="npsn" value="${p.npsn || (window.currentUser && window.currentUser.npsn ? window.currentUser.npsn : '') || ''}" placeholder="Misal: 10203040" class="w-full border p-2 rounded-lg bg-gray-50 focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none transition" />
+                                <div class="relative flex items-center">
+                                    <input type="text" id="input-pengaturan-npsn" name="npsn" value="${p.npsn || (window.currentUser && window.currentUser.npsn ? window.currentUser.npsn : '') || ''}" placeholder="Misal: 10203040" readonly onkeydown="if(event.key==='Enter'){event.preventDefault();window.saveEditNpsn();}else if(event.key==='Escape'){event.preventDefault();window.cancelEditNpsn();}" class="w-full border p-2 pr-32 rounded-lg bg-gray-100 text-gray-700 cursor-not-allowed outline-none transition" title="Klik tombol Edit di samping untuk mengubah NPSN" />
+                                    <div id="wrapper-btn-edit-npsn" class="absolute right-1.5 flex items-center gap-1">
+                                        <button type="button" id="btn-edit-npsn" onclick="window.startEditNpsn()" class="px-3 py-1 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-md text-xs font-semibold flex items-center gap-1 shadow-sm transition-all cursor-pointer" title="Klik untuk edit NPSN">
+                                            <i class="fas fa-pen text-[10px]"></i> Edit
+                                        </button>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
