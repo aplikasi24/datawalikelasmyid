@@ -11020,21 +11020,26 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
             const inputNama = form.nama;
             // Jika sedang diedit inline, jangan overwrite nama di DB sampai tombol Simpan diklik
             const newNama = (window._isEditingNama && db.pengaturan) ? (db.pengaturan.nama || inputNama.value) : inputNama.value;
+            const newSekolah = (form.sekolah?.value || '').trim();
+            const newNpsn = (form.npsn?.value || '').trim();
+
             db.pengaturan = {
                 ...db.pengaturan,
                 nama: newNama,
                 nip: form.nip.value,
-                sekolah: form.sekolah.value,
+                sekolah: newSekolah,
                 kelas: form.kelas.value,
                 kepsek: form.kepsek.value,
                 nip_kepsek: form.nip_kepsek.value,
                 tapel: form.tapel.value,
                 semester: form.semester.value,
-                npsn: form.npsn.value
+                npsn: newNpsn
             };
             if (!window._isEditingNama && window.currentUser) {
                 window.currentUser.nama = newNama;
                 window.currentUser.name = newNama;
+                window.currentUser.sekolah = newSekolah;
+                window.currentUser.npsn = newNpsn;
                 try {
                     localStorage.setItem('currentUser', JSON.stringify(window.currentUser));
                     localStorage.setItem('auth_user', JSON.stringify(window.currentUser));
@@ -11047,23 +11052,28 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                 window.updateUIIdentitas();
             }
 
-            // Debounce kirim perubahan nama ke database server (hanya jika tidak sedang diedit inline)
-            if (!window._isEditingNama && window.currentUser && window.currentUser.email && newNama && newNama.trim() && typeof APPSCRIPT_URL !== 'undefined') {
-                const trimmed = newNama.trim();
-                if (trimmed !== (window._lastSyncedNama || '')) {
-                    clearTimeout(window._debounceUpdateNamaTimer);
-                    window._debounceUpdateNamaTimer = setTimeout(() => {
-                        window._lastSyncedNama = trimmed;
-                        fetch(APPSCRIPT_URL, {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                            body: new URLSearchParams({
-                                action: 'updateNama',
-                                data: JSON.stringify({ email: window.currentUser.email, nama: trimmed })
-                            })
-                        }).catch(e => console.log('Autosave nama to server offline:', e));
-                    }, 1200);
-                }
+            // Debounce kirim perubahan profil (sekolah, npsn, nama) ke database server (Apps Script & Cloudflare D1)
+            if (window.currentUser && window.currentUser.email && typeof APPSCRIPT_URL !== 'undefined') {
+                const syncData = {
+                    email: window.currentUser.email,
+                    nama: newNama,
+                    sekolah: newSekolah,
+                    instansi: newSekolah,
+                    npsn: newNpsn
+                };
+                clearTimeout(window._debounceUpdateProfileTimer);
+                window._debounceUpdateProfileTimer = setTimeout(() => {
+                    fetch(APPSCRIPT_URL, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                        body: new URLSearchParams({
+                            action: 'updateProfile',
+                            data: JSON.stringify(syncData)
+                        })
+                    }).then(r => r.json()).then(res => {
+                        console.log('Profil (Sekolah & NPSN) tersinkron ke database server:', res);
+                    }).catch(e => console.log('Autosave profil to server offline:', e));
+                }, 1000);
             }
         };
 
@@ -11309,7 +11319,7 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
                                 <label class="text-sm font-medium text-gray-600 block mb-1">Nama Sekolah</label>
-                                <input type="text" name="sekolah" value="${p.sekolah || ''}" class="w-full border p-2 rounded-lg bg-gray-50 focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none transition" />
+                                <input type="text" name="sekolah" value="${p.sekolah || (window.currentUser && window.currentUser.sekolah ? window.currentUser.sekolah : '') || ''}" placeholder="Misal: SDN Konoha 02" class="w-full border p-2 rounded-lg bg-gray-50 focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none transition" />
                             </div>
                             <div>
                                 <label class="text-sm font-medium text-gray-600 block mb-1">Kelas yang Diampu</label>
@@ -11329,8 +11339,8 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                                 </select>
                             </div>
                             <div>
-                                <label class="text-sm font-medium text-gray-600 block mb-1">NPSN ${window.currentUser ? '<i class="fas fa-lock text-xs text-gray-400" title="Dikunci dari akun"></i>' : ''}</label>
-                                <input type="text" name="npsn" value="${p.npsn || ''}" placeholder="Misal: 10203040" ${window.currentUser ? 'readonly' : ''} class="w-full border p-2 rounded-lg ${window.currentUser ? 'bg-gray-100 text-gray-500 cursor-not-allowed' : 'bg-gray-50 focus:bg-white focus:ring-2 focus:ring-blue-500'} outline-none transition" />
+                                <label class="text-sm font-medium text-gray-600 block mb-1">NPSN</label>
+                                <input type="text" name="npsn" value="${p.npsn || (window.currentUser && window.currentUser.npsn ? window.currentUser.npsn : '') || ''}" placeholder="Misal: 10203040" class="w-full border p-2 rounded-lg bg-gray-50 focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none transition" />
                             </div>
                         </div>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -11557,6 +11567,7 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                             if (window.currentUser && window.currentUser.nama) {
                                 if (!db.pengaturan) db.pengaturan = {};
                                 db.pengaturan.nama = window.currentUser.nama;
+                                if (window.currentUser.sekolah) db.pengaturan.sekolah = window.currentUser.sekolah;
                                 if (window.currentUser.npsn) db.pengaturan.npsn = window.currentUser.npsn;
                             }
                             
@@ -11802,6 +11813,7 @@ Pastikan tulisan nama hari beserta daftar nama siswanya sesuai data di atas dima
                         if (window.currentUser && window.currentUser.nama) {
                             if (!db.pengaturan) db.pengaturan = {};
                             db.pengaturan.nama = window.currentUser.nama;
+                            if (window.currentUser.sekolah) db.pengaturan.sekolah = window.currentUser.sekolah;
                             if (window.currentUser.npsn) db.pengaturan.npsn = window.currentUser.npsn;
                         }
                         
